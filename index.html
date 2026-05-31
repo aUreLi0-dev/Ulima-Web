@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>ULima++ | Descarga la app</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <img src="assets/logo-ulima.png" alt="Logo Universidad de Lima" class="logo">
+      <div>
+        <h1>ULima++</h1>
+        <p class="header-subtitle">Universidad de Lima</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <div class="hero-text">
+        <span class="tag">Proyecto académico</span>
+        <h2>Una app pensada para acompañar la vida universitaria</h2>
+        <p>
+          ULima++ reúne en un solo lugar herramientas útiles para estudiantes de la Universidad de Lima:
+          malla curricular, horario, simulador de notas, asesorías, anuncios y contactos por curso.
+        </p>
+
+        <div class="download-buttons">
+          <a href="https://drive.google.com/uc?export=download&id=1QKQYptFrpdQ7hmX8ttPAFi71NiTc9Bte" class="btn android">
+            <span>Descargar versión</span>
+            <strong>Android APK</strong>
+          </a>
+
+          <a href="javascript:void(0)" class="btn ios" onclick="showIosMessage()">
+            <span>Versión para</span>
+            <strong>iOS pronto</strong>
+          </a>
+        </div>
+
+        <p class="note">
+          Por ahora, la aplicación está disponible para Android mediante APK. La versión para iOS se considera para una siguiente etapa del proyecto.
+        </p>
+      </div>
+
+      <div class="hero-image">
+        <div class="phone-card">
+          <img src="assets/app-preview.png" alt="Vista previa de ULima++">
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <article>
+        <h3>Malla curricular</h3>
+        <p>Revisa tu avance académico y los cursos que forman parte de tu plan de estudios.</p>
+      </article>
+
+      <article>
+        <h3>Horario y cursos</h3>
+        <p>Accede a tus clases, asesorías, anuncios y contactos según la sección matriculada.</p>
+      </article>
+
+      <article>
+        <h3>Simulador de notas</h3>
+        <p>Registra tus evaluaciones y calcula tu promedio de manera rápida durante el ciclo.</p>
+      </article>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>ULima++ · Ingenieria de Software II · Universidad de Lima</p>
+  </footer>
+
+  <script>
+    function showIosMessage(){
+      alert("La versión para iOS todavía no está disponible. Se implementará en una siguiente etapa del proyecto 🍎");
+    }
+  </script>
+</body>
+</html>
