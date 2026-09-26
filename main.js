@@ -295,6 +295,10 @@
   var POSES = { ensamble: poseEnsamble, incremento: poseIncremento, codigo: poseCodigo };
   var INTRO_END = { ensamble: 1250, incremento: 1150, codigo: 1330 };
   var EXIT_DUR = { ensamble: 530, incremento: 620, codigo: 420 };
+  // Instante en que se apaga el último efecto de cada intro. En Ensamble el segundo pulso de los
+  // «++» termina en 930 + 150 + 300 = 1380 ms, después de INTRO_END, y el bucle de cuadros sigue
+  // hasta entonces para que el anillo no quede congelado a medio desvanecer.
+  var FX_END = { ensamble: 1400, incremento: 1230, codigo: 1410 };
   var variant = VARIANTS[Math.floor(Math.random() * VARIANTS.length) % VARIANTS.length];
   try {
     // Para revisar una intro concreta se agrega ?intro=ensamble, ?intro=incremento o ?intro=codigo.
@@ -573,7 +577,7 @@
     // Sigue pidiendo cuadros mientras la intro o la salida automática están en curso.
     if (introStart !== null && !reduce) {
       var el = ts - introStart - NATIVE;
-      var busy = el < INTRO_END[variant] + 80 || (!L.wide && p < 1);
+      var busy = el < FX_END[variant] || (!L.wide && p < 1);
       if (busy) requestRender();
     }
   }
