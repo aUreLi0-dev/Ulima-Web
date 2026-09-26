@@ -23,6 +23,10 @@ entonces los datos de respaldo del APK.
 Para revisar una intro concreta del logo se agrega `?intro=ensamble`, `?intro=incremento` o
 `?intro=codigo` a la dirección. Sin el parámetro, cada visita sortea una de las tres.
 
+La página sigue el tema claro u oscuro del sistema. El botón de la barra superior lo cambia y el
+navegador recuerda la elección, así que en una computadora en modo claro basta con tocarlo una
+vez para ver la página con el fondo oscuro.
+
 ## Qué hace cada archivo
 
 | Archivo | Qué hace |
