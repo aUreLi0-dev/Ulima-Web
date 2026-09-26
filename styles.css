@@ -390,11 +390,14 @@ html:not(.js) .theme { display: none; }
   .js .cue .ic { width: 15px; height: 15px; animation: nudge 1.6s ease-in-out infinite; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
 
+  /* El anillo y su halo escalan con el teléfono. Con el de 330 px miden 28 y 4 px, y en cualquier
+     ancho cubren los mismos 33 dp de la captura, así que no pisan texto en pantallas más chicas. */
   .js .pin {
+    --pd: calc(var(--gw) * 28 / 330);
     display: block; position: absolute; z-index: 7; left: 0; top: 0;
-    width: 28px; height: 28px; margin: -14px 0 0 -14px;
+    width: var(--pd); height: var(--pd); margin: calc(var(--pd) / -2) 0 0 calc(var(--pd) / -2);
     border-radius: 50%; border: 2px solid var(--orange);
-    box-shadow: 0 0 0 4px rgba(255, 102, 0, .2);
+    box-shadow: 0 0 0 calc(var(--gw) * 4 / 330) rgba(255, 102, 0, .2);
     opacity: 0; pointer-events: none;
     transition: opacity .3s, left .5s cubic-bezier(.2, .8, .2, 1), top .5s cubic-bezier(.2, .8, .2, 1);
   }
