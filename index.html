@@ -23,12 +23,12 @@
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="Dos pantallas reales de ULima++, la malla y el horario, junto al logo y el lema Todo tu ciclo en una sola app.">
+  <meta property="og:image:alt" content="Dos pantallas reales de ULima++, la vista de mapa de la malla y el horario, junto al logo y el lema Todo tu ciclo en una sola app.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ULima++ · Todo tu ciclo en una sola app">
   <meta name="twitter:description" content="Tu malla, tu horario, tus notas y el chat de tu sección en el mismo lugar, con Ulises para responder tus dudas.">
   <meta name="twitter:image" content="https://ulimaweb.vercel.app/assets/og-ulimaplus.jpg">
-  <meta name="twitter:image:alt" content="Dos pantallas reales de ULima++, la malla y el horario, junto al logo y el lema Todo tu ciclo en una sola app.">
+  <meta name="twitter:image:alt" content="Dos pantallas reales de ULima++, la vista de mapa de la malla y el horario, junto al logo y el lema Todo tu ciclo en una sola app.">
 
   <!-- Tema y modo con JS antes del primer pintado, para que no parpadee. -->
   <script>(function(d){d.classList.add('js');var t=null;try{t=localStorage.getItem('ulimaplus-tema')}catch(e){}if(t==='light'||t==='dark')d.setAttribute('data-theme',t);var k=t?t==='dark':!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(k)d.classList.add('is-dark')})(document.documentElement)</script>
@@ -94,6 +94,10 @@
               <div class="scr is-on" data-scr="malla" data-hb="cc">
                 <img class="cap cap-claro" src="assets/capturas/malla-claro-360.webp" srcset="assets/capturas/malla-claro-360.webp 360w, assets/capturas/malla-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
                 <img class="cap cap-oscuro" src="assets/capturas/malla-oscuro-360.webp" srcset="assets/capturas/malla-oscuro-360.webp 360w, assets/capturas/malla-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="malla-mapa" data-push data-hb="oc">
+                <img class="cap cap-claro" src="assets/capturas/malla-mapa-claro-360.webp" srcset="assets/capturas/malla-mapa-claro-360.webp 360w, assets/capturas/malla-mapa-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/malla-mapa-oscuro-360.webp" srcset="assets/capturas/malla-mapa-oscuro-360.webp 360w, assets/capturas/malla-mapa-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
               </div>
               <div class="scr" data-scr="horario" data-hb="cc">
                 <img class="cap cap-claro" src="assets/capturas/horario-claro-360.webp" srcset="assets/capturas/horario-claro-360.webp 360w, assets/capturas/horario-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
@@ -228,73 +232,73 @@
     <div class="steps" id="steps">
       <div class="step step-intro" data-screen="malla"></div>
 
-      <article class="step" id="funciones" data-screen="malla" data-side="r" data-pin="272,154">
+      <article class="step" id="funciones" data-screen="malla-mapa" data-side="r">
         <div class="copy">
-          <p class="eyebrow">Pestaña Malla</p>
+          <p class="eyebrow">Malla › Vista mapa</p>
           <h2>Tu avance real, curso por curso.</h2>
-          <p>La malla cuenta tus créditos aprobados y te dice qué parte de la carrera llevas. Ciclo por ciclo ves los cursos que ya terminaste, los que estás llevando y los que tienes disponibles.</p>
+          <p>La vista de mapa pinta cada curso según su estado, en verde los que ya aprobaste, en naranja los que llevas este ciclo y en azul los que ya tienes disponibles. Arriba, la malla suma tu avance en toda la carrera.</p>
         </div>
-        <figure class="shot shot-first">
-          <div class="glass" data-hb="cc">
-            <img class="cap cap-claro" src="assets/capturas/malla-claro-360.webp" srcset="assets/capturas/malla-claro-360.webp 360w, assets/capturas/malla-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Malla de ULima++ con el avance de la carrera en 151 de 211 créditos, el 72 %, y los cuatro cursos del ciclo 8 marcados como Cursando.">
-            <img class="cap cap-oscuro" src="assets/capturas/malla-oscuro-360.webp" srcset="assets/capturas/malla-oscuro-360.webp 360w, assets/capturas/malla-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Malla de ULima++ con el avance de la carrera en 151 de 211 créditos, el 72 %, y los cuatro cursos del ciclo 8 marcados como Cursando.">
+        <figure class="shot" data-scr="malla-mapa">
+          <div class="glass" data-hb="oc">
+            <img class="cap cap-claro" src="assets/capturas/malla-mapa-claro-360.webp" srcset="assets/capturas/malla-mapa-claro-360.webp 360w, assets/capturas/malla-mapa-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Vista mapa de la malla con 43 cursos finalizados, 5 en proceso y 8 disponibles, un avance de 43 de 61 cursos, y los niveles 7, 8 y 9 con cada curso pintado según su estado, en verde los aprobados, en naranja los que se llevan, en azul los disponibles y en gris los que aún no se pueden llevar.">
+            <img class="cap cap-oscuro" src="assets/capturas/malla-mapa-oscuro-360.webp" srcset="assets/capturas/malla-mapa-oscuro-360.webp 360w, assets/capturas/malla-mapa-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Vista mapa de la malla con 43 cursos finalizados, 5 en proceso y 8 disponibles, un avance de 43 de 61 cursos, y los niveles 7, 8 y 9 con cada curso pintado según su estado, en verde los aprobados, en naranja los que se llevan, en azul los disponibles y en gris los que aún no se pueden llevar.">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step" data-screen="horario" data-side="l" data-pin="92,671">
+      <article class="step" data-screen="horario" data-side="l">
         <div class="copy">
           <p class="eyebrow">Pestaña Horario</p>
           <h2>Tus clases y lo que haces fuera de ellas.</h2>
-          <p>El horario del día trae tus clases con su aula y marca tus evaluaciones. Sumas tus propios bloques, como las prácticas o el gimnasio, y la app te avisa si alguno se cruza con una clase.</p>
+          <p>El horario del día trae tus clases con su aula y marca tus evaluaciones. Arriba ves cuántas horas suman tus bloques en la semana, y cada bloque propio, como las prácticas, aparece en su franja del día. Si alguno se cruza con una clase, la app te avisa.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="horario">
           <div class="glass" data-hb="cc">
-            <img class="cap cap-claro" src="assets/capturas/horario-claro-360.webp" srcset="assets/capturas/horario-claro-360.webp 360w, assets/capturas/horario-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Horario del martes 29 de septiembre, semana 6 del ciclo, con cuatro clases de colores, la evaluación PC2 marcada en Ingeniería de Software II y el bloque propio Prácticas preprofesionales en la noche. Arriba dice «Tus bloques: 12 h esta semana».">
-            <img class="cap cap-oscuro" src="assets/capturas/horario-oscuro-360.webp" srcset="assets/capturas/horario-oscuro-360.webp 360w, assets/capturas/horario-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Horario del martes 29 de septiembre, semana 6 del ciclo, con cuatro clases de colores, la evaluación PC2 marcada en Ingeniería de Software II y el bloque propio Prácticas preprofesionales en la noche. Arriba dice «Tus bloques: 12 h esta semana».">
+            <img class="cap cap-claro" src="assets/capturas/horario-claro-360.webp" srcset="assets/capturas/horario-claro-360.webp 360w, assets/capturas/horario-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Horario del martes 29 de septiembre, semana 6 del ciclo, con cuatro clases de colores, la evaluación PC2 marcada en Ingeniería de Software II y el bloque propio Prácticas pre profesionales en la tarde. Arriba dice «Tus bloques: 12 h esta semana».">
+            <img class="cap cap-oscuro" src="assets/capturas/horario-oscuro-360.webp" srcset="assets/capturas/horario-oscuro-360.webp 360w, assets/capturas/horario-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Horario del martes 29 de septiembre, semana 6 del ciclo, con cuatro clases de colores, la evaluación PC2 marcada en Ingeniería de Software II y el bloque propio Prácticas pre profesionales en la tarde. Arriba dice «Tus bloques: 12 h esta semana».">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step" data-screen="mis-bloques" data-side="r" data-pin="40,120">
+      <article class="step" data-screen="mis-bloques" data-side="r">
         <div class="copy">
           <p class="eyebrow">Horario › Mis bloques</p>
           <h2>Todos tus bloques en una lista.</h2>
           <p>En «Mis bloques» ves cada bloque con sus días, su hora y sus fechas, y lo editas o lo borras cuando cambia tu semana. Si un día no vas, lo tocas en el horario y cancelas solo ese día.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="mis-bloques">
           <div class="glass" data-hb="oc">
-            <img class="cap cap-claro" src="assets/capturas/mis-bloques-claro-360.webp" srcset="assets/capturas/mis-bloques-claro-360.webp 360w, assets/capturas/mis-bloques-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla Mis bloques con cuatro bloques propios, Prácticas preprofesionales, Gimnasio, Clases de inglés y Taller de oratoria, cada uno con sus días, su horario y sus fechas.">
-            <img class="cap cap-oscuro" src="assets/capturas/mis-bloques-oscuro-360.webp" srcset="assets/capturas/mis-bloques-oscuro-360.webp 360w, assets/capturas/mis-bloques-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla Mis bloques con cuatro bloques propios, Prácticas preprofesionales, Gimnasio, Clases de inglés y Taller de oratoria, cada uno con sus días, su horario y sus fechas.">
+            <img class="cap cap-claro" src="assets/capturas/mis-bloques-claro-360.webp" srcset="assets/capturas/mis-bloques-claro-360.webp 360w, assets/capturas/mis-bloques-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla Mis bloques con cuatro bloques propios, Prácticas pre profesionales, Gimnasio, Clases de inglés y Taller de oratoria, cada uno con sus días, su horario y sus fechas. El taller aparece como terminado.">
+            <img class="cap cap-oscuro" src="assets/capturas/mis-bloques-oscuro-360.webp" srcset="assets/capturas/mis-bloques-oscuro-360.webp 360w, assets/capturas/mis-bloques-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla Mis bloques con cuatro bloques propios, Prácticas pre profesionales, Gimnasio, Clases de inglés y Taller de oratoria, cada uno con sus días, su horario y sus fechas. El taller aparece como terminado.">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step" data-screen="notas" data-side="l" data-pin="347,146">
+      <article class="step" data-screen="notas" data-side="l">
         <div class="copy">
           <p class="eyebrow">Pestaña Notas</p>
           <h2>Tu promedio, calculado al instante.</h2>
-          <p>En la calculadora eliges cada evaluación del sílabo, que ya trae su peso, anotas tu nota y ves tu promedio al momento. El birrete de arriba te lleva a tus notas oficiales, las que publica tu profesor.</p>
+          <p>En la calculadora eliges cada evaluación del sílabo, que ya trae su peso, anotas tu nota o la que esperas sacar y ves tu promedio al momento. El birrete de arriba te lleva a tus notas oficiales, las que publica tu profesor.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="notas">
           <div class="glass" data-hb="cc">
-            <img class="cap cap-claro" src="assets/capturas/notas-claro-360.webp" srcset="assets/capturas/notas-claro-360.webp 360w, assets/capturas/notas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Calculadora de Notas con Ingeniería de Software II en 15,30 y sus evaluaciones con peso y nota, como la Práctica Calificada 1 con 16 y el Examen Parcial con 14. Arriba a la derecha está el birrete de las notas oficiales.">
-            <img class="cap cap-oscuro" src="assets/capturas/notas-oscuro-360.webp" srcset="assets/capturas/notas-oscuro-360.webp 360w, assets/capturas/notas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Calculadora de Notas con Ingeniería de Software II en 15,30 y sus evaluaciones con peso y nota, como la Práctica Calificada 1 con 16 y el Examen Parcial con 14. Arriba a la derecha está el birrete de las notas oficiales.">
+            <img class="cap cap-claro" src="assets/capturas/notas-claro-360.webp" srcset="assets/capturas/notas-claro-360.webp 360w, assets/capturas/notas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Calculadora de Notas con Ingeniería de Software II en 15,30 y sus evaluaciones con peso y nota, la Práctica Calificada 1 con 16, la Práctica Calificada 2 con 17 y el Examen Parcial con 14. Arriba a la derecha está el birrete de las notas oficiales.">
+            <img class="cap cap-oscuro" src="assets/capturas/notas-oscuro-360.webp" srcset="assets/capturas/notas-oscuro-360.webp 360w, assets/capturas/notas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Calculadora de Notas con Ingeniería de Software II en 15,30 y sus evaluaciones con peso y nota, la Práctica Calificada 1 con 16, la Práctica Calificada 2 con 17 y el Examen Parcial con 14. Arriba a la derecha está el birrete de las notas oficiales.">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step" data-screen="alertas" data-side="r" data-pin="56,131">
+      <article class="step" data-screen="alertas" data-side="r">
         <div class="copy">
           <p class="eyebrow">Buzón de alertas</p>
           <h2>Un aviso a tiempo, antes del susto.</h2>
           <p>ULima++ te avisa cuando tu promedio de un curso entra en riesgo y cuando se te juntan varias evaluaciones en la misma semana.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="alertas">
           <div class="glass" data-hb="oc">
             <img class="cap cap-claro" src="assets/capturas/alertas-claro-360.webp" srcset="assets/capturas/alertas-claro-360.webp 360w, assets/capturas/alertas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Buzón de Alertas con una alerta de riesgo académico en Sistemas ERP, con promedio de 9,60 y el 40 % evaluado, y una alerta de alta carga por cuatro evaluaciones en la semana 6.">
             <img class="cap cap-oscuro" src="assets/capturas/alertas-oscuro-360.webp" srcset="assets/capturas/alertas-oscuro-360.webp 360w, assets/capturas/alertas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Buzón de Alertas con una alerta de riesgo académico en Sistemas ERP, con promedio de 9,60 y el 40 % evaluado, y una alerta de alta carga por cuatro evaluaciones en la semana 6.">
@@ -303,13 +307,13 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="record" data-side="l" data-pin="144,114">
+      <article class="step" data-screen="record" data-side="l">
         <div class="copy">
           <p class="eyebrow">Perfil › Mi récord académico</p>
           <h2>Tu récord, traído de miUlima.</h2>
           <p>Sincronizas con el portal una vez y tienes a la mano tu promedio ponderado acumulado y las notas de cada ciclo, curso por curso.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="record">
           <div class="glass" data-hb="oc">
             <img class="cap cap-claro" src="assets/capturas/record-claro-360.webp" srcset="assets/capturas/record-claro-360.webp 360w, assets/capturas/record-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Mi récord académico con un promedio ponderado acumulado (PPA) de 15,42 en el tercio superior, sincronizado hace 3 días, y las notas del ciclo 2026-1 curso por curso.">
             <img class="cap cap-oscuro" src="assets/capturas/record-oscuro-360.webp" srcset="assets/capturas/record-oscuro-360.webp 360w, assets/capturas/record-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Mi récord académico con un promedio ponderado acumulado (PPA) de 15,42 en el tercio superior, sincronizado hace 3 días, y las notas del ciclo 2026-1 curso por curso.">
@@ -318,53 +322,53 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="curso-anuncios" data-side="r" data-pin="368,483">
+      <article class="step" data-screen="curso-anuncios" data-side="r">
         <div class="copy">
           <p class="eyebrow">Dentro de cada curso</p>
           <h2>Anuncios y asesorías de tu sección.</h2>
-          <p>Cada curso reúne tu asistencia, los anuncios que publican tus delegados, las asesorías y los contactos de la sección. Si vas a una asesoría, confirmas tu asistencia ahí mismo.</p>
+          <p>Cada curso reúne tu asistencia, los anuncios que publican tus delegados, las asesorías y los contactos de la sección. Si vas a una asesoría, la confirmas ahí mismo, y el botón de arriba te lleva al chat del curso.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="curso-anuncios">
           <div class="glass" data-hb="oc">
-            <img class="cap cap-claro" src="assets/capturas/curso-anuncios-claro-360.webp" srcset="assets/capturas/curso-anuncios-claro-360.webp 360w, assets/capturas/curso-anuncios-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Curso Ingeniería de Software II, sección 812, con la asistencia en 18 horas, la pestaña Anuncios abierta y dos anuncios del delegado. También se ven las pestañas Asesorías y Contactos.">
-            <img class="cap cap-oscuro" src="assets/capturas/curso-anuncios-oscuro-360.webp" srcset="assets/capturas/curso-anuncios-oscuro-360.webp 360w, assets/capturas/curso-anuncios-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Curso Ingeniería de Software II, sección 812, con la asistencia en 18 horas, la pestaña Anuncios abierta y dos anuncios del delegado. También se ven las pestañas Asesorías y Contactos.">
+            <img class="cap cap-claro" src="assets/capturas/curso-anuncios-claro-360.webp" srcset="assets/capturas/curso-anuncios-claro-360.webp 360w, assets/capturas/curso-anuncios-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Curso Ingeniería de Software II, sección 812, con la asistencia en 18 horas, la pestaña Anuncios abierta y el anuncio del delegado sobre la PC2 del martes en el L3-402. Arriba está el botón Chat del curso y también se ven las pestañas Asesorías y Contactos.">
+            <img class="cap cap-oscuro" src="assets/capturas/curso-anuncios-oscuro-360.webp" srcset="assets/capturas/curso-anuncios-oscuro-360.webp 360w, assets/capturas/curso-anuncios-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Curso Ingeniería de Software II, sección 812, con la asistencia en 18 horas, la pestaña Anuncios abierta y el anuncio del delegado sobre la PC2 del martes en el L3-402. Arriba está el botón Chat del curso y también se ven las pestañas Asesorías y Contactos.">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step" data-screen="chat-seccion" data-side="l" data-pin="210,460">
+      <article class="step" data-screen="chat-seccion" data-side="l">
         <div class="copy">
           <p class="eyebrow">Chats › Tu sección</p>
           <h2>El chat de tu sección, sin pasar tu número.</h2>
           <p>Cada sección tiene su propio chat, con sus alumnos, sus delegados y su profesor. Si te equivocas, borras tu mensaje para todos y el chat muestra que lo eliminaste.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="chat-seccion">
           <div class="glass" data-hb="oc">
-            <img class="cap cap-claro" src="assets/capturas/chat-seccion-claro-360.webp" srcset="assets/capturas/chat-seccion-claro-360.webp 360w, assets/capturas/chat-seccion-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat de la sección 812 de Ingeniería de Software II con mensajes del delegado, de alumnos y del profesor, y un mensaje propio borrado que dice «Eliminaste este mensaje».">
-            <img class="cap cap-oscuro" src="assets/capturas/chat-seccion-oscuro-360.webp" srcset="assets/capturas/chat-seccion-oscuro-360.webp 360w, assets/capturas/chat-seccion-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat de la sección 812 de Ingeniería de Software II con mensajes del delegado, de alumnos y del profesor, y un mensaje propio borrado que dice «Eliminaste este mensaje».">
+            <img class="cap cap-claro" src="assets/capturas/chat-seccion-claro-360.webp" srcset="assets/capturas/chat-seccion-claro-360.webp 360w, assets/capturas/chat-seccion-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat de la sección 812 de Ingeniería de Software II con mensajes del delegado, del subdelegado, de alumnos y del profesor, y un mensaje propio borrado que dice «Eliminaste este mensaje».">
+            <img class="cap cap-oscuro" src="assets/capturas/chat-seccion-oscuro-360.webp" srcset="assets/capturas/chat-seccion-oscuro-360.webp 360w, assets/capturas/chat-seccion-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat de la sección 812 de Ingeniería de Software II con mensajes del delegado, del subdelegado, de alumnos y del profesor, y un mensaje propio borrado que dice «Eliminaste este mensaje».">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step" data-screen="ulises" data-side="r" data-pin="367,452">
+      <article class="step" data-screen="ulises" data-side="r">
         <div class="copy">
           <p class="eyebrow">Ulises, el asistente</p>
           <h2>Pregúntale a Ulises.</h2>
-          <p>Toca al cuervo de la esquina y se abre ULimaBot, el asistente con inteligencia artificial que te responde sobre tu horario, tus bloques, tus evaluaciones y los delegados de tus secciones.</p>
+          <p>Toca al cuervo de la esquina y se abre ULimaBot, el asistente con inteligencia artificial que te responde sobre tu horario, tus evaluaciones, los delegados de tus secciones y tus bloques, y hasta te sugiere cuándo repasar.</p>
           <p class="soon"><b>Próximamente</b><span>El test de especialidad, conversando con Ulises.</span></p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="ulises">
           <div class="glass" data-hb="oc">
-            <img class="cap cap-claro" src="assets/capturas/ulises-claro-360.webp" srcset="assets/capturas/ulises-claro-360.webp 360w, assets/capturas/ulises-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat con ULimaBot, el asistente académico con la cara de Ulises. Responde qué clases hay el martes 29 de septiembre con sus aulas y horas, y quién es el delegado de Ingeniería de Software II.">
-            <img class="cap cap-oscuro" src="assets/capturas/ulises-oscuro-360.webp" srcset="assets/capturas/ulises-oscuro-360.webp 360w, assets/capturas/ulises-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat con ULimaBot, el asistente académico con la cara de Ulises. Responde qué clases hay el martes 29 de septiembre con sus aulas y horas, y quién es el delegado de Ingeniería de Software II.">
+            <img class="cap cap-claro" src="assets/capturas/ulises-claro-360.webp" srcset="assets/capturas/ulises-claro-360.webp 360w, assets/capturas/ulises-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat con ULimaBot, el asistente académico con la cara de Ulises. Responde que en Ingeniería de Software II, sección 812, el delegado es Renzo Valdivia y el subdelegado es Mateo Quispe, y después lista tres bloques propios que suman 12 horas por semana y sugiere repasar el jueves 1 de octubre de 11:00 a 14:00.">
+            <img class="cap cap-oscuro" src="assets/capturas/ulises-oscuro-360.webp" srcset="assets/capturas/ulises-oscuro-360.webp 360w, assets/capturas/ulises-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat con ULimaBot, el asistente académico con la cara de Ulises. Responde que en Ingeniería de Software II, sección 812, el delegado es Renzo Valdivia y el subdelegado es Mateo Quispe, y después lista tres bloques propios que suman 12 horas por semana y sugiere repasar el jueves 1 de octubre de 11:00 a 14:00.">
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
         </figure>
       </article>
 
-      <article class="step step-install" id="instalar" data-screen="sys1" data-side="l" data-pin="60,702" data-install>
+      <article class="step step-install" id="instalar" data-screen="sys1" data-side="l" data-install>
         <div class="copy">
           <p class="eyebrow">Instalación · solo Android por ahora</p>
           <h2><span class="num" aria-hidden="true">1</span><span class="vh">Paso 1. </span>Descarga el APK.</h2>
@@ -372,7 +376,7 @@
           <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
           <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="sys1">
           <div class="glass" data-hb="oc" data-sb="oc">
             <svg class="sx" viewBox="0 0 390 844" role="img" aria-label="Esquema de Chrome en un celular Android con esta página abierta y el aviso de descarga de ULimaPlus.apk terminado, con el botón Abrir.">
               <rect class="sx-bg" width="390" height="844"/>
@@ -401,13 +405,13 @@
         </figure>
       </article>
 
-      <article class="step step-install" data-screen="sys2" data-side="l" data-pin="326,274" data-install>
+      <article class="step step-install" data-screen="sys2" data-side="l" data-install>
         <div class="copy">
           <p class="eyebrow">Instalación</p>
           <h2><span class="num" aria-hidden="true">2</span><span class="vh">Paso 2. </span>Permite la instalación.</h2>
           <p>Al abrir el archivo, Android te pide permiso la primera vez. Entra a la configuración que te muestra y activa «Permitir desde esta fuente» para el navegador que usaste.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="sys2">
           <div class="glass" data-hb="oc" data-sb="oc">
             <svg class="sx" viewBox="0 0 390 844" role="img" aria-label="Esquema de la pantalla Instalar apps desconocidas de Android, con Chrome y el interruptor Permitir desde esta fuente activado.">
               <rect class="sx-bg" width="390" height="844"/>
@@ -432,14 +436,14 @@
         </figure>
       </article>
 
-      <article class="step step-install step-last" data-screen="login" data-side="l" data-pin="54,330" data-install>
+      <article class="step step-install step-last" data-screen="login" data-side="l" data-install>
         <div class="copy">
           <p class="eyebrow">Instalación</p>
           <h2><span class="num" aria-hidden="true">3</span><span class="vh">Paso 3. </span>Instala y entra.</h2>
           <p>Vuelve al archivo, toca «Instalar» y abre ULima++. Entras con tu código y tu contraseña o con Google, y si es tu primera vez, creas tu cuenta ahí mismo.</p>
           <p>Para actualizarla, descarga el APK otra vez desde esta página.</p>
         </div>
-        <figure class="shot">
+        <figure class="shot" data-scr="login">
           <div class="glass" data-hb="cc">
             <img class="cap cap-claro" src="assets/capturas/login-claro-360.webp" srcset="assets/capturas/login-claro-360.webp 360w, assets/capturas/login-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla de inicio de sesión de ULima++ con el ícono de la app, los campos Código y Contraseña, el botón Entrar y la opción de entrar con Google.">
             <img class="cap cap-oscuro" src="assets/capturas/login-oscuro-360.webp" srcset="assets/capturas/login-oscuro-360.webp 360w, assets/capturas/login-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla de inicio de sesión de ULima++ con el ícono de la app, los campos Código y Contraseña, el botón Entrar y la opción de entrar con Google.">
