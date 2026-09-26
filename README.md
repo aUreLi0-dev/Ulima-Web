@@ -36,7 +36,7 @@ vez para ver la página con el fondo oscuro.
 | `main.js` | Se carga con `defer`. Maneja el conmutador de tema, lee en vivo la versión, el peso y la fecha del APK desde la API pública de GitHub, anima el logo de la entrada, cambia la captura del teléfono según el paso que se lee y recorre en cada paso las zonas de la captura que explica el texto. |
 | `assets/capturas/` | Capturas reales de la app en WebP, en versión clara y oscura, con 360 y 720 px de ancho. La página elige la del tema activo y el ancho según la pantalla. |
 | `assets/qr-apk.svg` | Código QR que apunta a la descarga del APK. Se generó una vez con el paquete `qrcode` de npm y se verificó decodificándolo. |
-| `assets/og-ulimaplus.jpg` | Imagen de 1200 x 630 px para compartir la página en redes, hecha con dos capturas reales, la vista de mapa de la malla y el horario, con el mismo marco de teléfono que la página. |
+| `assets/og-ulimaplus.jpg` | Imagen de 1200 x 630 px para compartir la página en redes, hecha con dos capturas reales, la vista de mapa de la malla y el horario, con el mismo marco de teléfono que la página. Las metaetiquetas la piden con `?v=2`, así las redes no siguen mostrando la versión anterior guardada en su caché; al cambiarla otra vez conviene subir ese número. |
 | `assets/favicon.svg`, `assets/favicon-32.png`, `assets/apple-touch-icon.png` | Ícono de la pestaña y de la pantalla de inicio, con el logo y sus «++». |
 
 ## Datos del APK
@@ -54,7 +54,11 @@ segundos, quedan los valores de respaldo que ya trae `index.html` en los element
 
 Las pantallas del teléfono no se dibujan en HTML. Son capturas de la app renderizadas desde su
 propio código con datos ficticios, a 1170 x 2532 px, con una prueba de Flutter que se corre en una
-rama local del frontend y no se publica. Solo las pantallas de Android de los dos primeros pasos de
+rama local del frontend y no se publica. La prueba llega a cada pantalla por el mismo camino que un
+alumno, con toques y arrastres, y además de la pantalla principal de cada paso guarda las
+intermedias que el recorrido alterna, como la lista de la malla con su botón «Vista mapa», la hoja
+que se abre al tocar un bloque en el horario o la pestaña de asesorías antes y después de tocar
+«Asistiré». Solo las pantallas de Android de los dos primeros pasos de
 instalación son esquemas simples en SVG, dentro de `index.html`, que toman los colores del tema.
 Para reemplazar una captura se convierte el PNG nuevo a los dos anchos, por ejemplo con `cwebp`.
 
@@ -73,19 +77,42 @@ después sobre la oscura. Sin el atributo, la tinta es clara en los dos temas.
 
 Cada paso tiene en `data-beats` los momentos que recorre la pantalla mientras su texto está activo,
 separados por `|`. Un momento es una o varias zonas `x y ancho alto` en puntos de la captura, que
-mide 390 x 844, separadas por coma. Puede llevar delante `pantalla:` cuando el momento cambia de
-pantalla, y al final `@x y` para sumar un anillo en ese punto.
+mide 390 x 844, separadas por coma. Una zona puede llevar un quinto número con el radio de sus
+esquinas, que por defecto es 14 y con la mitad del lado la vuelve un círculo. Además, el momento
+puede llevar estas marcas.
+
+- `pantalla:` al comienzo, cuando el momento se ve en otra captura que la del paso
+  (`data-screen`). Sin ella, el momento usa la captura del paso.
+- `*` antes de todo, para marcar un momento principal. Con «reducir movimiento» se ven a la vez los
+  principales, o el último si ninguno lo está.
+- `@x y` al final, para sumar un anillo sobre un elemento chico, o `@x y ancho alto`, para rodearlo
+  con una píldora de 3 puntos de aire, como la insignia de una evaluación.
+- `^y ...` al final, para descubrir la conversación de la captura hasta cada una de esas alturas
+  antes de resaltar la zona. Solo sirve en una pantalla con `data-rev="arriba abajo"`, donde una
+  tapa del color del fondo del chat cubre las burbujas y se corre hacia abajo.
 
 ```html
-<article class="step" data-screen="chats"
-  data-beats="chats: 16 114 358 74 | chat-seccion: 8 536 294 146 | chat-seccion: 191.3 402 190.7 37">
+<article class="step" data-screen="ulises" data-side="r"
+  data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ^268 369 | *ulises: 46 453 319.8 278 ^447 759">
 ```
 
 En cada momento el resto de la pantalla se oscurece, la zona sube con un leve zoom y un borde que
-late, y en el texto se marca la frase que tiene el mismo número en `data-b`. Las zonas salen del
-`zonas.json` que la prueba de Flutter escribe junto a las capturas, así que al cambiar una captura
-conviene revisar que sus zonas sigan en el mismo lugar. En escritorio los momentos siguen al texto
-activo. En celular y tableta corren cuando la captura queda a la vista, sin tocar el desplazamiento.
+late, un anillo marca el borde de la zona que mira al texto y en el texto se marca la frase que
+tiene el mismo número en `data-b` (una frase puede llevar varios, separados por espacio). En
+escritorio, una línea punteada une el texto con ese anillo y su punta viaja de un anillo al
+siguiente. Al terminar el recorrido, el oscurecido se levanta y quedan el borde y el anillo sobre la
+pantalla en color. El oscurecido se recorta con `clip-path` y las lupas y los anillos nacen en su
+lugar, así que nada cambia la geometría de la página ni suma desplazamientos de diseño (CLS).
+
+Las pantallas intermedias también son capturas reales. Un cambio dentro de la misma pantalla, como
+una pestaña, un botón que cambia de estado o una hoja que se abre, lleva `data-cf` en su pantalla
+del teléfono fijo y entra en su lugar, sin deslizarse. En celular y tableta, cada figura suma encima
+las pantallas intermedias de su paso y corre el mismo recorrido cuando queda a la vista, sin tocar
+el desplazamiento. En el paso 1 de la instalación, el esquema de Chrome muestra la descarga que
+avanza hasta «Abrir».
+
+Las zonas salen del `zonas.json` que la prueba de Flutter escribe junto a las capturas, así que al
+cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
 
 ## Accesibilidad
 
@@ -100,8 +127,8 @@ activo. En celular y tableta corren cuando la captura queda a la vista, sin toca
   siempre está a contraste pleno. Los textos vecinos que asoman por arriba o por abajo quedan
   atenuados a propósito hasta que llegan al centro.
 - Con «reducir movimiento» activado en el sistema no hay animaciones, el logo queda quieto y cada
-  paso muestra, sin moverse, su último momento resaltado.
+  paso muestra, sin moverse ni oscurecer la captura, sus zonas principales a la vez.
 - El borde de la zona y el anillo laten unas pocas veces y se quedan quietos, y el recorrido de
-  cada paso termina en unos segundos.
+  cada paso termina en unos segundos, con la captura otra vez en color.
 - La barra de estado, la cámara, la barra de inicio y las copias ampliadas de cada zona son
   decorativas y quedan ocultas para el lector de pantalla.
