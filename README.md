@@ -31,12 +31,12 @@ vez para ver la página con el fondo oscuro.
 
 | Archivo | Qué hace |
 | --- | --- |
-| `index.html` | Contenido de la página, metadatos (Open Graph, Twitter, favicon, canonical) y un script mínimo en `<head>` que aplica el tema guardado antes del primer pintado. |
-| `styles.css` | Estilos. Por defecto las secciones van apiladas (celular, tableta y sin JS). Con JS y 900 px o más se activa el teléfono fijo al centro. Incluye el modo claro y oscuro y el modo sin movimiento. |
-| `main.js` | Se carga con `defer`. Maneja el conmutador de tema, lee en vivo la versión, el peso y la fecha del APK desde la API pública de GitHub, anima el logo de la entrada y cambia la captura del teléfono según el paso que se lee. |
+| `index.html` | Contenido de la página, metadatos (Open Graph, Twitter, favicon, canonical) y un script mínimo en `<head>` que aplica el tema guardado antes del primer pintado. Cada paso lleva en `data-beats` las zonas de su captura que se resaltan. |
+| `styles.css` | Estilos. Por defecto las secciones van apiladas (celular, tableta y sin JS). Con JS y 900 px o más se activa el teléfono fijo al centro. Incluye el marco del teléfono, los detalles animados sobre las capturas, el modo claro y oscuro y el modo sin movimiento. |
+| `main.js` | Se carga con `defer`. Maneja el conmutador de tema, lee en vivo la versión, el peso y la fecha del APK desde la API pública de GitHub, anima el logo de la entrada, cambia la captura del teléfono según el paso que se lee y recorre en cada paso las zonas de la captura que explica el texto. |
 | `assets/capturas/` | Capturas reales de la app en WebP, en versión clara y oscura, con 360 y 720 px de ancho. La página elige la del tema activo y el ancho según la pantalla. |
 | `assets/qr-apk.svg` | Código QR que apunta a la descarga del APK. Se generó una vez con el paquete `qrcode` de npm y se verificó decodificándolo. |
-| `assets/og-ulimaplus.jpg` | Imagen de 1200 x 630 px para compartir la página en redes, hecha con dos capturas reales. |
+| `assets/og-ulimaplus.jpg` | Imagen de 1200 x 630 px para compartir la página en redes, hecha con dos capturas reales, la vista de mapa de la malla y el horario, con el mismo marco de teléfono que la página. |
 | `assets/favicon.svg`, `assets/favicon-32.png`, `assets/apple-touch-icon.png` | Ícono de la pestaña y de la pantalla de inicio, con el logo y sus «++». |
 
 ## Datos del APK
@@ -63,6 +63,30 @@ cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 360 0 malla-claro.png -o asse
 cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 720 0 malla-claro.png -o assets/capturas/malla-claro-720.webp
 ```
 
+Las capturas traen 24 pt libres arriba y 16 pt abajo. Ahí la página dibuja con HTML y CSS la barra
+de estado (la hora 9:41, la señal, el wifi y la batería), la cámara y la barra de inicio, así que
+las capturas no llevan marco. En cada pantalla, `data-sb` y `data-hb` dicen si la tinta de la barra
+de estado y la de la barra de inicio va oscura (`o`) o clara (`c`), primero sobre la captura clara y
+después sobre la oscura. Sin el atributo, la tinta es clara en los dos temas.
+
+## Detalles animados
+
+Cada paso tiene en `data-beats` los momentos que recorre la pantalla mientras su texto está activo,
+separados por `|`. Un momento es una o varias zonas `x y ancho alto` en puntos de la captura, que
+mide 390 x 844, separadas por coma. Puede llevar delante `pantalla:` cuando el momento cambia de
+pantalla, y al final `@x y` para sumar un anillo en ese punto.
+
+```html
+<article class="step" data-screen="chats"
+  data-beats="chats: 16 114 358 74 | chat-seccion: 8 536 294 146 | chat-seccion: 191.3 402 190.7 37">
+```
+
+En cada momento el resto de la pantalla se oscurece, la zona sube con un leve zoom y un borde que
+late, y en el texto se marca la frase que tiene el mismo número en `data-b`. Las zonas salen del
+`zonas.json` que la prueba de Flutter escribe junto a las capturas, así que al cambiar una captura
+conviene revisar que sus zonas sigan en el mismo lugar. En escritorio los momentos siguen al texto
+activo. En celular y tableta corren cuando la captura queda a la vista, sin tocar el desplazamiento.
+
 ## Accesibilidad
 
 - Un solo `h1`, regiones con `header`, `nav`, `main` y `footer`, y un enlace para saltar al contenido.
@@ -75,4 +99,9 @@ cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 720 0 malla-claro.png -o asse
   paso activo es el del texto más cercano al centro de la ventana, así que el texto que se lee
   siempre está a contraste pleno. Los textos vecinos que asoman por arriba o por abajo quedan
   atenuados a propósito hasta que llegan al centro.
-- Con «reducir movimiento» activado en el sistema no hay animaciones y el logo queda quieto.
+- Con «reducir movimiento» activado en el sistema no hay animaciones, el logo queda quieto y cada
+  paso muestra, sin moverse, su último momento resaltado.
+- El borde de la zona y el anillo laten unas pocas veces y se quedan quietos, y el recorrido de
+  cada paso termina en unos segundos.
+- La barra de estado, la cámara, la barra de inicio y las copias ampliadas de cada zona son
+  decorativas y quedan ocultas para el lector de pantalla.
