@@ -363,9 +363,11 @@ html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .
   position: absolute; border-radius: var(--br, calc(var(--u) * 14));
   opacity: 0; transform: scale(1);
   box-shadow: 0 0 0 calc(var(--u) * 2 / var(--s, 1)) var(--orange), 0 calc(var(--u) * 18 / var(--s, 1)) calc(var(--u) * 34 / var(--s, 1)) calc(var(--u) * -14 / var(--s, 1)) rgba(0, 0, 0, .7);
-  transition: opacity .35s ease, transform .65s cubic-bezier(.2, .9, .25, 1.15);
+  transition: opacity .25s ease, transform .6s cubic-bezier(.2, .9, .25, 1.15);
 }
 .lens.is-on { opacity: 1; transform: translate(calc(var(--u) * var(--dx, 0)), calc(var(--u) * var(--dy, 0))) scale(var(--s, 1.04)); }
+/* Al pasar al momento siguiente, la lupa y el anillo se apagan en su lugar, sin achicarse. */
+.lens.is-on.is-out, .ring.is-on.is-out { opacity: 0; transition: opacity .15s ease; }
 .lens > div { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
 .lens .cap, .lens .sx { position: absolute; max-width: none; left: var(--ix); top: var(--iy); width: var(--iw); height: var(--ih); }
 .lens::after {

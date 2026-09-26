@@ -693,18 +693,23 @@
 
   function dropMarks(S, now) {
     S.marks.forEach(function (l) {
-      l.classList.remove('is-on');
-      if (now || reduce) { if (l.parentNode) l.parentNode.removeChild(l); }
-      else setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 420);
+      if (now || reduce) { l.classList.remove('is-on'); if (l.parentNode) l.parentNode.removeChild(l); }
+      else {
+        // La lupa y el anillo que salen se apagan en su lugar, sin achicarse, en 0,15 s.
+        l.classList.add('is-out');
+        setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 300);
+      }
     });
     S.marks = [];
     S.lead = null;
   }
+  // Entre dos momentos, la lupa nueva entra apenas se apaga la anterior, así hasta un momento de paso,
+  // de 0,7 s, la muestra entera y con su zoom antes de seguir.
   function addMark(S, el, wasOn, now) {
     S.box.appendChild(el);
     S.marks.push(el);
     if (reduce || now) el.classList.add('is-on');
-    else later(S, wasOn ? 380 : 200, function () { el.classList.add('is-on'); });
+    else later(S, wasOn ? 160 : 200, function () { el.classList.add('is-on'); });
   }
   // La lupa es una copia de la captura recortada a la zona, que sube sobre el resto.
   function addLens(S, g, caps, wasOn, hi, now) {
