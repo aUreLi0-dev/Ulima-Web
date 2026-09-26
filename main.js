@@ -8,7 +8,7 @@
    5. Detalles sobre la captura, con velo, lupa, anillo, línea guía y frase, al ritmo del texto
       activo, y las pantallas intermedias de cada paso, que también son capturas reales.
    6. Ulises, posado junto al teléfono, comenta cada paso en su burbuja y vuela en arco de un lugar
-      a otro por fuera de la pantalla. */
+      a otro por fuera de la pantalla. En el chat de la sección llega un «67». */
 (function () {
   'use strict';
 
@@ -72,6 +72,8 @@
     // Cabecera de la app en cada tema, medida en las capturas (390 x 844 dp).
     HEAD = d ? [30, 30, 36] : [255, 102, 0];
     HEAD_H = d ? 103.3 : 102;
+    // Las imágenes dentro de un SVG, como la conversación del 67, bajan solo en el tema activo.
+    svgImages();
     requestRender();
   }
   themeBtn.addEventListener('click', function () {
@@ -515,7 +517,8 @@
     L.rig = L.mode !== 'stack';
     syncShots();
     L.navH = nav.offsetHeight;
-    L.gw = glass.getBoundingClientRect().width || L.gw;
+    // Medidas sin transformaciones, así el vaivén del 67 no las altera.
+    L.gw = glass.offsetWidth || L.gw;
     var sy = win.pageYOffset;
     // Centro vertical de cada texto en la página. Su transición solo lo mueve en horizontal.
     L.copyMid = copies.map(function (c) {
@@ -526,7 +529,7 @@
     if (L.wide) {
       // Al inicio el teléfono queda a la derecha del texto de la portada y se centra al bajar.
       var hr = hero.getBoundingClientRect(), pad = parseFloat(getComputedStyle(stage).paddingRight) || 32;
-      var pw = phone.getBoundingClientRect().width, target = (hr.right + L.vw - pad) / 2;
+      var pw = phone.offsetWidth, target = (hr.right + L.vw - pad) / 2;
       target = Math.min(target, L.vw - pad - pw / 2);
       L.heroDx = Math.max(0, target - L.vw / 2);
     } else L.heroDx = 0;
@@ -627,13 +630,14 @@
       k = b.indexOf('@');
       q = k >= 0 ? nums(b.slice(k + 1)) : [];
       if ((q.length === 2 || q.length === 4) && q.every(isFinite)) o.mark = q;
-      // El zoom fijo puede traer un segundo valor para el teléfono chico del celular (=1.25:1.7).
+      // El zoom fijo puede traer un segundo valor para el teléfono chico del celular (=2.4:3.2) y
+      // un «!» para conservarlo con movimiento reducido, como la lupa del 67, que sin ella no se lee.
       (k >= 0 ? b.slice(0, k) : b).split(',').forEach(function (r) {
-        var ZR = /=\s*([\d.]+)(?::([\d.]+))?/;
+        var ZR = /=\s*([\d.]+)(?::([\d.]+))?(!?)/;
         var h = /~([tbno])/.exec(r), zm = ZR.exec(r), v = nums(r.replace(/~[a-z]/g, '').replace(ZR, ''));
         if ((v.length === 4 || v.length === 5) && v.every(isFinite)) {
           v.ring = h ? h[1] : ''; v.zoom = zm && +zm[1] > 1 ? +zm[1] : 0;
-          v.zoomC = zm && zm[2] && +zm[2] > 1 ? +zm[2] : v.zoom;
+          v.zoomC = zm && zm[2] && +zm[2] > 1 ? +zm[2] : v.zoom; v.keep = !!(zm && zm[3]);
           o.z.push(v);
         }
       });
@@ -664,11 +668,11 @@
   // estado y la de inicio. Con [flat] (movimiento reducido) no hay zoom.
   // En un teléfono chico, el de arriba en el celular o una captura apilada de menos de 250 px de
   // ancho (un celular apaisado), la lupa amplía 1,5 veces más, hasta 3,4, siempre dentro de la
-  // pantalla, y una zona con dos zooms (=1.25:1.7) usa el segundo.
+  // pantalla, y una zona con dos zooms (=2.4:3.2) usa el segundo.
   var LENS_T = 140, LENS_MAX = 2.6, LENS_FIX = 3.4, SAFE = [4, 27, 386, 826], SMALL_K = 1.5;
   function lensGeo(z, flat, gw) {
     var w = z[2], h = z[3], m = Math.max(w, h), cx = z[0] + w / 2, cy = z[1] + h / 2, s = 1;
-    if (!flat) {
+    if (!flat || z.keep) {
       var n = Math.min(w, h), small = L.mode === 'cmp' || (L.mode === 'stack' && (gw || 999) < 250);
       var fix = small ? z.zoomC : z.zoom;
       s = fix || Math.max(LENS_T / m, n < 70 ? clamp(46 / n, 1.25, LENS_MAX) : 1, 1 + Math.min(0.07, 12 / m));
@@ -775,6 +779,7 @@
         if (hi) return;
         k = c.cloneNode(true);
         k.removeAttribute('role'); k.removeAttribute('aria-label');
+        svgHref(k);
       }
       dest.appendChild(k);
     });
@@ -986,6 +991,21 @@
       im.setAttribute('src', im.getAttribute('data-src'));
       im.removeAttribute('data-srcset'); im.removeAttribute('data-src');
     });
+    svgHref(sc);
+  }
+  // Una imagen dentro de un SVG baja aunque su tema no se vea, así que cada una recibe su fuente
+  // solo cuando su tema está activo.
+  function svgHref(el) {
+    var want = isDark() ? 'cap-oscuro' : 'cap-claro';
+    Array.prototype.forEach.call(el.querySelectorAll('image[data-href]'), function (im) {
+      if (im.classList.contains(want) && !im.getAttribute('href')) im.setAttribute('href', im.getAttribute('data-href'));
+    });
+  }
+  function svgImages() {
+    if (typeof scrs !== 'object' || !scrs) return;
+    Object.keys(scrs).forEach(function (k) { if (scrs[k].hydrated) svgHref(scrs[k]); });
+    // También las copias que ya están a la vista, en las lupas y en las capas del modo apilado.
+    all('.lens, .lay').forEach(svgHref);
   }
   function hydrateNear(i) {
     for (var k = Math.max(1, i - 1); k <= i + 2 && k < steps.length; k++) {
@@ -1003,6 +1023,8 @@
     if (T.idx > 0) phrase(T.idx, []);
     hideSpot(T.spot, true);
     T.idx = i; T.scr = null; T.lead = null;
+    stopTilt(phone);
+    U.t67 = false;
     if (i <= 0) return;
     hydrateNear(i);
     var bs = beatsOf[i];
@@ -1016,9 +1038,28 @@
       src: function (n) { return scrs[n]; },
       reveal: function (n, y) { if (n == null) showBubbles(rigCovers); else setCover(rigCovers[n], y); },
       phr: function (ks) { phrase(i, ks); },
-      at: function (b, now) { schemeGo(glass, b, now); },
+      at: function (b, now) { schemeGo(glass, b, now); if (b.scr === 'chat-67') six7(phone, now, true); },
       beat: function () { T.lead = T.spot.lead; requestRender(); }
     });
+  }
+
+  // El 67. Un compañero manda «67» en el chat de la sección, el teléfono entero se inclina de un lado
+  // a otro durante 2 s, como el truco de la app (−3° · sen(2π · 4 · avance), primero a la izquierda),
+  // y Ulises responde «SIX SEVEN!!!». Con movimiento reducido, con las animaciones en pausa o al
+  // saltar al estado final no hay vaivén, y la burbuja de Ulises trae su comentario del paso y,
+  // debajo, la respuesta.
+  function stopTilt(el) {
+    if (!el) return;
+    clearTimeout(el.t67);
+    el.classList.remove('t67');
+  }
+  function six7(el, now, uli) {
+    if (uli) { U.t67 = true; U.t67both = !!(now || reduce || still); uliSay(); }
+    if (now || reduce || still || !el) return;
+    stopTilt(el);
+    void el.offsetWidth;
+    el.classList.add('t67');
+    el.t67 = setTimeout(function () { el.classList.remove('t67'); }, 2100);
   }
 
   // Recorridos de las capturas apiladas. Cada figura corre los momentos de su paso al quedar a la
@@ -1078,7 +1119,7 @@
       src: function (n) { return s.layers[n] || s.glass; },
       reveal: function (n, y) { if (n == null) showBubbles(s.covers); else setCover(s.covers[n], y); },
       phr: function (ks) { phrase(s.i, ks); },
-      at: function (b, now) { schemeGo(s.glass, b, now); },
+      at: function (b, now) { schemeGo(s.glass, b, now); if (b.scr === 'chat-67') six7(s.fig, now, false); },
       beat: noop
     });
   }
@@ -1086,7 +1127,7 @@
   // pantalla intermedia cuando se sube de nuevo hasta ella.
   function stopShot(s) {
     if (!s.spot) return;
-    stopTour(s.spot); s.spot.end = null; hideSpot(s.spot, true); phrase(s.i, []);
+    stopTour(s.spot); s.spot.end = null; hideSpot(s.spot, true); phrase(s.i, []); stopTilt(s.fig);
     if (s.ready) figScreen(s, firstScreen(s));
     schemeArm(s.glass, s.scr);
   }
@@ -1237,11 +1278,11 @@
   // celular se posa en el canto derecho del teléfono, sobre el marco y sin entrar a la pantalla, así
   // nunca tapa lo que muestran las lupas, y su burbuja va en la columna libre de al lado. Con
   // movimiento reducido o con las animaciones en pausa aparece en su lugar, sin volar.
-  var uli = $('uli'), uliF = uli.querySelector('.uli-f'), ubub = $('ubub'), ubT = ubub.querySelector('.ub-t');
+  var uli = $('uli'), uliF = uli.querySelector('.uli-f'), ubub = $('ubub'), ubT = ubub.querySelector('.ub-t'), ubS = ubub.querySelector('.ub-s');
   var qrEl = doc.querySelector('.qrpanel'), qrImg = qrEl && qrEl.querySelector('img'), pauseSt = doc.querySelector('.pausa-st');
   var U = {
     ok: false, mode: null, x: 0, y: 0, s: 64, face: 1, idx: -1, spot: null, fl: null,
-    land: -1e9, talk: -1e9, showAt: 1e15,
+    land: -1e9, talk: -1e9, showAt: 1e15, t67: false, t67both: false,
     bub: { on: false, w: 0, h: 0, cand: null }
   };
   var ARRIVE = 250, BUB_DELAY = 220, LAND = 480, TALK = 320;
@@ -1253,6 +1294,13 @@
     if (i <= 0) return (!L.wide && hero.getAttribute('data-uli-c')) || hero.getAttribute('data-uli') || '';
     var st = steps[i];
     return (st && st.getAttribute('data-uli')) || '';
+  }
+  // La respuesta al 67 (data-uli67). Durante el recorrido reemplaza al comentario del paso. Con
+  // movimiento reducido, con las animaciones en pausa o al saltar al estado final va debajo del
+  // comentario, así los dos se leen.
+  function uliShout(i) {
+    var st = i > 0 ? steps[i] : null;
+    return U.t67 && st && st.hasAttribute('data-uli67') ? st.getAttribute('data-uli67') : '';
   }
   function uliSize() { return Math.round(L.wide ? clamp(L.gw * 0.2, 56, 72) : clamp(L.gw * 0.27, 40, 54)); }
   function rigBox() { return rig.getBoundingClientRect(); }
@@ -1493,14 +1541,24 @@
     U.bub.w = bw; U.bub.h = bh; U.bub.cand = best.n;
   }
   function bubShow(ts) {
-    var txt = uliText(U.idx);
-    if (!txt) return;
+    var txt = uliText(U.idx), shout = uliShout(U.idx);
+    if (!txt && !shout) return;
     ubT.textContent = txt;
+    if (ubS) ubS.textContent = shout;
+    ubub.classList.toggle('is-67', !!shout);
+    ubub.classList.toggle('solo-67', !!shout && !U.t67both);
     bubFit();
     instant(ubub, bubPlace);
     U.bub.on = true;
     ubub.classList.add('is-on');
     U.talk = ts;
+  }
+  // Ulises dice otra cosa sin moverse, como la respuesta al 67.
+  function uliSay() {
+    if (!U.ok || U.fl) return;
+    if (U.bub.on) bubHide();
+    U.showAt = now() + (reduce || still ? 0 : 140);
+    requestRender();
   }
   function uliGo(ts, jump) {
     bubHide();

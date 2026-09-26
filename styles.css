@@ -251,6 +251,7 @@ html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-
 .copy .udice { margin-top: 14px; }
 .udice img { width: 32px; height: 32px; flex: none; border-radius: 50%; }
 .udice b { color: var(--ink); font-weight: 700; }
+.ud-67 { display: block; margin-top: 4px; }
 
 /* ---------- Teléfono ---------- */
 .story { position: relative; }
@@ -265,6 +266,21 @@ html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-
   animation: breathe 7s ease-in-out infinite;
 }
 @keyframes breathe { 50% { transform: translate(-50%, -50%) scale(1.06); } }
+/* El 67. El teléfono entero se inclina de un lado a otro en 2 s, con −3° · sen(2π · 4 · avance), como
+   el truco de la app, primero hacia la izquierda. */
+.phone.t67, .shot.t67 { animation: t67 2s both; }
+@keyframes t67 {
+  0% { transform: rotate(0); animation-timing-function: cubic-bezier(.61, 1, .88, 1); }
+  6.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  18.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  31.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  43.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  56.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  68.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  81.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  93.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.12, 0, .39, 0); }
+  100% { transform: rotate(0); }
+}
 .phone {
   position: relative; padding: 8px;
   border-radius: calc(var(--gw) * .13 + 8px);
@@ -289,6 +305,28 @@ html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-
 }
 :root[data-theme="dark"] .cap-claro { display: none; }
 :root[data-theme="dark"] .cap-oscuro { display: block; }
+
+/* Pantalla del 67. La conversación de la captura sube 38 puntos al llegar el mensaje, con los
+   colores de las burbujas de la captura en cada tema. */
+.c67-bg { fill: var(--chat-bg); }
+.c67-card { fill: #FFFFFF; stroke: #E6E8EB; stroke-width: 1; }
+.c67-sombra { fill: rgba(16, 18, 24, .07); }
+.c67-name, .c67-txt { fill: #111318; font-family: Roboto, var(--sans); }
+.c67-time { fill: #4A4C53; font-family: Roboto, var(--sans); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .c67-card { fill: #1F1E25; stroke: #2E2D34; }
+  :root:not([data-theme="light"]) .c67-sombra { fill: rgba(0, 0, 0, .3); }
+  :root:not([data-theme="light"]) .c67-name, :root:not([data-theme="light"]) .c67-txt { fill: #FFFFFF; }
+  :root:not([data-theme="light"]) .c67-time { fill: #ADACB8; }
+}
+:root[data-theme="dark"] .c67-card { fill: #1F1E25; stroke: #2E2D34; }
+:root[data-theme="dark"] .c67-sombra { fill: rgba(0, 0, 0, .3); }
+:root[data-theme="dark"] .c67-name, :root[data-theme="dark"] .c67-txt { fill: #FFFFFF; }
+:root[data-theme="dark"] .c67-time { fill: #ADACB8; }
+.rig .scr[data-scr="chat-67"].is-on .c67-sube { animation: c67-sube .42s cubic-bezier(.2, .8, .2, 1) .12s both; }
+.rig .scr[data-scr="chat-67"].is-on .c67-msg { animation: c67-msg .36s ease-out .3s both; }
+@keyframes c67-sube { from { transform: translateY(38px); } }
+@keyframes c67-msg { from { opacity: 0; } }
 
 /* Logo animado de la entrada (solo con JS) */
 .splash { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; display: none; }
@@ -548,6 +586,13 @@ html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-
 @supports (translate: 1px) {
   .ubub[data-tail]::before { left: 0; top: 0; right: auto; bottom: auto; translate: var(--px, 0px) var(--py, 0px); }
 }
+/* La respuesta al 67, como el rótulo de la app. Durante el recorrido va sola (.solo-67). Con
+   movimiento reducido, con la pausa o al saltar al estado final va debajo del comentario del paso. */
+.ub-s { display: none; margin: 0; }
+.ubub.is-67 .ub-s { display: block; font: italic 800 23px/1.05 var(--display); letter-spacing: -.01em; color: var(--accent); white-space: nowrap; }
+.ubub.is-67:not(.solo-67) .ub-s { margin-top: 6px; }
+.ubub.solo-67 { padding: 10px 16px 11px; }
+.ubub.solo-67 .ub-t { display: none; }
 
 /* ---------- Pasos (modo apilado) ---------- */
 .steps { max-width: 980px; margin: 0 auto; padding: 0 var(--gutter); }
@@ -800,6 +845,10 @@ html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-
   .js .copy { margin: 0 auto; }
   .ready .copy { opacity: .3; transition: opacity .45s ease; }
   .ready .step.is-active .copy, .ready .copy:focus-within { opacity: 1; }
+  /* «SIX SEVEN!!!» cabe entero en la columna libre junto al teléfono, que en 320 px mide unos 110 px. */
+  .ubub.is-67 .ub-s { font-size: clamp(16px, 5.4vw, 23px); }
+  /* El paso del chat dura más al bajar, así el «67», que llega a los 4,9 s, no se pasa de largo. */
+  .js .step[data-uli67] { min-height: calc(var(--read-h) * 1.5); }
 }
 @supports (height: 100svh) {
   @media (max-width: 899px) and (min-height: 500px) {
