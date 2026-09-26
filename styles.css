@@ -22,6 +22,9 @@
   --ink: #16161C;
   --ink2: #50505E;
   --accent: #B84A00;
+  /* Los textos chicos en naranja (la ceja de cada paso y «Próximamente») van sobre el resplandor del
+     teléfono, que aclara el fondo. Este tono les da 4,5 a 1 o más también ahí. */
+  --accent-sm: #A94300;
   --glow: .34;
   --shadow: 0 34px 70px -34px rgba(22, 22, 28, .55);
   --app-bg: #F7F8FA;
@@ -32,7 +35,10 @@
   --s-line: #C9C9D2;
   --s-acc: #3D5AFE;
   --s-bar: #ECECF1;
-  --dim: .28;
+  /* Velo del foco. En claro es más suave, y tras el primer instante de cada momento baja a --calm
+     de su fuerza, así la cabecera naranja y las pantallas siguen en color. */
+  --dim: .2;
+  --calm: .5;
   --mk-a: 30%;
   /* Fondo de la conversación de Ulises en la captura, para la tapa que deja ver sus burbujas. */
   --chat-bg: #F9FBFC;
@@ -47,6 +53,7 @@
     --ink: #EDEDF3;
     --ink2: #A3A3B3;
     --accent: #FF8A3D;
+    --accent-sm: #FF8A3D;
     --glow: .6;
     --shadow: 0 40px 90px -30px rgba(0, 0, 0, .85);
     --app-bg: #1A1A20;
@@ -58,6 +65,7 @@
     --s-acc: #AFC2FF;
     --s-bar: #1A1A20;
     --dim: .5;
+    --calm: .75;
     --mk-a: 38%;
     --chat-bg: #16151C;
     color-scheme: dark;
@@ -71,6 +79,7 @@
   --ink: #EDEDF3;
   --ink2: #A3A3B3;
   --accent: #FF8A3D;
+  --accent-sm: #FF8A3D;
   --glow: .6;
   --shadow: 0 40px 90px -30px rgba(0, 0, 0, .85);
   --app-bg: #1A1A20;
@@ -82,6 +91,7 @@
   --s-acc: #AFC2FF;
   --s-bar: #1A1A20;
   --dim: .5;
+  --calm: .75;
   --mk-a: 38%;
   --chat-bg: #16151C;
   color-scheme: dark;
@@ -166,7 +176,7 @@ html:not(.js) .theme { display: none; }
 .eyebrow {
   margin: 0 0 14px;
   font: 600 12px/1.35 var(--mono); letter-spacing: .08em; text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-sm);
 }
 .meta { margin: 12px 0 0; font: 500 13px/1.45 var(--mono); color: var(--ink2); }
 .meta b { font-weight: 600; color: var(--ink); }
@@ -309,11 +319,13 @@ html:not(.js) .theme { display: none; }
 :root[data-theme="dark"] .hb { background: var(--hb-d); }
 
 /* ---------- Detalles sobre la captura ---------- */
-/* Mientras un texto está activo, el resto de la pantalla se oscurece, la zona que explica sube con
-   un leve zoom y un borde que late, un anillo marca el borde que mira al texto y la frase que la
-   nombra se marca en el texto. Al final del recorrido el oscurecido se levanta y quedan el borde y
-   el anillo. Nada de esto cambia la geometría de la página: el oscurecido se mueve con clip-path y
-   las lupas y los anillos nacen en su lugar, así que no suma desplazamientos de diseño (CLS). */
+/* Mientras un texto está activo, el resto de la pantalla queda bajo un velo, la zona que explica
+   sube en una lupa con un borde que late, un anillo marca un borde libre de la zona y la frase que
+   la nombra se marca en el texto. La lupa amplía apenas las zonas grandes y hasta 2,6 veces las
+   chicas; su borde, su sombra y sus esquinas se dividen por el zoom para verse iguales en todas.
+   Al final del recorrido el velo se levanta y quedan la lupa y el anillo. Nada de esto cambia la
+   geometría de la página, porque el velo se recorta con clip-path y las lupas y los anillos nacen
+   en su lugar y se mueven con transform, así que no suma desplazamientos de diseño (CLS). */
 .hl { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
 .spot {
   position: absolute; inset: 0;
@@ -322,14 +334,15 @@ html:not(.js) .theme { display: none; }
   transition: opacity .45s ease, clip-path .6s cubic-bezier(.2, .8, .2, 1);
 }
 .hl.is-on .spot { opacity: 1; }
+.hl.is-on.is-calm .spot { opacity: var(--calm); transition: opacity .9s ease, clip-path .6s cubic-bezier(.2, .8, .2, 1); }
 .hl.is-rest .spot { opacity: 0; transition: opacity 1s ease; }
 .lens {
-  position: absolute; border-radius: calc(var(--u) * var(--r, 14));
+  position: absolute; border-radius: var(--br, calc(var(--u) * 14));
   opacity: 0; transform: scale(1);
-  box-shadow: 0 0 0 calc(var(--u) * 2) var(--orange), 0 calc(var(--u) * 18) calc(var(--u) * 34) calc(var(--u) * -14) rgba(0, 0, 0, .7);
+  box-shadow: 0 0 0 calc(var(--u) * 2 / var(--s, 1)) var(--orange), 0 calc(var(--u) * 18 / var(--s, 1)) calc(var(--u) * 34 / var(--s, 1)) calc(var(--u) * -14 / var(--s, 1)) rgba(0, 0, 0, .7);
   transition: opacity .35s ease, transform .65s cubic-bezier(.2, .9, .25, 1.15);
 }
-.lens.is-on { opacity: 1; transform: scale(var(--s, 1.04)); }
+.lens.is-on { opacity: 1; transform: translate(calc(var(--u) * var(--dx, 0)), calc(var(--u) * var(--dy, 0))) scale(var(--s, 1.04)); }
 .lens > div { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
 .lens .cap, .lens .sx { position: absolute; max-width: none; left: var(--ix); top: var(--iy); width: var(--iw); height: var(--ih); }
 .lens::after {
@@ -342,8 +355,8 @@ html:not(.js) .theme { display: none; }
 }
 
 /* El anillo mide 24 puntos de la captura en cualquier ancho (unos 20 px en el teléfono fijo) y toca
-   el borde de la zona desde afuera, así no tapa lo que explica. La píldora rodea un elemento chico,
-   como la insignia de una evaluación. */
+   un borde libre de la zona desde afuera, así no tapa lo que explica. La píldora rodea un elemento
+   chico. */
 .ring {
   position: absolute; box-sizing: border-box;
   border: 2px solid var(--orange); border-radius: 50%;
@@ -407,7 +420,7 @@ html:not(.js) .theme { display: none; }
 .copy p { margin: 0; color: var(--ink2); }
 .copy p:not([class]) { font-size: 16.5px; }
 .copy p:not([class]) + p:not([class]) { margin-top: 10px; }
-.copy .eyebrow { margin-bottom: 12px; color: var(--accent); }
+.copy .eyebrow { margin-bottom: 12px; color: var(--accent-sm); }
 .copy .btn { margin-top: 18px; }
 .soon {
   display: flex; gap: 10px; align-items: flex-start;
@@ -415,7 +428,7 @@ html:not(.js) .theme { display: none; }
   border-radius: 14px; border: 1px dashed color-mix(in srgb, var(--accent) 70%, transparent);
   font-size: 15px; line-height: 1.45;
 }
-.soon b { flex: none; font: 700 11px/1.9 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.soon b { flex: none; font: 700 11px/1.9 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-sm); }
 .num {
   display: inline-grid; place-items: center;
   width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;

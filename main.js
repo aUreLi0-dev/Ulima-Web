@@ -3,7 +3,7 @@
    2. Versión, peso y fecha del APK, en vivo desde la API pública de GitHub, con respaldo.
    3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar.
    4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar.
-   5. Detalles sobre la captura, con foco, leve zoom, anillo, línea guía y frase, al ritmo del texto
+   5. Detalles sobre la captura, con velo, lupa, anillo, línea guía y frase, al ritmo del texto
       activo, y las pantallas intermedias de cada paso, que también son capturas reales. */
 (function () {
   'use strict';
@@ -478,6 +478,7 @@
   }
 
   var cur = null, swTimer = 0, dlTimer = 0;
+  function startDownload() { clearTimeout(dlTimer); if (scrs.sys1) scrs.sys1.classList.remove('is-dl'); }
   function setScreen(name, install) {
     if (name === cur) return;
     cur = name;
@@ -491,13 +492,14 @@
     if (sc && sc.hasAttribute('data-sb')) glass.setAttribute('data-sb', sc.getAttribute('data-sb'));
     else glass.removeAttribute('data-sb');
     stage.classList.toggle('is-install', !!install);
-    // En el paso 1 la descarga avanza hasta «Abrir», y en el paso 2 el interruptor se enciende solo,
-    // salvo con movimiento reducido.
+    // En el paso 1 la descarga avanza hasta «Abrir» cuando el recorrido enciende su aviso (o a los
+    // 4 s, si no llega), y en el paso 2 el interruptor se enciende solo, salvo con movimiento
+    // reducido.
     clearTimeout(swTimer); clearTimeout(dlTimer);
     if (scrs.sys1) {
       if (name === 'sys1' && !reduce) {
         scrs.sys1.classList.add('is-dl');
-        dlTimer = setTimeout(function () { scrs.sys1.classList.remove('is-dl'); }, 450);
+        dlTimer = setTimeout(startDownload, 4000);
       } else scrs.sys1.classList.remove('is-dl');
     }
     if (scrs.sys2) {
@@ -510,15 +512,17 @@
 
   /* ---------- 5. Detalles sobre la captura ---------- */
   // Cada paso recorre sus momentos (data-beats) mientras su texto está activo. En cada momento, el
-  // resto de la pantalla se oscurece, la zona sube con un leve zoom y un borde que late, un anillo
-  // marca el borde de la zona que mira al texto y en el texto se marca la frase que la explica
-  // (data-b). Al terminar, el oscurecido se levanta y quedan el borde y el anillo sobre la pantalla
-  // en color. Con movimiento reducido no hay recorrido y se ven quietas, a la vez, las zonas
-  // principales (las marcadas con «*», o la última si ninguna lo está).
-  var BEAT = 1900, SWAP = 560, REVEAL = 480, REST = 2400, RING = 24;
+  // resto de la pantalla se oscurece un instante y queda bajo un velo suave, la zona sube en una
+  // lupa, apenas en las zonas grandes y hasta 2,6 veces en las chicas, un anillo marca un borde
+  // libre de la zona y en el texto se marca la frase que la explica (data-b). Los momentos
+  // principales («*») duran más que los de paso. Al terminar, el velo se levanta y quedan la lupa
+  // y el anillo sobre la pantalla en color. Con movimiento reducido no hay recorrido y se ven
+  // quietas, sin zoom y a la vez, las zonas principales (o la última, si ninguna lo está).
+  var SEC = 1100, MAIN = 1700, SWAP = 450, REVEAL = 480, REST = 2400, CALM = 900, RING = 24;
 
   function nums(s) { return s.trim().split(/\s+/).filter(Boolean).map(Number); }
-  // Un momento es «[*][pantalla:] x y ancho alto [radio][, otra zona] [@x y | @x y ancho alto] [^y ...]».
+  // Un momento es «[*][pantalla:] x y ancho alto [radio] [~t|~b|~o|~n][, otra zona] [@x y | @x y
+  // ancho alto] [^y ...]».
   function parseBeats(str, home) {
     var out = [];
     (str || '').split('|').forEach(function (b, i) {
@@ -533,8 +537,8 @@
       q = k >= 0 ? nums(b.slice(k + 1)) : [];
       if ((q.length === 2 || q.length === 4) && q.every(isFinite)) o.mark = q;
       (k >= 0 ? b.slice(0, k) : b).split(',').forEach(function (r) {
-        var v = nums(r);
-        if ((v.length === 4 || v.length === 5) && v.every(isFinite)) o.z.push(v);
+        var h = /~([tbno])/.exec(r), v = nums(r.replace(/~[a-z]/g, ''));
+        if ((v.length === 4 || v.length === 5) && v.every(isFinite)) { v.ring = h ? h[1] : ''; o.z.push(v); }
       });
       if (o.z.length) out.push(o);
     });
@@ -553,30 +557,62 @@
     el.style.left = pct(x / 390); el.style.top = pct(y / 844);
     el.style.width = pct(w / 390); el.style.height = pct(h / 844);
   }
-  // Leve zoom de la lupa, nulo en las zonas que tocan el borde de la pantalla.
-  function lensScale(z) { return z[0] < 2 || z[0] + z[2] > 388 ? 1 : 1 + Math.min(0.07, 12 / Math.max(z[2], z[3])); }
-  // Un punto de la zona tal como queda con la lupa, que crece desde el centro de la zona.
-  function onLens(z, x, y) {
-    var s = lensScale(z), cx = z[0] + z[2] / 2, cy = z[1] + z[3] / 2;
-    return [cx + (x - cx) * s, cy + (y - cy) * s, s];
-  }
   function radius(z) { return z.length > 4 ? z[4] : 14; }
   function inside(z, x, y) { return x >= z[0] && x <= z[0] + z[2] && y >= z[1] && y <= z[1] + z[3]; }
-  // Centro del anillo, a media altura del borde de la zona que mira al texto. Queda casi todo
-  // afuera, con 5 puntos adentro, así toca el borde sin tapar lo que la zona muestra.
-  var RING_OUT = RING / 2 - 5;
-  function edgeRing(z, side) {
-    var p = onLens(z, side === 'l' ? z[0] : z[0] + z[2], z[1] + z[3] / 2);
-    p[0] += side === 'l' ? -RING_OUT : RING_OUT;
-    return [clamp(p[0], RING / 2 + 3, 390 - RING / 2 - 3), p[1]];
+
+  // La lupa de una zona crece desde su centro. Una zona grande sube apenas; una chica, como una
+  // insignia, un botón o una línea de texto, se amplía hasta que se lee (2,6 veces como mucho). Si la
+  // lupa no cabe, se corre lo justo para quedar entre la barra de estado y la de inicio. Con [flat]
+  // (movimiento reducido) no hay zoom.
+  var LENS_T = 140, LENS_MAX = 2.6, SAFE = [4, 27, 386, 826];
+  function lensGeo(z, flat) {
+    var w = z[2], h = z[3], m = Math.max(w, h), cx = z[0] + w / 2, cy = z[1] + h / 2, s = 1;
+    if (!flat) {
+      var n = Math.min(w, h);
+      s = Math.max(LENS_T / m, n < 70 ? clamp(46 / n, 1.25, LENS_MAX) : 1, 1 + Math.min(0.07, 12 / m));
+      s = Math.max(1, Math.min(s, LENS_MAX, (SAFE[2] - SAFE[0]) / w, (SAFE[3] - SAFE[1]) / h));
+    }
+    var hw = w * s / 2, hh = h * s / 2, dx = 0, dy = 0;
+    if (s > 1) {
+      if (cx - hw < SAFE[0]) dx = SAFE[0] - cx + hw; else if (cx + hw > SAFE[2]) dx = SAFE[2] - cx - hw;
+      if (cy - hh < SAFE[1]) dy = SAFE[1] - cy + hh; else if (cy + hh > SAFE[3]) dy = SAFE[3] - cy - hh;
+    }
+    return { z: z, s: s, dx: dx, dy: dy, x0: cx + dx - hw, y0: cy + dy - hh, x1: cx + dx + hw, y1: cy + dy + hh };
+  }
+  // Un punto de la zona tal como queda en su lupa.
+  function onLens(g, x, y) {
+    var z = g.z, cx = z[0] + z[2] / 2, cy = z[1] + z[3] / 2;
+    return [cx + g.dx + (x - cx) * g.s, cy + g.dy + (y - cy) * g.s, g.s];
+  }
+  // Centro del anillo. Toca desde afuera, con 5 puntos adentro, el borde de la lupa que mira al
+  // texto, a media altura. Si ahí no cabe entero en la pantalla, va al borde de arriba o al de abajo,
+  // junto a la esquina que mira al texto. Una zona puede pedir otro borde, ~t arriba o ~b abajo (al
+  // medio del borde) u ~o el lado opuesto al texto. Así nunca cae dentro de lo que la zona muestra.
+  // Con ~n la zona no lleva anillo.
+  var RING_OUT = RING / 2 - 5, RING_M = RING / 2 + 5;
+  function ringAt(g, side) {
+    var hint = g.z.ring, l = (side === 'l') !== (hint === 'o');
+    if (hint === 'n') return null;
+    var mid = (g.x0 + g.x1) / 2, ex = hint === 't' || hint === 'b' ? mid : l ? Math.min(g.x0 + RING, mid) : Math.max(g.x1 - RING, mid);
+    var sid = [l ? g.x0 - RING_OUT : g.x1 + RING_OUT, (g.y0 + g.y1) / 2];
+    var top = [ex, g.y0 - RING_OUT], bot = [ex, g.y1 + RING_OUT];
+    var order = hint === 't' ? [top, bot, sid] : hint === 'b' ? [bot, top, sid] : [sid, top, bot];
+    for (var i = 0; i < order.length; i++) {
+      var p = order[i];
+      if (p[0] >= RING_M && p[0] <= 390 - RING_M && p[1] >= 24 + RING_M && p[1] <= 828 - RING_M) return p;
+    }
+    return [clamp(sid[0], RING_M, 390 - RING_M), sid[1]];
   }
 
-  // El oscurecido cubre la pantalla entera y se recorta con clip-path, con un hueco por zona (hasta
-  // tres), así moverlo no desplaza nada en la página. Cada hueco queda 5 puntos adentro de su zona,
-  // bajo la lupa, y los que sobran se reducen a un punto para que el paso entre momentos sea continuo.
+  // El velo cubre la pantalla entera y se recorta con clip-path, con un hueco por zona (hasta tres),
+  // así moverlo no desplaza nada en la página. Cada hueco queda 5 puntos adentro de su zona, bajo la
+  // lupa, una zona que cabe dentro de otra no abre hueco propio y los huecos que sobran se reducen a
+  // un punto para que el paso entre momentos sea continuo.
   var HOLES = 3;
   function dimClip(zs) {
-    var hs = zs.slice(0, HOLES).map(function (z) {
+    var hs = zs.filter(function (z, j) {
+      return !zs.some(function (o, k) { return k !== j && k < j && inside(o, z[0], z[1]) && inside(o, z[0] + z[2], z[1] + z[3]); });
+    }).slice(0, HOLES).map(function (z) {
       // Con esquinas más redondas, como un círculo, el hueco se achica para quedar bajo la lupa.
       var i = Math.min(Math.max(5, 1 + 0.3 * radius(z)), z[2] / 4, z[3] / 4);
       return [z[0] + i, z[1] + i, z[0] + z[2] - i, z[1] + z[3] - i];
@@ -597,7 +633,7 @@
     hl.className = 'hl'; hl.setAttribute('aria-hidden', 'true');
     dim.className = 'spot'; hl.appendChild(dim);
     g.insertBefore(hl, g.querySelector('.chrome'));
-    return { box: hl, dim: dim, marks: [], timers: [], lead: null };
+    return { box: hl, glass: g, dim: dim, marks: [], timers: [], lead: null, end: null };
   }
   function later(S, ms, fn) { S.timers.push(setTimeout(fn, ms)); }
   function stopTour(S) { S.timers.forEach(clearTimeout); S.timers = []; }
@@ -606,20 +642,31 @@
       return c.classList && (c.classList.contains('cap') || c.classList.contains('sx'));
     });
   }
+  function srcsetOf(c) { return c.getAttribute('srcset') || c.getAttribute('data-srcset'); }
+  function srcOf(c) { return c.getAttribute('data-src') || c.getAttribute('src'); }
   // Copia las capturas de una pantalla en [dest]. Una imagen copiada con cloneNode empieza a bajar
   // antes de entrar a la página, y ahí la carga diferida no la frena. Por eso cada imagen se crea
   // vacía y recibe su fuente ya insertada, así la del tema que no se ve (display: none) no se baja.
-  function copyCaps(caps, dest) {
+  // Con [hi], la copia suma la captura de 1170 px del tema activo, sin diferir, y pide el ancho de la
+  // lupa ampliada, para que una zona chica ampliada se vea nítida. Va encima de la copia normal, que
+  // ya está en caché y se ve mientras la grande llega.
+  function copyCaps(caps, dest, hi) {
     var back = [];
     caps.forEach(function (c) {
-      var k;
+      var k, set = c.tagName === 'IMG' ? srcsetOf(c) : null;
       if (c.tagName === 'IMG') {
+        if (hi && (!/-720\.webp/.test(set || '') || !c.classList.contains(isDark() ? 'cap-oscuro' : 'cap-claro'))) return;
         k = doc.createElement('img');
-        k.className = c.className; k.alt = '';
-        k.setAttribute('loading', 'lazy'); k.setAttribute('decoding', 'async');
-        k.setAttribute('sizes', c.getAttribute('sizes') || '');
-        back.push([k, c.getAttribute('srcset'), c.getAttribute('src')]);
+        k.className = c.className + (hi ? ' hi' : ''); k.alt = '';
+        k.setAttribute('loading', hi ? 'eager' : 'lazy'); k.setAttribute('decoding', 'async');
+        if (hi) {
+          var big = /(\S+)-720\.webp/.exec(set)[1] + '-1170.webp';
+          set += ', ' + big + ' 1170w';
+          k.setAttribute('sizes', hi);
+        } else k.setAttribute('sizes', c.getAttribute('sizes') || '');
+        back.push([k, set, srcOf(c)]);
       } else {
+        if (hi) return;
         k = c.cloneNode(true);
         k.removeAttribute('role'); k.removeAttribute('aria-label');
       }
@@ -628,78 +675,95 @@
     return function () { back.forEach(function (x) { if (x[1]) x[0].setAttribute('srcset', x[1]); if (x[2]) x[0].setAttribute('src', x[2]); }); };
   }
 
-  function dropMarks(S) {
+  function dropMarks(S, now) {
     S.marks.forEach(function (l) {
       l.classList.remove('is-on');
-      setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, reduce ? 0 : 420);
+      if (now || reduce) { if (l.parentNode) l.parentNode.removeChild(l); }
+      else setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, 420);
     });
     S.marks = [];
     S.lead = null;
   }
-  function addMark(S, el, wasOn) {
+  function addMark(S, el, wasOn, now) {
     S.box.appendChild(el);
     S.marks.push(el);
-    if (reduce) el.classList.add('is-on');
+    if (reduce || now) el.classList.add('is-on');
     else later(S, wasOn ? 380 : 200, function () { el.classList.add('is-on'); });
   }
-  // La lupa es una copia de la captura recortada a la zona, que sube un poco sobre el resto.
-  function addLens(S, z, caps, wasOn) {
-    var lens = doc.createElement('div'), inner = doc.createElement('div');
+  // La lupa es una copia de la captura recortada a la zona, que sube sobre el resto.
+  function addLens(S, g, caps, wasOn, hi, now) {
+    var z = g.z, lens = doc.createElement('div'), inner = doc.createElement('div');
     lens.className = 'lens';
     box(lens, z[0], z[1], z[2], z[3]);
-    lens.style.setProperty('--s', lensScale(z).toFixed(3));
-    if (z.length > 4) lens.style.setProperty('--r', f(z[4]));
+    lens.style.setProperty('--s', g.s.toFixed(3));
+    lens.style.setProperty('--dx', f(g.dx));
+    lens.style.setProperty('--dy', f(g.dy));
+    // Las esquinas se ven con el mismo radio con cualquier zoom, y un círculo o una píldora siguen
+    // siéndolo.
+    var r = radius(z), half = Math.min(z[2], z[3]) / 2;
+    lens.style.setProperty('--br', 'calc(var(--u) * ' + f(r >= half - 0.25 ? half : r / g.s) + ')');
     // El halo de una zona baja no pasa de un 40 % de su alto, así no tapa la línea de arriba.
-    lens.style.setProperty('--hs', f(Math.min(16, 0.4 * Math.min(z[2], z[3]))));
+    lens.style.setProperty('--hs', f(Math.min(16, 0.4 * Math.min(z[2], z[3])) / g.s));
     lens.style.setProperty('--iw', pct(390 / z[2]));
     lens.style.setProperty('--ih', pct(844 / z[3]));
     lens.style.setProperty('--ix', pct(-z[0] / z[2]));
     lens.style.setProperty('--iy', pct(-z[1] / z[3]));
     var load = copyCaps(caps, inner);
+    var gw = S.glass.getBoundingClientRect().width || L.gw;
+    var loadHi = hi && g.s >= 1.3 ? copyCaps(caps, inner, Math.round(gw * g.s) + 'px') : null;
     lens.appendChild(inner);
-    addMark(S, lens, wasOn);
+    addMark(S, lens, wasOn, now);
     load();
+    if (loadHi) loadHi();
   }
-  function addRing(S, x, y, w, h, pill, wasOn) {
+  function addRing(S, x, y, w, h, pill, wasOn, now) {
     var r = doc.createElement('span');
     r.className = pill ? 'ring pill' : 'ring';
     box(r, x - w / 2, y - h / 2, w, h);
-    addMark(S, r, wasOn);
+    addMark(S, r, wasOn, now);
   }
-  // Los anillos de un momento. Uno en el borde de cada zona que mira al texto, donde termina la
-  // línea guía, y otro opcional sobre un elemento chico (@x y) o una píldora que lo rodea con 3
-  // puntos de aire (@x y ancho alto), los dos con el mismo zoom de la lupa que los contiene.
-  function addRings(S, b, side, wasOn, one) {
-    (one ? b.z.slice(0, 1) : b.z).forEach(function (z, j) {
-      var p = edgeRing(z, side);
-      if (j === 0 && !S.lead) S.lead = { x: p[0], y: p[1], r: RING / 2 };
-      addRing(S, p[0], p[1], RING, RING, false, wasOn);
+  // Los anillos de un momento. Uno en un borde libre de cada lupa, del lado del texto cuando cabe, y
+  // otro opcional sobre un elemento chico (@x y) o una píldora que lo rodea con 3 puntos de aire
+  // (@x y ancho alto), los dos con el zoom de la lupa que los contiene. La línea guía del escritorio
+  // llega al canto del teléfono a la altura del primero.
+  function addRings(S, b, gs, side, wasOn, one, now) {
+    var done = false;
+    gs.forEach(function (g) {
+      var p = one && done ? null : ringAt(g, side);
+      if (!p) return;
+      done = true;
+      if (!S.lead) S.lead = { y: p[1] };
+      addRing(S, p[0], p[1], RING, RING, false, wasOn, now);
     });
-    var q = b.mark, z0 = b.z[0];
+    if (!S.lead) S.lead = { y: (gs[0].y0 + gs[0].y1) / 2 };
+    var q = b.mark, g0 = gs[0];
     if (!q) return;
     var cx = q.length === 4 ? q[0] + q[2] / 2 : q[0], cy = q.length === 4 ? q[1] + q[3] / 2 : q[1];
-    var at = inside(z0, cx, cy) ? onLens(z0, cx, cy) : [cx, cy, 1];
-    if (q.length === 4) addRing(S, at[0], at[1], (q[2] + 6) * at[2], (q[3] + 6) * at[2], true, wasOn);
-    else addRing(S, at[0], at[1], RING + 10, RING + 10, false, wasOn);
+    var at = inside(g0.z, cx, cy) ? onLens(g0, cx, cy) : [cx, cy, 1];
+    if (q.length === 4) addRing(S, at[0], at[1], (q[2] + 6) * at[2], (q[3] + 6) * at[2], true, wasOn, now);
+    else addRing(S, at[0], at[1], RING + 10, RING + 10, false, wasOn, now);
   }
-  function hideSpot(S) { S.box.classList.remove('is-on', 'is-rest'); dropMarks(S); }
-  function showBeat(S, b, src, side) {
+  function hideSpot(S, now) { S.box.classList.remove('is-on', 'is-rest', 'is-calm'); dropMarks(S, now); }
+  function showBeat(S, b, src, side, hi, now) {
     var wasOn = S.box.classList.contains('is-on'), caps = capsOf(src), c = dimClip(b.z);
-    if (wasOn && !S.box.classList.contains('is-rest')) S.dim.style.clipPath = c;
+    if (wasOn && !now && !S.box.classList.contains('is-rest')) S.dim.style.clipPath = c;
     else instant(S.dim, function () { S.dim.style.clipPath = c; });
-    S.box.classList.remove('is-rest');
+    S.box.classList.remove('is-rest', 'is-calm');
     S.box.classList.add('is-on');
-    dropMarks(S);
-    b.z.forEach(function (z) { addLens(S, z, caps, wasOn); });
-    addRings(S, b, side, wasOn);
+    dropMarks(S, now);
+    var gs = b.z.map(function (z) { return lensGeo(z, false); });
+    gs.forEach(function (g) { addLens(S, g, caps, wasOn, hi, now); });
+    addRings(S, b, gs, side, wasOn, false, now);
+    // Tras el primer instante, el velo se aclara para que la pantalla siga en color.
+    if (!now) later(S, CALM, function () { S.box.classList.add('is-calm'); });
   }
-  // Las zonas principales a la vez, sin oscurecido ni movimiento.
+  // Las zonas principales a la vez, sin velo, sin zoom y con un solo anillo por momento.
   function showAll(S, list, src, side) {
-    S.box.classList.remove('is-on');
-    dropMarks(S);
-    var caps = capsOf(src);
-    list.forEach(function (b) { b.z.forEach(function (z) { addLens(S, z, caps, true); }); });
-    list.forEach(function (b) { addRings(S, b, side, true, true); });
+    S.box.classList.remove('is-on', 'is-calm');
+    dropMarks(S, true);
+    var caps = capsOf(src), gl = list.map(function (b) { return b.z.map(function (z) { return lensGeo(z, true); }); });
+    gl.forEach(function (gs) { gs.forEach(function (g) { addLens(S, g, caps, true); }); });
+    list.forEach(function (b, k) { addRings(S, b, gl[k], side, true, true); });
   }
   function phrase(i, ks) {
     if (!copies[i]) return;
@@ -730,11 +794,15 @@
     beats.forEach(function (b) { var cv = covers[b.scr]; if (b.rev.length && cv) setCover(cv, cv.top, true); });
   }
   function showBubbles(covers) { Object.keys(covers).forEach(function (k) { setCover(covers[k], 1e5, true); }); }
+  // Las pantallas que tienen captura de 1170 px para las lupas que amplían mucho.
+  function hiOf(name) { var sc = scrs[name]; return !!(sc && sc.hasAttribute('data-hi')); }
 
-  // Recorre los momentos uno tras otro. Si un momento cambia de pantalla, primero se apaga el foco,
-  // entra la pantalla nueva y después se enciende en ella. Al final se levanta el oscurecido.
+  // Recorre los momentos uno tras otro. Si un momento cambia de pantalla, primero se apaga el foco
+  // sin esperar, entra la pantalla nueva y después se enciende en ella. Al final se levanta el velo.
+  // S.end detiene el recorrido y deja su estado final, la última zona con su anillo y sin velo.
   function play(S, beats, o) {
     stopTour(S);
+    S.end = null;
     if (!beats.length) return;
     if (reduce) {
       var ms = mainBeats(beats), sc = ms[0].scr;
@@ -742,20 +810,37 @@
       if (sc !== o.scr0) o.setScr(sc);
       showAll(S, ms, o.src(sc), o.side());
       o.phr(ms.map(function (b) { return b.i; }));
+      if (o.at) o.at(ms[ms.length - 1]);
       o.beat();
       return;
     }
-    var t = o.delay, cur = o.scr0;
+    var t = o.delay, cur = o.scr0, last = beats[beats.length - 1];
     beats.forEach(function (b) {
       if (b.scr !== cur) {
-        later(S, t, function () { hideSpot(S); o.beat(); o.setScr(b.scr); });
+        later(S, t, function () { hideSpot(S, true); o.beat(); o.setScr(b.scr); });
         t += SWAP; cur = b.scr;
       }
       b.rev.forEach(function (y) { later(S, t, function () { o.reveal(b.scr, y); }); t += REVEAL; });
-      later(S, t, function () { showBeat(S, b, o.src(b.scr), o.side()); o.phr([b.i]); o.beat(); });
-      t += BEAT;
+      later(S, t, function () {
+        showBeat(S, b, o.src(b.scr), o.side(), hiOf(b.scr));
+        o.phr([b.i]);
+        if (o.at) o.at(b);
+        o.beat();
+      });
+      t += b.main ? MAIN : SEC;
     });
-    later(S, t - BEAT + REST, function () { S.box.classList.add('is-rest'); o.beat(); });
+    later(S, t - (last.main ? MAIN : SEC) + REST, function () { S.box.classList.add('is-rest'); S.end = null; o.beat(); });
+    S.end = function () {
+      stopTour(S);
+      S.end = null;
+      o.setScr(last.scr);
+      o.reveal(null);
+      showBeat(S, last, o.src(last.scr), o.side(), hiOf(last.scr), true);
+      S.box.classList.add('is-rest');
+      o.phr([last.i]);
+      if (o.at) o.at(last);
+      o.beat();
+    };
   }
   function noop() {}
 
@@ -769,25 +854,47 @@
     if (cv) rigCovers[k] = cv;
   });
 
+  // Las pantallas del teléfono fijo, salvo las del primer paso, traen su fuente en data-srcset y
+  // data-src, así no bajan todas al abrir la página. Se cargan las de un paso cuando ese paso está
+  // cerca de la vista.
+  function hydrate(sc) {
+    if (!sc || sc.hydrated) return;
+    sc.hydrated = true;
+    all('img[data-src]', sc).forEach(function (im) {
+      if (im.hasAttribute('data-srcset')) im.setAttribute('srcset', im.getAttribute('data-srcset'));
+      im.setAttribute('src', im.getAttribute('data-src'));
+      im.removeAttribute('data-srcset'); im.removeAttribute('data-src');
+    });
+  }
+  function hydrateNear(i) {
+    for (var k = Math.max(1, i - 1); k <= i + 2 && k < steps.length; k++) {
+      hydrate(scrs[steps[k].getAttribute('data-screen')]);
+      beatsOf[k].forEach(function (b) { hydrate(scrs[b.scr]); });
+    }
+  }
+
   // Recorrido del teléfono fijo, con su paso activo, la pantalla que muestra y el anillo de la línea.
   var T = { idx: -1, scr: null, lead: null, spot: null };
   function startRigTour(i) {
     if (!T.spot) T.spot = makeSpot(glass);
     stopTour(T.spot);
+    T.spot.end = null;
     if (T.idx > 0) phrase(T.idx, []);
-    hideSpot(T.spot);
+    hideSpot(T.spot, true);
     T.idx = i; T.scr = null; T.lead = null;
     if (i <= 0) return;
+    hydrateNear(i);
     var bs = beatsOf[i];
     T.scr = bs.length ? bs[0].scr : steps[i].getAttribute('data-screen');
     if (!reduce) hideBubbles(bs, rigCovers);
     play(T.spot, bs, {
-      delay: SWAP, scr0: T.scr,
+      delay: 300, scr0: T.scr,
       side: function () { return sideOf(i); },
       setScr: function (n) { T.scr = n; requestRender(); },
       src: function (n) { return scrs[n]; },
       reveal: function (n, y) { if (n == null) showBubbles(rigCovers); else setCover(rigCovers[n], y); },
       phr: function (ks) { phrase(i, ks); },
+      at: function (b) { if (b.scr === 'sys1' && b.i >= 1) startDownload(); },
       beat: function () { T.lead = T.spot.lead; requestRender(); }
     });
   }
@@ -846,9 +953,12 @@
       beat: noop
     });
   }
+  // Al salir de la vista, la figura vuelve a la pantalla con la que empieza, así no reaparece en una
+  // pantalla intermedia cuando se sube de nuevo hasta ella.
   function stopShot(s) {
     if (!s.spot) return;
-    stopTour(s.spot); hideSpot(s.spot); phrase(s.i, []);
+    stopTour(s.spot); s.spot.end = null; hideSpot(s.spot, true); phrase(s.i, []);
+    if (s.ready) figScreen(s, firstScreen(s));
   }
   var TH = [];
   for (var th = 0; th <= 20; th++) TH.push(th / 20);
@@ -872,6 +982,14 @@
       if (vis) playShot(s); else stopShot(s);
     });
   }, { threshold: TH }) : null;
+  // Las capas de una figura se arman una pantalla antes de que asome, así sus capturas ya bajaron
+  // cuando empieza su recorrido.
+  var prepIO = 'IntersectionObserver' in win ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var s = e.target.tour;
+      if (s && e.isIntersecting && !L.wide) { prepShot(s); prepIO.unobserve(e.target); }
+    });
+  }, { rootMargin: '0px 0px 100% 0px' }) : null;
   all('.shot').forEach(function (fig) {
     var st = fig.closest ? fig.closest('.step') : null, i = steps.indexOf(st);
     if (i < 1 || !shotIO) return;
@@ -883,6 +1001,7 @@
     if (!reduce) fig.classList.add('rv');
     shotTours.push(s);
     shotIO.observe(fig);
+    if (prepIO) prepIO.observe(fig);
   });
   var wasWide = null;
   function syncShots() {
@@ -891,7 +1010,27 @@
     shotTours.forEach(function (s) { if (L.wide) stopShot(s); else if (s.on) playShot(s); });
   }
 
-  var leader = $('leader'), leadp = $('leadp'), leadc = $('leadc');
+  // Pausa del recorrido. Al mover el puntero sobre el texto de un paso, al tocarlo o al llevarle el
+  // foco, y en el modo apilado también sobre su captura, el recorrido se detiene y deja su estado
+  // final. El desplazamiento solo no cuenta, porque no mueve el puntero.
+  function endTour(i) {
+    if (L.wide) { if (T.idx === i && T.spot && T.spot.end) T.spot.end(); return; }
+    shotTours.forEach(function (s) { if (s.i === i && s.spot && s.spot.end) s.spot.end(); });
+  }
+  function pauseOn(el, i) {
+    if (!el) return;
+    var stop = function (e) {
+      if (e.type === 'pointermove' && !(e.movementX || e.movementY)) return;
+      endTour(i);
+    };
+    el.addEventListener('pointermove', stop, { passive: true });
+    el.addEventListener('pointerdown', stop, { passive: true });
+    el.addEventListener('focusin', stop);
+  }
+  copies.forEach(function (c, i) { if (i > 0) pauseOn(c, i); });
+  shotTours.forEach(function (s) { pauseOn(s.fig, s.i); });
+
+  var leader = $('leader'), leadp = $('leadp'), leadc = $('leadc'), leade = $('leade');
   // Caja del texto en reposo, sin el desplazamiento de su transición de entrada.
   function restRect(el) {
     var r = el.getBoundingClientRect(), tx = 0;
@@ -901,29 +1040,32 @@
     } catch (e) { /* sin transformación */ }
     return { left: r.left - tx, right: r.right - tx, top: r.top, bottom: r.bottom };
   }
-  // La línea punteada une el texto activo con el anillo del momento y termina en su borde. Cuando
-  // el momento cambia, su punta viaja de un anillo al otro.
-  var LD = { on: false, x: 0, y: 0, ts: 0 };
+  // La línea punteada une el texto activo con el canto del teléfono, a la altura del anillo del
+  // momento, y nunca entra al vidrio, así no cruza lo que muestra la captura. Cuando el momento
+  // cambia, su punta baja o sube por el canto hasta el anillo nuevo.
+  var LD = { on: false, y: 0, ts: 0 };
   function leaderOff() { leader.classList.remove('is-on'); LD.on = false; }
   function updateLeader(idx, p, ts) {
     var lead = T.lead, copy = copies[idx];
     if (!lead || !copy || idx !== T.idx || idx === 0 || p < 1) { leaderOff(); return; }
     var side = sideOf(idx), cr = restRect(copy), gr = glass.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    var pr = phone.getBoundingClientRect();
     var eb = copy.querySelector('.eyebrow'), er = eb ? eb.getBoundingClientRect() : cr, k = gr.width / 390;
     var y0 = er.top + er.height / 2 - sr.top;
     var x0 = side === 'l' ? cr.right + 12 - sr.left : cr.left - 12 - sr.left;
-    var tx = gr.left - sr.left + (side === 'l' ? lead.x - lead.r : lead.x + lead.r) * k;
-    var ty = gr.top - sr.top + lead.y * k;
+    var tx = side === 'l' ? pr.left - 3 - sr.left : pr.right + 3 - sr.left;
+    var ty = gr.top - sr.top + clamp(lead.y, 44, 800) * k;
     if (!(cr.bottom > L.navH + 20 && cr.top < L.vh - 20 && Math.abs(tx - x0) > 18)) { leaderOff(); return; }
-    if (!LD.on || reduce) { LD.x = tx; LD.y = ty; } else {
+    if (!LD.on || reduce) LD.y = ty; else {
       var a = 1 - Math.exp(-clamp(ts - LD.ts, 0, 64) / 90);
-      LD.x += (tx - LD.x) * a; LD.y += (ty - LD.y) * a;
-      if (Math.abs(tx - LD.x) + Math.abs(ty - LD.y) > 0.4) requestRender(); else { LD.x = tx; LD.y = ty; }
+      LD.y += (ty - LD.y) * a;
+      if (Math.abs(ty - LD.y) > 0.4) requestRender(); else LD.y = ty;
     }
     LD.ts = ts; LD.on = true;
-    var mx = (x0 + LD.x) / 2;
-    attr(leadp, 'd', 'M' + f(x0) + ' ' + f(y0) + 'C' + f(mx) + ' ' + f(y0) + ' ' + f(mx) + ' ' + f(LD.y) + ' ' + f(LD.x) + ' ' + f(LD.y));
+    var mx = (x0 + tx) / 2;
+    attr(leadp, 'd', 'M' + f(x0) + ' ' + f(y0) + 'C' + f(mx) + ' ' + f(y0) + ' ' + f(mx) + ' ' + f(LD.y) + ' ' + f(tx) + ' ' + f(LD.y));
     attr(leadc, 'cx', f(x0)); attr(leadc, 'cy', f(y0));
+    attr(leade, 'cx', f(tx)); attr(leade, 'cy', f(LD.y));
     leader.classList.add('is-on');
   }
 
