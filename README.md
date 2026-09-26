@@ -99,7 +99,9 @@ texto) o `~n` (sin anillo). Además, el momento puede llevar estas marcas.
 - `*` antes de todo, para marcar un momento principal, que dura 1,5 s en lugar de 0,7 s. Con
   «reducir movimiento» se ven a la vez los principales, o el último si ninguno lo está.
 - `=zoom` en una zona, para fijar cuánto la amplía su lupa. Las columnas del mapa llevan `=1.7`,
-  porque sus nombres son chicos aunque la zona sea grande, y así se leen curso por curso.
+  porque sus nombres son chicos aunque la zona sea grande, y así se leen curso por curso. La verde,
+  que es la más alta, lleva `=1.6`, así su lupa deja a la vista las fichas del avance y su anillo
+  cabe abajo, en el espacio libre sobre los electivos.
 - `@x y` al final, para sumar un anillo sobre un elemento chico, o `@x y ancho alto`, para rodearlo
   con una píldora de 3 puntos de aire, como la insignia de una evaluación.
 - `^y ...` al final, para descubrir la conversación de la captura hasta cada una de esas alturas
@@ -129,10 +131,17 @@ de la página ni suma desplazamientos de diseño (CLS).
 
 El recorrido empieza a los 0,3 s de llegar al paso, los momentos de paso duran 0,7 s y el cambio de
 pantalla, 0,25 s, así el primer momento principal de cada paso llega antes de los 2,5 s, aun para
-quien baja sin detenerse. Al hacer clic en el texto de un paso o tocarlo sin arrastrar, o al
-llevarle el foco con el teclado, y en celular también al tocar su captura, el recorrido se detiene y
-deja su estado final. Pasar el mouse no lo detiene, porque el cursor suele quedar sobre el texto
-mientras se lee, y desplazar la página, con la rueda o con el dedo, tampoco.
+quien baja sin detenerse. Entre dos momentos, la lupa y el anillo que salen se apagan en su lugar en
+0,15 s y los nuevos entran a los 0,16 s, con una lupa que se vuelve opaca en 0,25 s, así hasta un
+momento de paso la muestra entera y con su zoom antes de seguir. El último momento es el que queda
+en reposo, por eso cada paso termina en una pantalla en color. Una pantalla que la app oscurece,
+como el aviso «Hay un cruce» del horario, va antes como momento de paso, y el recorrido vuelve
+después al horario para reposar sobre el bloque de las prácticas.
+
+Al hacer clic en el texto de un paso o tocarlo sin arrastrar, o al llevarle el foco con el teclado,
+y en celular también al tocar su captura, el recorrido se detiene y deja su estado final. Pasar el
+mouse no lo detiene, porque el cursor suele quedar sobre el texto mientras se lee, y desplazar la
+página, con la rueda o con el dedo, tampoco.
 
 El botón «Pausar animaciones» va en la barra superior con el teléfono fijo y al comienzo de
 Funciones con las capturas apiladas. Termina todos los recorridos en su estado final, muestra ya
