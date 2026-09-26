@@ -32,7 +32,7 @@ vez para ver la página con el fondo oscuro.
 | Archivo | Qué hace |
 | --- | --- |
 | `index.html` | Contenido de la página, metadatos (Open Graph, Twitter, favicon, canonical) y un script mínimo en `<head>` que aplica el tema guardado antes del primer pintado. Cada paso lleva en `data-beats` las zonas de su captura que se resaltan. |
-| `styles.css` | Estilos. Por defecto las secciones van apiladas (celular, tableta y sin JS). Con JS y 900 px o más se activa el teléfono fijo al centro. Incluye el marco del teléfono, los detalles animados sobre las capturas, el modo claro y oscuro y el modo sin movimiento. |
+| `styles.css` | Estilos. Por defecto las secciones van apiladas (celular, tableta y sin JS). Con JS, 900 px o más de ancho y 560 px o más de alto se activa el teléfono fijo al centro, así un celular apaisado, ancho pero bajo, sigue con las capturas apiladas. Incluye el marco del teléfono, los detalles animados sobre las capturas, el modo claro y oscuro y el modo sin movimiento. |
 | `main.js` | Se carga con `defer`. Maneja el conmutador de tema, lee en vivo la versión, el peso y la fecha del APK desde la API pública de GitHub, anima el logo de la entrada, cambia la captura del teléfono según el paso que se lee y recorre en cada paso las zonas de la captura que explica el texto. |
 | `assets/capturas/` | Capturas reales de la app en WebP, en versión clara y oscura, con 360 y 720 px de ancho. La página elige la del tema activo y el ancho según la pantalla. |
 | `assets/qr-apk.svg` | Código QR que apunta a la descarga del APK. Se generó una vez con el paquete `qrcode` de npm y se verificó decodificándolo. |
@@ -65,9 +65,9 @@ las pantallas de Android de los dos primeros pasos de instalación son esquemas 
 dentro de `index.html`, que toman los colores del tema.
 
 Para reemplazar una captura se convierte el PNG nuevo a los dos anchos, por ejemplo con `cwebp`.
-Las pantallas con `data-hi` (la malla, el horario, el día cancelado y la calculadora final) tienen
-además una versión de 1170 px, que solo baja cuando una lupa amplía mucho una zona chica, como la
-insignia de la PC2 o el birrete.
+Las pantallas con `data-hi` (la malla, su vista de mapa, el horario, el día cancelado y la
+calculadora final) tienen además una versión de 1170 px, que solo baja cuando una lupa amplía 1,3
+veces o más, como en la insignia de la PC2, el birrete o las columnas del mapa.
 
 ```bash
 cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 360 0 malla-claro.png -o assets/capturas/malla-claro-360.webp
@@ -96,8 +96,10 @@ texto) o `~n` (sin anillo). Además, el momento puede llevar estas marcas.
 
 - `pantalla:` al comienzo, cuando el momento se ve en otra captura que la del paso
   (`data-screen`). Sin ella, el momento usa la captura del paso.
-- `*` antes de todo, para marcar un momento principal, que dura 1,7 s en lugar de 1,1 s. Con
+- `*` antes de todo, para marcar un momento principal, que dura 1,5 s en lugar de 0,7 s. Con
   «reducir movimiento» se ven a la vez los principales, o el último si ninguno lo está.
+- `=zoom` en una zona, para fijar cuánto la amplía su lupa. Las columnas del mapa llevan `=1.7`,
+  porque sus nombres son chicos aunque la zona sea grande, y así se leen curso por curso.
 - `@x y` al final, para sumar un anillo sobre un elemento chico, o `@x y ancho alto`, para rodearlo
   con una píldora de 3 puntos de aire, como la insignia de una evaluación.
 - `^y ...` al final, para descubrir la conversación de la captura hasta cada una de esas alturas
@@ -106,33 +108,44 @@ texto) o `~n` (sin anillo). Además, el momento puede llevar estas marcas.
 
 ```html
 <article class="step" data-screen="ulises" data-side="r"
-  data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^268 369 | *ulises: 46 453 319.8 278 ~o ^447 759">
+  data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^369 759 | *ulises: 46 453 319.8 278 ~o">
 ```
 
-En cada momento el resto de la pantalla se oscurece un instante y queda bajo un velo suave, más
-leve en el tema claro, y la zona sube en una lupa con un borde que late. La lupa amplía apenas las
-zonas grandes y hasta 2,6 veces las chicas, como la insignia de una evaluación, una línea de texto o
-el birrete, y si no cabe se corre lo justo para quedar dentro de la pantalla. Un anillo toca desde
-afuera un borde libre de la zona, del lado del texto cuando hay lugar y si no arriba o abajo, así
-nunca cae sobre lo que explica, y en el texto se marca la frase que tiene el mismo número en
-`data-b` (una frase puede llevar varios, separados por espacio). En escritorio, una línea punteada
-une el texto con el canto del teléfono a la altura de ese anillo, sin entrar a la pantalla, y su
-punta sube o baja por el canto de un anillo al siguiente. Al terminar el recorrido, el velo se
-levanta y quedan la lupa y el anillo sobre la pantalla en color. El velo se recorta con `clip-path`
-y las lupas y los anillos nacen en su lugar y se mueven con `transform`, así que nada cambia la
-geometría de la página ni suma desplazamientos de diseño (CLS).
+En cada momento el resto de la pantalla se oscurece un instante y queda bajo un velo suave, más leve
+en el tema claro (un 10 % de negro), y la zona sube en una lupa con un borde que late. La lupa
+amplía apenas las zonas grandes y hasta 2,6 veces las chicas, como la insignia de una evaluación,
+una línea de texto o el birrete, y si no cabe se corre lo justo para quedar dentro de la pantalla.
+Un anillo toca desde afuera un borde libre de la zona, del lado del texto cuando hay lugar y si no
+arriba o abajo, así nunca cae sobre lo que explica. Si la lupa queda más baja que el anillo, como la
+insignia sin zoom, el anillo va del todo afuera. En el texto se marca la frase que tiene el mismo
+número en `data-b` (una frase puede llevar varios, separados por espacio). En escritorio, una línea
+punteada une el texto con el canto del teléfono a la altura de ese anillo, sin entrar a la pantalla,
+y su punta sube o baja por el canto de un anillo al siguiente. Al terminar el recorrido, el velo se
+levanta del todo y quedan la lupa y el anillo sobre la pantalla en color. El velo se recorta con
+`clip-path` y las lupas y los anillos nacen en su lugar y se mueven con `transform`, así que nada
+cambia la geometría de la página ni suma desplazamientos de diseño (CLS).
 
-El recorrido empieza a los 0,3 s de llegar al paso y los momentos de paso duran 1,1 s, así el
-momento principal de cada paso llega en los primeros segundos. Al mover el puntero sobre el texto
-de un paso, al tocarlo o al llevarle el foco con el teclado, y en celular también al tocar su
-captura, el recorrido se detiene y deja su estado final.
+El recorrido empieza a los 0,3 s de llegar al paso, los momentos de paso duran 0,7 s y el cambio de
+pantalla, 0,25 s, así el primer momento principal de cada paso llega antes de los 2,5 s, aun para
+quien baja sin detenerse. Al mover el mouse sobre el texto de un paso, al hacer clic o tocarlo sin
+arrastrar o al llevarle el foco con el teclado, y en celular también al tocar su captura, el
+recorrido se detiene y deja su estado final. Desplazar la página, con la rueda o con el dedo, no lo
+detiene.
+
+El botón «Pausar animaciones» va en la barra superior con el teléfono fijo y al comienzo de
+Funciones con las capturas apiladas. Termina todos los recorridos en su estado final, muestra ya
+terminados los que siguen y apaga lo que late, como los halos, los anillos, el resplandor del
+teléfono y la flecha de la portada. La tecla Escape también pausa, y la pausa dura toda la visita.
+El mismo botón, que pasa a decir «Reanudar animaciones», vuelve a recorrer el paso a la vista.
 
 Las pantallas intermedias también son capturas reales. Un cambio dentro de la misma pantalla, como
 una pestaña, un botón que cambia de estado o una hoja que se abre, lleva `data-cf` en su pantalla
 del teléfono fijo y entra en su lugar, sin deslizarse. En celular y tableta, cada figura suma encima
 las pantallas intermedias de su paso y corre el mismo recorrido cuando queda a la vista, sin tocar
 el desplazamiento. En el paso 1 de la instalación, el esquema de Chrome muestra la descarga que
-avanza hasta «Abrir» cuando el recorrido enciende su aviso.
+avanza hasta «Abrir» cuando el recorrido enciende su aviso, y en el paso 2 el permiso se enciende
+cuando el recorrido llega a él. Las clases `is-dl` e `is-off` van en el vidrio, así la lupa y la
+figura del celular muestran el mismo cambio.
 
 Las zonas salen del `zonas.json` que la prueba de Flutter escribe junto a las capturas, así que al
 cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
@@ -155,7 +168,11 @@ cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
   paso muestra, sin moverse, sin zoom ni oscurecer la captura, sus zonas principales a la vez, con
   un anillo por momento.
 - El borde de la zona y el anillo laten unas pocas veces y se quedan quietos, y el recorrido de
-  cada paso termina en unos segundos, con la captura otra vez en color. Mover el puntero sobre el
-  texto, tocarlo o llevarle el foco detiene el recorrido en su estado final.
+  cada paso termina en unos segundos, con la captura otra vez en color. Mover el mouse sobre el
+  texto, hacer clic, tocarlo o llevarle el foco detiene el recorrido en su estado final.
+- Como los recorridos y el resplandor se mueven más de 5 s en total, el botón «Pausar animaciones»
+  (criterio 2.2.2 de WCAG) los detiene con el mouse, el dedo o el teclado. Tab lo alcanza en la
+  barra, después de los enlaces, o justo después de la portada con las capturas apiladas, y Escape
+  pausa desde cualquier lugar de la página.
 - La barra de estado, la cámara, la barra de inicio y las copias ampliadas de cada zona son
   decorativas y quedan ocultas para el lector de pantalla.
