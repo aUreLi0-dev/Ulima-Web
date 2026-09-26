@@ -3,7 +3,8 @@
    2. Versión, peso y fecha del APK, en vivo desde la API pública de GitHub, con respaldo.
    3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar y distinta de
       la de la visita anterior, y la espera en bucle de cada intro mientras el logo reposa.
-   4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar.
+   4. Scrollytelling con el teléfono fijo, al centro en la compu y arriba en el celular, que cambia
+      de captura al bajar.
    5. Detalles sobre la captura, con velo, lupa, anillo, línea guía y frase, al ritmo del texto
       activo, y las pantallas intermedias de cada paso, que también son capturas reales. */
 (function () {
@@ -39,8 +40,12 @@
   function now() { return (win.performance && performance.now) ? performance.now() : Date.now(); }
 
   var mqReduce = mq('(prefers-reduced-motion: reduce)');
-  // El teléfono fijo pide ancho y también alto, así un celular apaisado usa las capturas apiladas.
+  // El teléfono fijo va al centro con 900 px o más de ancho y 560 px o más de alto (wide) y arriba,
+  // más chico, en un celular o una tableta en vertical (cmp). Un celular apaisado, bajo, sigue con
+  // las capturas apiladas (stack), porque ahí el teléfono fijo no deja lugar al texto.
   var mqWide = mq('(min-width: 900px) and (min-height: 560px)');
+  var mqCmp = mq('(max-width: 899px) and (min-height: 500px)');
+  function modeNow() { return mqWide && mqWide.matches ? 'wide' : mqCmp && mqCmp.matches ? 'cmp' : 'stack'; }
   var mqDark = mq('(prefers-color-scheme: dark)');
   var reduce = !!(mqReduce && mqReduce.matches);
 
@@ -495,11 +500,15 @@
   all('.scr', rig).forEach(function (s) { scrs[s.getAttribute('data-scr')] = s; });
   mallaScr = scrs.malla;
 
-  var L = { vh: 0, vw: 0, wide: false, navH: 56, gw: 280, copyMid: [], heroDx: 0 };
+  // L.mode es wide (teléfono al centro), cmp (teléfono arriba, en el celular) o stack (capturas
+  // apiladas). L.rig dice si manda el teléfono fijo, que en wide y en cmp recorre los pasos.
+  var L = { vh: 0, vw: 0, mode: 'stack', wide: false, rig: false, navH: 56, gw: 280, copyMid: [], heroDx: 0 };
   function measure() {
     L.vh = win.innerHeight;
     L.vw = root.clientWidth || win.innerWidth;
-    L.wide = !!(mqWide && mqWide.matches);
+    L.mode = modeNow();
+    L.wide = L.mode === 'wide';
+    L.rig = L.mode !== 'stack';
     syncShots();
     L.navH = nav.offsetHeight;
     L.gw = glass.getBoundingClientRect().width || L.gw;
@@ -522,7 +531,17 @@
 
   // El paso activo es el del texto más cercano al centro de la zona visible, así el texto que se
   // lee nunca queda atenuado. Mientras el primero no asoma hasta su mitad, sigue la portada.
+  // Con el teléfono arriba (cmp), el texto sube por debajo del teléfono y el paso activo es el
+  // último cuyo texto ya pasó la línea de lectura, a un 36 % de la zona libre bajo el teléfono.
   function activeIndex(y) {
+    if (L.mode === 'cmp') {
+      var sb = stage.getBoundingClientRect().bottom, line = sb + 0.36 * (L.vh - sb), k = 0;
+      for (var j = 1; j < steps.length; j++) {
+        if (!copies[j]) continue;
+        if (copies[j].getBoundingClientRect().top <= line) k = j; else break;
+      }
+      return k;
+    }
     var mid = y + L.navH + (L.vh - L.navH) / 2, idx = 0, best = Infinity;
     for (var i = 1; i < steps.length; i++) {
       var m = L.copyMid[i];
@@ -600,10 +619,14 @@
       k = b.indexOf('@');
       q = k >= 0 ? nums(b.slice(k + 1)) : [];
       if ((q.length === 2 || q.length === 4) && q.every(isFinite)) o.mark = q;
+      // El zoom fijo puede traer un segundo valor para el teléfono chico del celular (=1.25:1.7).
       (k >= 0 ? b.slice(0, k) : b).split(',').forEach(function (r) {
-        var h = /~([tbno])/.exec(r), zm = /=\s*([\d.]+)/.exec(r), v = nums(r.replace(/~[a-z]/g, '').replace(/=\s*[\d.]+/, ''));
+        var ZR = /=\s*([\d.]+)(?::([\d.]+))?/;
+        var h = /~([tbno])/.exec(r), zm = ZR.exec(r), v = nums(r.replace(/~[a-z]/g, '').replace(ZR, ''));
         if ((v.length === 4 || v.length === 5) && v.every(isFinite)) {
-          v.ring = h ? h[1] : ''; v.zoom = zm && +zm[1] > 1 ? +zm[1] : 0; o.z.push(v);
+          v.ring = h ? h[1] : ''; v.zoom = zm && +zm[1] > 1 ? +zm[1] : 0;
+          v.zoomC = zm && zm[2] && +zm[2] > 1 ? +zm[2] : v.zoom;
+          o.z.push(v);
         }
       });
       if (o.z.length) out.push(o);
@@ -631,13 +654,18 @@
   // zona puede fijar su zoom (=1.7), como las columnas del mapa, cuyos nombres son chicos aunque la
   // zona sea grande. Si la lupa no cabe, se achica o se corre lo justo para quedar entre la barra de
   // estado y la de inicio. Con [flat] (movimiento reducido) no hay zoom.
-  var LENS_T = 140, LENS_MAX = 2.6, SAFE = [4, 27, 386, 826];
-  function lensGeo(z, flat) {
+  // En un teléfono chico, el de arriba en el celular o una captura apilada de menos de 250 px de
+  // ancho (un celular apaisado), la lupa amplía 1,5 veces más, hasta 3,4, siempre dentro de la
+  // pantalla, y una zona con dos zooms (=1.25:1.7) usa el segundo.
+  var LENS_T = 140, LENS_MAX = 2.6, LENS_FIX = 3.4, SAFE = [4, 27, 386, 826], SMALL_K = 1.5;
+  function lensGeo(z, flat, gw) {
     var w = z[2], h = z[3], m = Math.max(w, h), cx = z[0] + w / 2, cy = z[1] + h / 2, s = 1;
     if (!flat) {
-      var n = Math.min(w, h);
-      s = z.zoom || Math.max(LENS_T / m, n < 70 ? clamp(46 / n, 1.25, LENS_MAX) : 1, 1 + Math.min(0.07, 12 / m));
-      s = Math.max(1, Math.min(s, LENS_MAX, (SAFE[2] - SAFE[0]) / w, (SAFE[3] - SAFE[1]) / h));
+      var n = Math.min(w, h), small = L.mode === 'cmp' || (L.mode === 'stack' && (gw || 999) < 250);
+      var fix = small ? z.zoomC : z.zoom;
+      s = fix || Math.max(LENS_T / m, n < 70 ? clamp(46 / n, 1.25, LENS_MAX) : 1, 1 + Math.min(0.07, 12 / m));
+      if (small && z.zoomC === z.zoom) s *= SMALL_K;
+      s = Math.max(1, Math.min(s, fix || small ? LENS_FIX : LENS_MAX, (SAFE[2] - SAFE[0]) / w, (SAFE[3] - SAFE[1]) / h));
     }
     var hw = w * s / 2, hh = h * s / 2, dx = 0, dy = 0;
     if (s > 1) {
@@ -826,7 +854,8 @@
     S.box.classList.remove('is-rest', 'is-calm');
     S.box.classList.add('is-on');
     dropMarks(S, now);
-    var gs = b.z.map(function (z) { return lensGeo(z, false); });
+    var gw = S.glass.offsetWidth;
+    var gs = b.z.map(function (z) { return lensGeo(z, false, gw); });
     gs.forEach(function (g) { addLens(S, g, caps, wasOn, hi, now); });
     addRings(S, b, gs, side, wasOn, false, now);
     // Tras el primer instante, el velo se aclara para que la pantalla siga en color.
@@ -836,7 +865,8 @@
   function showAll(S, list, src, side) {
     S.box.classList.remove('is-on', 'is-calm');
     dropMarks(S, true);
-    var caps = capsOf(src), gl = list.map(function (b) { return b.z.map(function (z) { return lensGeo(z, true); }); });
+    var gw = S.glass.offsetWidth;
+    var caps = capsOf(src), gl = list.map(function (b) { return b.z.map(function (z) { return lensGeo(z, true, gw); }); });
     gl.forEach(function (gs) { gs.forEach(function (g) { addLens(S, g, caps, true); }); });
     list.forEach(function (b, k) { addRings(S, b, gl[k], side, true, true); });
   }
@@ -972,7 +1002,8 @@
     if (!reduce) hideBubbles(bs, rigCovers);
     play(T.spot, bs, {
       delay: 300, scr0: T.scr,
-      side: function () { return sideOf(i); },
+      // Con el teléfono arriba, el texto va debajo y el anillo sale a la derecha de la zona.
+      side: function () { return L.wide ? sideOf(i) : 'r'; },
       setScr: function (n) { T.scr = n; requestRender(); },
       src: function (n) { return scrs[n]; },
       reveal: function (n, y) { if (n == null) showBubbles(rigCovers); else setCover(rigCovers[n], y); },
@@ -1058,7 +1089,7 @@
       if (e.isIntersecting && e.intersectionRatio > 0.08) {
         s.fig.classList.add('in');
         // Al asomar, la figura ya muestra la pantalla con la que empieza su recorrido.
-        if (!L.wide && !s.primed) { s.primed = true; prepShot(s); figScreen(s, firstScreen(s)); schemeArm(s.glass, s.scr); }
+        if (!L.rig && !s.primed) { s.primed = true; prepShot(s); figScreen(s, firstScreen(s)); schemeArm(s.glass, s.scr); }
       }
       // La parte visible se mide contra lo que cabe en la ventana, así una figura más alta que la
       // ventana, como en un celular apaisado, también arranca su recorrido.
@@ -1067,7 +1098,7 @@
       var vis = e.isIntersecting && e.intersectionRect.height / room >= 0.6;
       if (vis === s.on) return;
       s.on = vis;
-      if (L.wide) return;
+      if (L.rig) return;
       if (vis) playShot(s); else stopShot(s);
     });
   }, { threshold: TH }) : null;
@@ -1076,7 +1107,7 @@
   var prepIO = 'IntersectionObserver' in win ? new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
       var s = e.target.tour;
-      if (s && e.isIntersecting && !L.wide) { prepShot(s); prepIO.unobserve(e.target); }
+      if (s && e.isIntersecting && !L.rig) { prepShot(s); prepIO.unobserve(e.target); }
     });
   }, { rootMargin: '0px 0px 100% 0px' }) : null;
   all('.shot').forEach(function (fig) {
@@ -1092,11 +1123,11 @@
     shotIO.observe(fig);
     if (prepIO) prepIO.observe(fig);
   });
-  var wasWide = null;
+  var wasRig = null;
   function syncShots() {
-    if (wasWide === L.wide) return;
-    wasWide = L.wide;
-    shotTours.forEach(function (s) { if (L.wide) stopShot(s); else if (s.on) playShot(s); });
+    if (wasRig === L.rig) return;
+    wasRig = L.rig;
+    shotTours.forEach(function (s) { if (L.rig) stopShot(s); else if (s.on) playShot(s); });
   }
 
   // Pausa del recorrido. Al hacer clic en el texto de un paso o tocarlo sin arrastrar, o al llevarle
@@ -1105,7 +1136,7 @@
   // cortaría cada paso antes de sus detalles. Desplazar la página tampoco, ni con la rueda ni con el
   // dedo, porque un toque que se vuelve desplazamiento no dispara click.
   function endTour(i) {
-    if (L.wide) { if (T.idx === i && T.spot && T.spot.end) T.spot.end(); return; }
+    if (L.rig) { if (T.idx === i && T.spot && T.spot.end) T.spot.end(); return; }
     shotTours.forEach(function (s) { if (s.i === i && s.spot && s.spot.end) s.spot.end(); });
   }
   function pauseOn(el, i) {
@@ -1122,12 +1153,10 @@
   // apaga lo que late (halos, anillos, resplandor y flecha de la portada). Escape también pausa. Al
   // reanudar, el paso a la vista vuelve a recorrer sus momentos.
   var pauseBtns = all('[data-pausa]');
+  // El rótulo, «Pausar» o «Reanudar animaciones», cambia con la clase quieto, que el script del
+  // <head> ya pone antes del primer pintado si la pausa quedó guardada.
   function syncPause() {
     root.classList.toggle('quieto', still);
-    pauseBtns.forEach(function (b) {
-      var t = b.querySelector('.pausa-t');
-      if (t) t.textContent = still ? 'Reanudar animaciones' : 'Pausar animaciones';
-    });
   }
   function setStill(v) {
     if (v === still) return;
@@ -1139,7 +1168,7 @@
       shotTours.forEach(function (s) { if (s.spot && s.spot.end) s.spot.end(); });
     } else {
       if (T.idx > 0) T.idx = -2;
-      shotTours.forEach(function (s) { if (s.on && !L.wide) playShot(s); });
+      shotTours.forEach(function (s) { if (s.on && !L.rig) playShot(s); });
     }
     requestRender();
   }
@@ -1207,16 +1236,22 @@
   }
 
   function update(ts) {
-    var y = win.pageYOffset, p = splashProgress(ts, y);
-    if (L.wide) {
-      var e = reduce ? (y > 0.3 * L.vh ? 1 : 0) : inOutCubic(clamp(y / (0.62 * L.vh)));
-      rig.style.transform = 'translateX(' + f(L.heroDx * (1 - e)) + 'px)';
-      var ho = 1 - clamp((y - 0.08 * L.vh) / (0.34 * L.vh));
-      hero.style.opacity = f(ho);
-      hero.style.pointerEvents = ho < 0.05 ? 'none' : '';
+    var y = win.pageYOffset, p = splashProgress(ts, y), idx = 0;
+    if (L.rig) {
+      if (L.wide) {
+        var e = reduce ? (y > 0.3 * L.vh ? 1 : 0) : inOutCubic(clamp(y / (0.62 * L.vh)));
+        rig.style.transform = 'translateX(' + f(L.heroDx * (1 - e)) + 'px)';
+        var ho = 1 - clamp((y - 0.08 * L.vh) / (0.34 * L.vh));
+        hero.style.opacity = f(ho);
+        hero.style.pointerEvents = ho < 0.05 ? 'none' : '';
+        cue.style.opacity = f(1 - clamp(p * 4));
+      } else {
+        rig.style.transform = '';
+        hero.style.opacity = '';
+        hero.style.pointerEvents = '';
+      }
       root.style.setProperty('--gk', f(lerp(1, 0.45, p)));
-      cue.style.opacity = f(1 - clamp(p * 4));
-      var idx = activeIndex(y);
+      idx = activeIndex(y);
       if (idx !== S2.idx) {
         if (S2.idx >= 0 && steps[S2.idx]) steps[S2.idx].classList.remove('is-active');
         steps[idx].classList.add('is-active');
@@ -1229,7 +1264,7 @@
       var want = p >= 1 ? idx : -1;
       if (want !== T.idx) startRigTour(want);
       setScreen(p < 1 ? 'malla' : (T.scr || steps[idx].getAttribute('data-screen')), p >= 1 && steps[idx].hasAttribute('data-install'));
-      updateLeader(idx, p, ts);
+      if (L.wide) updateLeader(idx, p, ts); else leaderOff();
     } else {
       rig.style.transform = '';
       hero.style.opacity = '';
@@ -1271,11 +1306,12 @@
   win.addEventListener('load', remeasure);
   if (win.ResizeObserver) new ResizeObserver(remeasure).observe(doc.body);
   onChange(mqWide, remeasure);
+  onChange(mqCmp, remeasure);
   onChange(mqReduce, function () {
     reduce = !!mqReduce.matches; cur = null; lastP = -1;
     // Los recorridos vuelven a empezar con la preferencia nueva.
     T.idx = -2;
-    shotTours.forEach(function (s) { s.fig.classList.toggle('rv', !reduce); if (s.on && !L.wide) playShot(s); });
+    shotTours.forEach(function (s) { s.fig.classList.toggle('rv', !reduce); if (s.on && !L.rig) playShot(s); });
     remeasure();
   });
 

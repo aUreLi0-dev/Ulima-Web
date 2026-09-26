@@ -1,7 +1,9 @@
 /* ULima++ · landing
    Dirección «Scrollytelling». Las pantallas del teléfono son capturas reales de la app.
-   Por defecto las secciones van apiladas (celular, tableta y sin JS).
-   Con JS y 900 px o más, el teléfono queda fijo al centro y los textos pasan a su lado. */
+   Por defecto las secciones van apiladas (sin JS y en un celular apaisado).
+   Con JS y 900 px o más, el teléfono queda fijo al centro y los textos pasan a su lado. En el
+   celular y la tableta en vertical, el teléfono queda fijo arriba, más chico, y el texto de cada
+   paso sube por debajo. */
 
 /* ---------- Tokens ---------- */
 :root {
@@ -173,6 +175,10 @@ html:not(.js) .theme { display: none; }
 .pausa .ic { width: 16px; height: 16px; stroke-width: 2.4; }
 .pausa .i-play, .quieto .pausa .i-pause { display: none; }
 .quieto .pausa .i-play { display: block; }
+/* El rótulo cambia por clase, y el script del <head> pone la clase antes del primer pintado, así el
+   botón no cambia de ancho ni corre los enlaces de la barra al abrir la página con la pausa guardada. */
+.pt-r, .quieto .pt-p { display: none; }
+.quieto .pt-r { display: inline; }
 .pausa-fila { display: none; }
 .js .pausa-fila { display: flex; justify-content: center; padding-top: 8px; }
 .js .pausa-fila .pausa { display: inline-flex; }
@@ -558,6 +564,30 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
   .hero h1 { font-size: 32px; }
 }
 
+/* ---------- Teléfono fijo, con JS, en la compu (wide) y en el celular en vertical (cmp) ---------- */
+@media (min-width: 900px) and (min-height: 560px), (max-width: 899px) and (min-height: 500px) {
+  .js .pausa-fila { display: none; }
+  .js .rig .scr:not([data-scr="malla"]) { display: block; }
+  .js .scr {
+    opacity: 0; visibility: hidden; transform: translateY(10px) scale(.985);
+    transition: opacity .4s ease, transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .55s;
+  }
+  .js .scr[data-push] { transform: translateX(14%); }
+  .js .scr.is-on {
+    opacity: 1; visibility: visible; transform: none;
+    transition: opacity .4s ease .08s, transform .55s cubic-bezier(.2, .8, .2, 1) .08s, visibility 0s;
+  }
+  .js .glass.in-splash .scr { transition: none; }
+  /* Una pestaña, un botón o una hoja que cambia dentro de la misma pantalla entra en su lugar, en
+     0,2 s y encima de la que sale, que espera entera debajo. Así las dos no se ven a medias a la vez. */
+  .js .glass.cf .scr { transform: none; transition: opacity 0s linear .2s, visibility 0s linear .2s; }
+  .js .glass.cf .scr.is-on { transition: opacity .2s ease, visibility 0s; }
+  .js .shot {
+    position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; box-shadow: none;
+  }
+}
+
 /* ---------- Scrollytelling, con JS, 900 px o más de ancho y 560 px o más de alto ---------- */
 /* Un celular apaisado, ancho pero bajo, sigue con las capturas apiladas, porque el teléfono fijo
    no le cabe entero. */
@@ -567,7 +597,6 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
     --gw: clamp(220px, min(calc((100vh - var(--nav-h) - 96px) / 2.1641), 25vw), 330px);
   }
   .js .nav .pausa { display: inline-flex; }
-  .js .pausa-fila { display: none; }
   .js .top { position: relative; }
   .js .hero {
     position: absolute; z-index: 3; top: 0; left: 0;
@@ -585,21 +614,6 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
     pointer-events: none;
   }
   .js .rig { grid-column: 2; justify-self: center; will-change: transform; }
-  .js .rig .scr:not([data-scr="malla"]) { display: block; }
-  .js .scr {
-    opacity: 0; visibility: hidden; transform: translateY(10px) scale(.985);
-    transition: opacity .4s ease, transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .55s;
-  }
-  .js .scr[data-push] { transform: translateX(14%); }
-  .js .scr.is-on {
-    opacity: 1; visibility: visible; transform: none;
-    transition: opacity .4s ease .08s, transform .55s cubic-bezier(.2, .8, .2, 1) .08s, visibility 0s;
-  }
-  .js .glass.in-splash .scr { transition: none; }
-  /* Una pestaña, un botón o una hoja que cambia dentro de la misma pantalla entra en su lugar, en
-     0,2 s y encima de la que sale, que espera entera debajo. Así las dos no se ven a medias a la vez. */
-  .js .glass.cf .scr { transform: none; transition: opacity 0s linear .2s, visibility 0s linear .2s; }
-  .js .glass.cf .scr.is-on { transition: opacity .2s ease, visibility 0s; }
 
   .js .cue {
     position: absolute; left: 50%; top: calc(100% + 16px); transform: translateX(-50%);
@@ -647,14 +661,60 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
   .js .step[data-side="l"] .copy { grid-column: 1; justify-self: end; }
   .js .copy h2 { font-size: clamp(27px, 2.7vw, 38px); }
   .js .copy p:not([class]) { font-size: 16px; }
-  .js .shot {
-    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; box-shadow: none;
-  }
   .ready .copy { opacity: .14; transform: translateX(26px); transition: opacity .55s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
   .ready .step[data-side="l"] .copy { transform: translateX(-26px); }
   .ready .en-portada .copy { opacity: 0; }
   .ready .step.is-active .copy, .ready .copy:focus-within { opacity: 1; transform: none; }
+}
+
+/* ---------- Teléfono fijo arriba, con JS, en el celular y la tableta en vertical ---------- */
+/* El teléfono queda fijo bajo la barra, un poco más chico. El texto de cada paso sube por debajo del
+   teléfono, que lo tapa con el fondo de la página, y el paso activo es el que pasó la línea de
+   lectura. Un celular apaisado, bajo, sigue con las capturas apiladas. */
+@media (max-width: 899px) and (min-height: 500px) {
+  .js {
+    --gw: min(44vw, calc(((100vh - var(--nav-h)) * .52 - 38px) / 2.1641));
+    --stage-h: calc(var(--gw) * 2.1641 + 38px);
+    --read-h: calc(100vh - var(--nav-h) - var(--stage-h));
+  }
+  html.js { scroll-padding-top: calc(var(--nav-h) + var(--stage-h)); }
+  .js .stage {
+    position: sticky; top: var(--nav-h); z-index: 30;
+    display: block; height: var(--stage-h);
+    padding: 10px var(--gutter) 12px;
+    background: var(--bg);
+  }
+  .js .stage::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+    background: linear-gradient(var(--bg) 30%, color-mix(in srgb, var(--bg) 0%, transparent));
+  }
+  .js .rig { width: var(--pw); margin: 0 auto; }
+  .js .stage .pausa-st {
+    display: inline-flex; justify-content: center;
+    position: absolute; right: var(--gutter); bottom: 12px;
+    width: 40px; height: 40px; min-height: 0; padding: 0;
+    background: var(--bg);
+  }
+  .js .stage .pausa-st .ic { width: 16px; height: 16px; }
+  .js .hero { padding-top: 24px; }
+  .js .steps { position: relative; z-index: 1; }
+  .js .step, .js .step:not(.step-intro) {
+    display: block; min-height: calc(var(--read-h) * .8);
+    padding: 18px 0 30px;
+  }
+  .js .step-intro { display: none; }
+  .js .step.step-last { min-height: calc(var(--read-h) + 40px); }
+  .js .copy { margin: 0 auto; }
+  .ready .copy { opacity: .3; transition: opacity .45s ease; }
+  .ready .step.is-active .copy, .ready .copy:focus-within { opacity: 1; }
+}
+@supports (height: 100svh) {
+  @media (max-width: 899px) and (min-height: 500px) {
+    .js {
+      --gw: min(44vw, calc(((100svh - var(--nav-h)) * .52 - 38px) / 2.1641));
+      --read-h: calc(100svh - var(--nav-h) - var(--stage-h));
+    }
+  }
 }
 
 /* ---------- Reducir movimiento, sin animaciones ---------- */
@@ -667,5 +727,5 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
   .js .qrpanel { transform: none; }
   .shot.rv { opacity: 1; transform: none; }
   /* Sin animaciones no hay nada que pausar. */
-  .js .pausa-fila, .js .nav .pausa { display: none; }
+  .js .pausa-fila, .js .nav .pausa, .js .stage .pausa-st { display: none; }
 }
