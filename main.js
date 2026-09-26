@@ -2,7 +2,8 @@
    1. Tema claro u oscuro, según el sistema o el conmutador.
    2. Versión, peso y fecha del APK, en vivo desde la API pública de GitHub, con respaldo.
    3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar.
-   4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar. */
+   4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar.
+   5. Detalles sobre la captura, con foco, leve zoom, anillo y frase, al ritmo del texto activo. */
 (function () {
   'use strict';
 
@@ -443,6 +444,7 @@
     L.vh = win.innerHeight;
     L.vw = root.clientWidth || win.innerWidth;
     L.wide = !!(mqWide && mqWide.matches);
+    syncShots();
     L.navH = nav.offsetHeight;
     L.gw = glass.getBoundingClientRect().width || L.gw;
     var sy = win.pageYOffset;
@@ -495,7 +497,195 @@
     }
   }
 
-  var pin = $('pin'), leader = $('leader'), leadp = $('leadp'), leadc = $('leadc');
+  /* ---------- 5. Detalles sobre la captura ---------- */
+  // Cada paso recorre sus momentos (data-beats) mientras su texto está activo. En cada uno, el
+  // resto de la pantalla se oscurece, la zona sube con un leve zoom y un anillo que late, y en el
+  // texto se marca la frase que la explica (data-b). Con movimiento reducido queda quieto el último.
+  var BEAT = 1900, SWAP = 560;
+  function parseBeats(str) {
+    var out = [];
+    (str || '').split('|').forEach(function (b, i) {
+      var o = { i: i, scr: null, z: [], pin: null }, m = /^\s*([a-z0-9-]+):/.exec(b);
+      if (m) { o.scr = m[1]; b = b.slice(m[0].length); }
+      var parts = b.split('@');
+      parts[0].split(',').forEach(function (r) {
+        var v = r.trim().split(/\s+/).map(Number);
+        if (v.length === 4 && v.every(isFinite)) o.z.push(v);
+      });
+      var q = parts[1] ? parts[1].trim().split(/\s+/).map(Number) : [];
+      if (q.length === 2 && q.every(isFinite)) o.pin = q;
+      if (o.z.length) out.push(o);
+    });
+    return out;
+  }
+  function pct(v) { return f(v * 100) + '%'; }
+  function place(el, z) {
+    el.style.left = pct(z[0] / 390); el.style.top = pct(z[1] / 844);
+    el.style.width = pct(z[2] / 390); el.style.height = pct(z[3] / 844);
+  }
+  function makeSpot(g, pinEl) {
+    var box = doc.createElement('div'), spot = doc.createElement('i');
+    box.className = 'hl'; box.setAttribute('aria-hidden', 'true');
+    spot.className = 'spot'; box.appendChild(spot);
+    g.insertBefore(box, g.querySelector('.chrome'));
+    if (!pinEl) { pinEl = doc.createElement('span'); pinEl.className = 'pin'; pinEl.setAttribute('aria-hidden', 'true'); g.appendChild(pinEl); }
+    return { box: box, spot: spot, pin: pinEl, lenses: [], timers: [] };
+  }
+  function later(S, ms, fn) { S.timers.push(setTimeout(fn, ms)); }
+  function stopTour(S) { S.timers.forEach(clearTimeout); S.timers = []; }
+  function capsOf(src) {
+    return Array.prototype.filter.call(src ? src.children : [], function (c) {
+      return c.classList && (c.classList.contains('cap') || c.classList.contains('sx'));
+    });
+  }
+  function dropLenses(S) {
+    S.lenses.forEach(function (l) {
+      l.classList.remove('is-on');
+      setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, reduce ? 0 : 420);
+    });
+    S.lenses = [];
+  }
+  function hideSpot(S) { S.box.classList.remove('is-on'); dropLenses(S); S.pin.classList.remove('is-on'); }
+  function showBeat(S, b, src) {
+    var wasOn = S.box.classList.contains('is-on'), caps = capsOf(src);
+    place(S.spot, b.z[0]);
+    S.box.classList.add('is-on');
+    dropLenses(S);
+    b.z.forEach(function (z) {
+      // La lupa es una copia de la captura recortada a la zona, que sube un poco sobre el resto.
+      var lens = doc.createElement('div'), inner = doc.createElement('div');
+      var edge = z[0] < 2 || z[0] + z[2] > 388;
+      lens.className = 'lens';
+      place(lens, z);
+      lens.style.setProperty('--s', edge ? '1' : (1 + Math.min(0.07, 12 / Math.max(z[2], z[3]))).toFixed(3));
+      lens.style.setProperty('--iw', pct(390 / z[2]));
+      lens.style.setProperty('--ih', pct(844 / z[3]));
+      lens.style.setProperty('--ix', pct(-z[0] / z[2]));
+      lens.style.setProperty('--iy', pct(-z[1] / z[3]));
+      // Una imagen copiada con cloneNode empieza a bajar antes de entrar a la página, y ahí la carga
+      // diferida no la frena. Por eso cada imagen de la lupa se crea vacía y recibe su fuente ya
+      // insertada, así la captura del tema que no se ve (display: none) no se descarga.
+      var back = [];
+      caps.forEach(function (c) {
+        var k;
+        if (c.tagName === 'IMG') {
+          k = doc.createElement('img');
+          k.className = c.className; k.alt = '';
+          k.setAttribute('loading', 'lazy'); k.setAttribute('decoding', 'async');
+          k.setAttribute('sizes', c.getAttribute('sizes') || '');
+          back.push([k, c.getAttribute('srcset'), c.getAttribute('src')]);
+        } else {
+          k = c.cloneNode(true);
+          k.removeAttribute('role'); k.removeAttribute('aria-label');
+        }
+        inner.appendChild(k);
+      });
+      lens.appendChild(inner);
+      S.box.appendChild(lens);
+      back.forEach(function (x) { if (x[1]) x[0].setAttribute('srcset', x[1]); if (x[2]) x[0].setAttribute('src', x[2]); });
+      S.lenses.push(lens);
+      if (reduce) lens.classList.add('is-on');
+      else later(S, wasOn ? 380 : 200, function () { lens.classList.add('is-on'); });
+    });
+    if (b.pin) {
+      S.pin.style.left = pct(b.pin[0] / 390);
+      S.pin.style.top = pct(b.pin[1] / 844);
+      // Se reinicia para que el anillo vuelva a latir en cada momento que lo usa.
+      S.pin.classList.remove('is-on'); void S.pin.offsetWidth; S.pin.classList.add('is-on');
+    } else S.pin.classList.remove('is-on');
+  }
+  function phrase(i, k) {
+    if (!copies[i]) return;
+    all('.hl-f', copies[i]).forEach(function (el) { el.classList.toggle('is-on', +el.getAttribute('data-b') === k); });
+  }
+  // Recorre los momentos uno tras otro y deja el último quieto. Si un momento cambia de pantalla,
+  // primero se apaga el foco, entra la pantalla nueva y después se enciende en ella.
+  function play(S, beats, o) {
+    stopTour(S);
+    if (!beats.length) return;
+    if (reduce) {
+      var last = beats[beats.length - 1], ls = last.scr || o.scr0;
+      if (ls !== o.scr0) o.setScr(ls);
+      showBeat(S, last, o.src(ls)); o.phr(last.i); o.beat(last);
+      return;
+    }
+    var t = o.delay, now0 = o.scr0;
+    beats.forEach(function (b) {
+      var sc = b.scr || now0;
+      if (sc !== now0) {
+        later(S, t, function () { hideSpot(S); o.setScr(sc); });
+        t += SWAP; now0 = sc;
+      }
+      later(S, t, function () { showBeat(S, b, o.src(sc)); o.phr(b.i); o.beat(b); });
+      t += BEAT;
+    });
+  }
+  function noop() {}
+
+  var beatsOf = steps.map(function (s) { return parseBeats(s.getAttribute('data-beats')); });
+  var pin = $('pin');
+  // Recorrido del teléfono fijo, con su paso activo, la pantalla que muestra y el momento en curso.
+  var T = { idx: -1, scr: null, beat: null, spot: null };
+  function startRigTour(i) {
+    if (!T.spot) T.spot = makeSpot(glass, pin);
+    stopTour(T.spot);
+    if (T.idx > 0) phrase(T.idx, -1);
+    hideSpot(T.spot);
+    T.idx = i; T.scr = null; T.beat = null;
+    if (i <= 0) return;
+    T.scr = steps[i].getAttribute('data-screen');
+    play(T.spot, beatsOf[i], {
+      delay: SWAP, scr0: T.scr,
+      setScr: function (n) { T.scr = n; requestRender(); },
+      src: function (n) { return scrs[n]; },
+      phr: function (k) { phrase(i, k); },
+      beat: function (b) { T.beat = b; requestRender(); }
+    });
+  }
+
+  // Recorridos de las capturas apiladas. Cada una corre los momentos de su pantalla al quedar a la vista.
+  var shotTours = [];
+  function playShot(s) {
+    if (!s.spot) s.spot = makeSpot(s.glass);
+    play(s.spot, s.beats, { delay: 300, scr0: s.scr, setScr: noop, src: function () { return s.glass; }, phr: function (k) { phrase(s.i, k); }, beat: noop });
+  }
+  function stopShot(s) {
+    if (!s.spot) return;
+    stopTour(s.spot); hideSpot(s.spot); phrase(s.i, -1);
+  }
+  var shotIO = 'IntersectionObserver' in win ? new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var s = e.target.tour;
+      if (!s) return;
+      if (e.isIntersecting && e.intersectionRatio > 0.08) s.fig.classList.add('in');
+      var vis = e.isIntersecting && e.intersectionRatio >= 0.6;
+      if (vis === s.on) return;
+      s.on = vis;
+      if (L.wide) return;
+      if (vis) playShot(s); else stopShot(s);
+    });
+  }, { threshold: [0, 0.1, 0.6] }) : null;
+  all('.shot').forEach(function (fig) {
+    var st = fig.closest ? fig.closest('.step') : null, i = steps.indexOf(st);
+    if (i < 1 || !shotIO) return;
+    var name = fig.getAttribute('data-scr'), scr0 = st.getAttribute('data-screen');
+    var s = {
+      fig: fig, glass: fig.querySelector('.glass'), i: i, scr: name, on: false, spot: null,
+      beats: beatsOf[i].filter(function (b) { return (b.scr || scr0) === name; })
+    };
+    fig.tour = s;
+    if (!reduce) fig.classList.add('rv');
+    shotTours.push(s);
+    shotIO.observe(fig);
+  });
+  var wasWide = null;
+  function syncShots() {
+    if (wasWide === L.wide) return;
+    wasWide = L.wide;
+    shotTours.forEach(function (s) { if (L.wide) stopShot(s); else if (s.on) playShot(s); });
+  }
+
+  var leader = $('leader'), leadp = $('leadp'), leadc = $('leadc');
   // Caja del texto en reposo, sin el desplazamiento de su transición de entrada.
   function restRect(el) {
     var r = el.getBoundingClientRect(), tx = 0;
@@ -505,13 +695,11 @@
     } catch (e) { /* sin transformación */ }
     return { left: r.left - tx, right: r.right - tx, top: r.top, bottom: r.bottom };
   }
-  function updatePin(idx, p) {
-    var st = steps[idx], raw = st.getAttribute('data-pin');
-    if (!raw || idx === 0 || p < 1) { pin.classList.remove('is-on'); leader.classList.remove('is-on'); return; }
-    var xy = raw.split(','), px = +xy[0], py = +xy[1];
-    pin.style.left = f(px / 390 * 100) + '%';
-    pin.style.top = f(py / 844 * 100) + '%';
-    pin.classList.add('is-on');
+  // La línea punteada une el texto activo con la altura del anillo o, si no hay, con la de la zona.
+  function updateLeader(idx, p) {
+    var st = steps[idx], b = T.beat;
+    if (!b || idx !== T.idx || idx === 0 || p < 1) { leader.classList.remove('is-on'); return; }
+    var py = b.pin ? b.pin[1] : b.z[0][1] + b.z[0][3] / 2;
     var copy = copies[idx], side = st.getAttribute('data-side') || 'r';
     if (!copy) { leader.classList.remove('is-on'); return; }
     var cr = restRect(copy), gr = glass.getBoundingClientRect(), sr = stage.getBoundingClientRect();
@@ -558,16 +746,19 @@
         stepsBox.classList.toggle('en-portada', idx === 0);
         S2.idx = idx;
       }
-      // Mientras el splash no termina de salir, el teléfono muestra la malla.
-      setScreen(p < 1 ? 'malla' : steps[idx].getAttribute('data-screen'), p >= 1 && steps[idx].hasAttribute('data-install'));
-      updatePin(idx, p);
+      // Mientras el splash no termina de salir, el teléfono muestra la malla. Después, la pantalla
+      // del paso activo, o la que va mostrando su recorrido.
+      var want = p >= 1 ? idx : -1;
+      if (want !== T.idx) startRigTour(want);
+      setScreen(p < 1 ? 'malla' : (T.scr || steps[idx].getAttribute('data-screen')), p >= 1 && steps[idx].hasAttribute('data-install'));
+      updateLeader(idx, p);
     } else {
       rig.style.transform = '';
       hero.style.opacity = '';
       hero.style.pointerEvents = '';
       root.style.removeProperty('--gk');
+      if (T.idx !== -1) startRigTour(-1);
       setScreen('malla', false);
-      pin.classList.remove('is-on');
       leader.classList.remove('is-on');
     }
     renderFx(ts, p);
@@ -595,7 +786,13 @@
   win.addEventListener('load', remeasure);
   if (win.ResizeObserver) new ResizeObserver(remeasure).observe(doc.body);
   onChange(mqWide, remeasure);
-  onChange(mqReduce, function () { reduce = !!mqReduce.matches; cur = null; lastP = -1; remeasure(); });
+  onChange(mqReduce, function () {
+    reduce = !!mqReduce.matches; cur = null; lastP = -1;
+    // Los recorridos vuelven a empezar con la preferencia nueva.
+    T.idx = -2;
+    shotTours.forEach(function (s) { s.fig.classList.toggle('rv', !reduce); if (s.on && !L.wide) playShot(s); });
+    remeasure();
+  });
 
   syncTheme();
   measure();

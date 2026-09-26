@@ -32,6 +32,8 @@
   --s-line: #C9C9D2;
   --s-acc: #3D5AFE;
   --s-bar: #ECECF1;
+  --dim: .24;
+  --mk-a: 30%;
   color-scheme: light;
 }
 
@@ -53,6 +55,8 @@
     --s-line: #3A3A44;
     --s-acc: #AFC2FF;
     --s-bar: #1A1A20;
+    --dim: .44;
+    --mk-a: 38%;
     color-scheme: dark;
   }
 }
@@ -74,6 +78,8 @@
   --s-line: #3A3A44;
   --s-acc: #AFC2FF;
   --s-bar: #1A1A20;
+  --dim: .44;
+  --mk-a: 38%;
   color-scheme: dark;
 }
 
@@ -290,7 +296,68 @@ html:not(.js) .theme { display: none; }
 :root[data-theme="dark"] .chrome { color: var(--sb-d); }
 :root[data-theme="dark"] .hb { background: var(--hb-d); }
 
-.pin, .cue, .qrpanel, .leader { display: none; }
+/* ---------- Detalles sobre la captura ---------- */
+/* Mientras un texto está activo, el resto de la pantalla se oscurece, la zona que explica sube con
+   un leve zoom y un anillo que late, y la frase que la nombra se marca en el texto. */
+.hl { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.spot {
+  position: absolute; border-radius: calc(var(--u) * 14);
+  box-shadow: 0 0 0 calc(var(--gw) * 2.4) rgba(8, 8, 14, var(--dim));
+  opacity: 0;
+  transition: opacity .45s ease, left .6s cubic-bezier(.2, .8, .2, 1), top .6s cubic-bezier(.2, .8, .2, 1),
+    width .6s cubic-bezier(.2, .8, .2, 1), height .6s cubic-bezier(.2, .8, .2, 1);
+}
+.hl.is-on .spot { opacity: 1; }
+.lens {
+  position: absolute; border-radius: calc(var(--u) * 14);
+  opacity: 0; transform: scale(1);
+  box-shadow: 0 0 0 calc(var(--u) * 2) var(--orange), 0 calc(var(--u) * 18) calc(var(--u) * 34) calc(var(--u) * -14) rgba(0, 0, 0, .7);
+  transition: opacity .35s ease, transform .65s cubic-bezier(.2, .9, .25, 1.15);
+}
+.lens.is-on { opacity: 1; transform: scale(var(--s, 1.04)); }
+.lens > div { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.lens .cap, .lens .sx { position: absolute; max-width: none; left: var(--ix); top: var(--iy); width: var(--iw); height: var(--ih); }
+.lens::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  animation: halo 1.9s ease-out .4s 3 both;
+}
+@keyframes halo {
+  from { box-shadow: 0 0 0 0 rgba(255, 102, 0, .55); }
+  to { box-shadow: 0 0 0 calc(var(--u) * 16) rgba(255, 102, 0, 0); }
+}
+
+/* El anillo mide 28 y 4 dp de la captura en cualquier ancho, así que no pisa texto en pantallas chicas. */
+.pin {
+  --pd: calc(var(--u, 1px) * 33);
+  position: absolute; z-index: 7; left: 0; top: 0;
+  width: var(--pd); height: var(--pd); margin: calc(var(--pd) / -2) 0 0 calc(var(--pd) / -2);
+  border-radius: 50%; border: 2px solid var(--orange);
+  box-shadow: 0 0 0 calc(var(--u, 1px) * 5) rgba(255, 102, 0, .2);
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s, left .5s cubic-bezier(.2, .8, .2, 1), top .5s cubic-bezier(.2, .8, .2, 1);
+}
+.pin::after {
+  content: ""; position: absolute; inset: -2px; border-radius: 50%;
+  border: 2px solid var(--orange); opacity: 0;
+}
+.pin.is-on::after { animation: ping 1.8s ease-out 4; }
+@keyframes ping { from { transform: scale(1); opacity: .7; } to { transform: scale(2.1); opacity: 0; } }
+.pin.is-on { opacity: 1; }
+
+/* Frase del texto que explica la zona resaltada, con el color del estado cuando lo tiene. */
+.hl-f {
+  --mk: var(--orange);
+  background: linear-gradient(color-mix(in srgb, var(--mk) var(--mk-a), transparent), color-mix(in srgb, var(--mk) var(--mk-a), transparent)) 0 92% / 0 .46em no-repeat;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-size .6s cubic-bezier(.2, .8, .2, 1), color .3s;
+}
+.hl-f.is-on { background-size: 100% .46em; color: var(--ink); }
+
+/* En el modo apilado, cada captura entra suave al asomar (la clase la pone el JS). */
+.shot.rv { opacity: 0; transform: translateY(28px) scale(.98); transition: opacity .6s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
+.shot.rv.in { opacity: 1; transform: none; }
+
+.cue, .qrpanel, .leader { display: none; }
 
 /* ---------- Pasos (modo apilado) ---------- */
 .steps { max-width: 980px; margin: 0 auto; padding: 0 var(--gutter); }
@@ -412,7 +479,7 @@ html:not(.js) .theme { display: none; }
   .js .rig { grid-column: 2; justify-self: center; will-change: transform; }
   .js .rig .scr:not([data-scr="malla"]) { display: block; }
   .js .scr {
-    opacity: 0; visibility: hidden; transform: translateY(8px);
+    opacity: 0; visibility: hidden; transform: translateY(10px) scale(.985);
     transition: opacity .4s ease, transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .55s;
   }
   .js .scr[data-push] { transform: translateX(14%); }
@@ -429,24 +496,6 @@ html:not(.js) .theme { display: none; }
   }
   .js .cue .ic { width: 15px; height: 15px; animation: nudge 1.6s ease-in-out infinite; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
-
-  /* El anillo y su halo escalan con el teléfono. Con el de 330 px miden 28 y 4 px, y en cualquier
-     ancho cubren los mismos 33 dp de la captura, así que no pisan texto en pantallas más chicas. */
-  .js .pin {
-    --pd: calc(var(--gw) * 28 / 330);
-    display: block; position: absolute; z-index: 7; left: 0; top: 0;
-    width: var(--pd); height: var(--pd); margin: calc(var(--pd) / -2) 0 0 calc(var(--pd) / -2);
-    border-radius: 50%; border: 2px solid var(--orange);
-    box-shadow: 0 0 0 calc(var(--gw) * 4 / 330) rgba(255, 102, 0, .2);
-    opacity: 0; pointer-events: none;
-    transition: opacity .3s, left .5s cubic-bezier(.2, .8, .2, 1), top .5s cubic-bezier(.2, .8, .2, 1);
-  }
-  .js .pin::after {
-    content: ""; position: absolute; inset: -2px; border-radius: 50%;
-    border: 2px solid var(--orange); animation: ping 1.8s ease-out infinite;
-  }
-  @keyframes ping { from { transform: scale(1); opacity: .7; } to { transform: scale(2.1); opacity: 0; } }
-  .js .pin.is-on { opacity: 1; }
 
   .js .qrpanel {
     position: relative; z-index: 2;
@@ -504,4 +553,5 @@ html:not(.js) .theme { display: none; }
   .ready .copy, .ready .step[data-side="l"] .copy { transform: none; }
   .js .scr, .js .scr[data-push] { transform: none; }
   .js .qrpanel { transform: none; }
+  .shot.rv { opacity: 1; transform: none; }
 }
