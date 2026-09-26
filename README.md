@@ -60,7 +60,11 @@ cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 720 0 malla-claro.png -o asse
 ## Accesibilidad
 
 - Un solo `h1`, regiones con `header`, `nav`, `main` y `footer`, y un enlace para saltar al contenido.
-- Cada captura lleva un texto alternativo que describe lo que muestra. Con el teléfono fijo, las
-  capturas del teléfono son decorativas y el lector de pantalla lee las que acompañan a cada texto.
-- Colores con contraste de 4,5 a 1 o más y foco visible en todos los controles.
+- Cada captura lleva un texto alternativo que describe lo que muestra, y los dos esquemas de
+  Android se leen como imagen con su descripción. Con el teléfono fijo, las capturas del teléfono
+  son decorativas y el lector de pantalla lee las que acompañan a cada texto.
+- Textos con contraste de 4,5 a 1 o más y foco visible en todos los controles. En escritorio, el
+  paso activo es el del texto más cercano al centro de la ventana, así que el texto que se lee
+  siempre está a contraste pleno. Los textos vecinos que asoman por arriba o por abajo quedan
+  atenuados a propósito hasta que llegan al centro.
 - Con «reducir movimiento» activado en el sistema no hay animaciones y el logo queda quieto.

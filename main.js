@@ -429,12 +429,12 @@
   /* ---------- 4. Scrollytelling ---------- */
   var nav = doc.querySelector('.nav'), hero = $('hero'), story = doc.querySelector('.story');
   var stage = $('stage'), rig = $('rig'), phone = $('phone'), cue = $('cue');
-  var steps = all('.step'), copies = steps.map(function (s) { return s.querySelector('.copy'); });
+  var stepsBox = $('steps'), steps = all('.step'), copies = steps.map(function (s) { return s.querySelector('.copy'); });
   var scrs = {};
   all('.scr', rig).forEach(function (s) { scrs[s.getAttribute('data-scr')] = s; });
   mallaScr = scrs.malla;
 
-  var L = { vh: 0, vw: 0, wide: false, navH: 56, gw: 280, stepTop: [], stepH: [], heroDx: 0 };
+  var L = { vh: 0, vw: 0, wide: false, navH: 56, gw: 280, copyMid: [], heroDx: 0 };
   function measure() {
     L.vh = win.innerHeight;
     L.vw = root.clientWidth || win.innerWidth;
@@ -442,8 +442,12 @@
     L.navH = nav.offsetHeight;
     L.gw = glass.getBoundingClientRect().width || L.gw;
     var sy = win.pageYOffset;
-    L.stepTop = steps.map(function (s) { return s.getBoundingClientRect().top + sy; });
-    L.stepH = steps.map(function (s) { return s.offsetHeight; });
+    // Centro vertical de cada texto en la página. Su transición solo lo mueve en horizontal.
+    L.copyMid = copies.map(function (c) {
+      if (!c) return null;
+      var r = c.getBoundingClientRect();
+      return r.top + sy + r.height / 2;
+    });
     if (L.wide) {
       // Al inicio el teléfono queda a la derecha del texto de la portada y se centra al bajar.
       var hr = hero.getBoundingClientRect(), pad = parseFloat(getComputedStyle(stage).paddingRight) || 32;
@@ -454,10 +458,16 @@
     measureCode();
   }
 
+  // El paso activo es el del texto más cercano al centro de la zona visible, así el texto que se
+  // lee nunca queda atenuado. Mientras el primero no asoma hasta su mitad, sigue la portada.
   function activeIndex(y) {
-    var idx = 0;
-    for (var i = 1; i < steps.length; i++) if (L.stepTop[i] + L.stepH[i] / 2 - y <= L.vh * 0.64) idx = i;
-    return idx;
+    var mid = y + L.navH + (L.vh - L.navH) / 2, idx = 0, best = Infinity;
+    for (var i = 1; i < steps.length; i++) {
+      var m = L.copyMid[i];
+      if (m == null) continue;
+      if (Math.abs(m - mid) < best) { best = Math.abs(m - mid); idx = i; }
+    }
+    return idx && L.copyMid[idx] > y + L.vh ? 0 : idx;
   }
 
   var cur = null, swTimer = 0;
@@ -535,6 +545,8 @@
       if (idx !== S2.idx) {
         if (S2.idx >= 0 && steps[S2.idx]) steps[S2.idx].classList.remove('is-active');
         steps[idx].classList.add('is-active');
+        // Con la portada a la vista, los textos de los pasos todavía no asoman ni atenuados.
+        stepsBox.classList.toggle('en-portada', idx === 0);
         S2.idx = idx;
       }
       // Mientras el splash no termina de salir, el teléfono muestra la malla.

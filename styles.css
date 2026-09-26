@@ -282,6 +282,8 @@ html:not(.js) .theme { display: none; }
 
 @media (min-width: 600px) {
   .step:not(.step-intro) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; justify-items: start; gap: 40px; }
+  /* Con la captura a la izquierda, la columna de ancho fijo va primero para que no pise el texto. */
+  .step[data-side="l"]:not(.step-intro) { grid-template-columns: auto minmax(0, 1fr); }
   .step[data-side="l"] .shot { order: -1; }
   .step[data-side="l"] .copy { justify-self: start; }
 }
@@ -441,6 +443,7 @@ html:not(.js) .theme { display: none; }
   }
   .ready .copy { opacity: .14; transform: translateX(26px); transition: opacity .55s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
   .ready .step[data-side="l"] .copy { transform: translateX(-26px); }
+  .ready .en-portada .copy { opacity: 0; }
   .ready .step.is-active .copy, .ready .copy:focus-within { opacity: 1; transform: none; }
 }
 
