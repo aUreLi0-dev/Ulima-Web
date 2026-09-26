@@ -6,7 +6,9 @@
    4. Scrollytelling con el teléfono fijo, al centro en la compu y arriba en el celular, que cambia
       de captura al bajar.
    5. Detalles sobre la captura, con velo, lupa, anillo, línea guía y frase, al ritmo del texto
-      activo, y las pantallas intermedias de cada paso, que también son capturas reales. */
+      activo, y las pantallas intermedias de cada paso, que también son capturas reales.
+   6. Ulises, posado junto al teléfono, comenta cada paso en su burbuja y vuela en arco de un lugar
+      a otro por fuera de la pantalla. */
 (function () {
   'use strict';
 
@@ -572,6 +574,7 @@
 
   var cur = null;
   function setScreen(name, install) {
+    stage.classList.toggle('is-install', !!install);
     if (name === cur) return;
     cur = name;
     Object.keys(scrs).forEach(function (k) { scrs[k].classList.toggle('is-on', k === name); });
@@ -1177,6 +1180,7 @@
       if (T.idx > 0) T.idx = -2;
       shotTours.forEach(function (s) { if (s.on && !L.rig) playShot(s); });
     }
+    uliStill();
     requestRender();
   }
   pauseBtns.forEach(function (b) { b.addEventListener('click', function () { setStill(!still); }); });
@@ -1224,6 +1228,359 @@
     leader.classList.add('is-on');
   }
 
+  /* ---------- 6. Ulises ---------- */
+  // Ulises va posado junto al teléfono y comenta cada paso en su burbuja. Entre un paso y otro vuela
+  // a su lugar nuevo en arco, siempre por fuera de la pantalla del teléfono. Si cambia de lado, sube
+  // por su costado, cruza por encima del teléfono y baja por el otro, como en la bienvenida de la
+  // app, con aleteo, inclinación según la velocidad y rebote al posarse. En la compu se posa del lado
+  // contrario al texto, a otra altura en cada paso, y en la instalación sobre el panel del QR. En el
+  // celular se posa en el canto derecho del teléfono, sobre el marco y sin entrar a la pantalla, así
+  // nunca tapa lo que muestran las lupas, y su burbuja va en la columna libre de al lado. Con
+  // movimiento reducido o con las animaciones en pausa aparece en su lugar, sin volar.
+  var uli = $('uli'), uliF = uli.querySelector('.uli-f'), ubub = $('ubub'), ubT = ubub.querySelector('.ub-t');
+  var qrEl = doc.querySelector('.qrpanel'), qrImg = qrEl && qrEl.querySelector('img'), pauseSt = doc.querySelector('.pausa-st');
+  var U = {
+    ok: false, mode: null, x: 0, y: 0, s: 64, face: 1, idx: -1, spot: null, fl: null,
+    land: -1e9, talk: -1e9, showAt: 1e15,
+    bub: { on: false, w: 0, h: 0, cand: null }
+  };
+  var ARRIVE = 250, BUB_DELAY = 220, LAND = 480, TALK = 320;
+  var HAS_TRANSLATE = 'translate' in ubub.style;
+
+  // En la portada del celular no está el aviso «Baja y la app se abre» de la compu, así que Ulises
+  // invita a bajar (data-uli-c).
+  function uliText(i) {
+    if (i <= 0) return (!L.wide && hero.getAttribute('data-uli-c')) || hero.getAttribute('data-uli') || '';
+    var st = steps[i];
+    return (st && st.getAttribute('data-uli')) || '';
+  }
+  function uliSize() { return Math.round(L.wide ? clamp(L.gw * 0.2, 56, 72) : clamp(L.gw * 0.27, 40, 54)); }
+  function rigBox() { return rig.getBoundingClientRect(); }
+  function glassBox() { var r = rigBox(); return { left: r.left + 8, top: r.top + 8, right: r.right - 8, bottom: r.bottom - 8 }; }
+
+  // Lugar de cada paso. En el celular alterna tres alturas del canto derecho; en la compu va del lado
+  // contrario al texto, a dos alturas que se alternan, y en la instalación salta entre los dos
+  // extremos del panel del QR. Dos pasos seguidos nunca comparten lugar.
+  function spotOf(i) {
+    if (!L.wide) return { key: 'c' + (i % 3), kind: 'side', side: 'r', fy: [0.24, 0.53, 0.8][i % 3] };
+    if (i > 0 && steps[i].hasAttribute('data-install') && qrEl) {
+      var k = 0;
+      for (var j = 1; j < i; j++) if (steps[j].hasAttribute('data-install')) k++;
+      return { key: 'q' + (k % 2), kind: 'qr', fx: k % 2 ? 0.74 : 0.26 };
+    }
+    var side = i === 0 || sideOf(i) === 'l' ? 'r' : 'l';
+    var fy = i === 0 ? 0.36 : i % 2 ? 0.3 : 0.56;
+    return { key: 'w' + side + fy, kind: 'side', side: side, fy: fy };
+  }
+  function spotXY(sp) {
+    var s = U.s;
+    if (sp.kind === 'qr') {
+      var Q = qrEl.getBoundingClientRect();
+      return { x: Q.left + sp.fx * Q.width, y: Q.top - s * 0.42 };
+    }
+    // En la compu se posa junto al canto, sin tocar el teléfono. En el celular se apoya en el marco,
+    // a 6 px de la pantalla, así ni su respiración ni el rebote la alcanzan.
+    var R = rigBox(), gap = L.wide ? 4 : -2;
+    return { x: sp.side === 'r' ? R.right + gap + s / 2 : R.left - gap - s / 2, y: R.top + sp.fy * R.height };
+  }
+  // El otro lugar del mismo tramo, para cuando el paso nuevo cae donde Ulises ya está, como al saltar
+  // varios pasos de una vez. Así cada cambio de paso es un vuelo de verdad y no un salto en su sitio.
+  function altSpot(sp) {
+    var o = {};
+    for (var k in sp) o[k] = sp[k];
+    if (sp.kind === 'qr') o.fx = sp.fx < 0.5 ? 0.74 : 0.26;
+    else if (!L.wide) o.fy = sp.fy < 0.4 ? 0.8 : 0.24;
+    else o.fy = sp.fy < 0.45 ? 0.56 : 0.3;
+    o.key = sp.key + '*';
+    return o;
+  }
+  // Posado, mira hacia el teléfono.
+  function restFace() { return U.spot && U.spot.kind === 'side' && U.spot.side === 'l' ? 1 : -1; }
+
+  function quadPts(A, C, B, N) {
+    var out = [];
+    for (var k = 0; k <= N; k++) { var t = k / N; out.push({ x: quad(A.x, C.x, B.x, t), y: quad(A.y, C.y, B.y, t) }); }
+    return out;
+  }
+  // Curva de Catmull-Rom por los puntos P, con tangentes escaladas por [ten].
+  function crPts(P, ten, N) {
+    var out = [];
+    for (var i = 0; i < P.length - 1; i++) {
+      var p0 = P[i - 1] || P[i], p1 = P[i], p2 = P[i + 1], p3 = P[i + 2] || P[i + 1];
+      var m1x = (p2.x - p0.x) * ten, m1y = (p2.y - p0.y) * ten, m2x = (p3.x - p1.x) * ten, m2y = (p3.y - p1.y) * ten;
+      for (var k = i ? 1 : 0; k <= N; k++) {
+        var t = k / N, t2 = t * t, t3 = t2 * t;
+        var a = 2 * t3 - 3 * t2 + 1, b = t3 - 2 * t2 + t, c = -2 * t3 + 3 * t2, d = t3 - t2;
+        out.push({ x: a * p1.x + b * m1x + c * p2.x + d * m2x, y: a * p1.y + b * m1y + c * p2.y + d * m2y });
+      }
+    }
+    return out;
+  }
+  function hitsGlass(pts, G, r) {
+    for (var k = 0; k < pts.length; k++) {
+      var q = pts[k];
+      if (q.x + r > G.left - 3 && q.x - r < G.right + 3 && q.y + r > G.top - 3 && q.y - r < G.bottom + 3) return true;
+    }
+    return false;
+  }
+  // Camino del vuelo de A a B, en px de la ventana. Del mismo lado, un arco que sube (compu) o que
+  // sale hacia afuera (celular). Si cambia de lado, o si el arco rozara la pantalla, sube por su
+  // costado hasta pasar el borde de arriba del teléfono, cruza por encima y baja por el otro lado.
+  function pathPts(A, B) {
+    var G = glassBox(), r = U.s / 2, cx = (G.left + G.right) / 2, minY = r + 4;
+    var da = A.x < cx ? -1 : 1, db = B.x < cx ? -1 : 1, pts;
+    if (da === db) {
+      var C;
+      if (L.wide) {
+        var lift = Math.max(70, Math.abs(B.x - A.x) * 0.35);
+        C = { x: (A.x + B.x) / 2, y: Math.max(minY, Math.min(A.y, B.y) - lift) };
+      } else C = { x: Math.min(Math.max(A.x, B.x) + 110, L.vw - r - 2), y: (A.y + B.y) / 2 };
+      pts = quadPts(A, C, B, 40);
+      if (!hitsGlass(pts, G, r)) return pts;
+    }
+    var top = Math.max(minY, G.top - r - 10);
+    var way = function (P, d) { return { x: d < 0 ? Math.min(P.x, G.left - r) - 14 : Math.max(P.x, G.right + r) + 14, y: top }; };
+    var W1 = way(A, da), W2 = way(B, db);
+    return da === db ? crPts([A, W1, B], 0.35, 24) : crPts([A, W1, W2, B], 0.35, 24);
+  }
+  // Punto del camino a una fracción [e] de su largo, con su dirección.
+  function along(pts, e) {
+    var acc = [0], k;
+    for (k = 1; k < pts.length; k++) acc.push(acc[k - 1] + Math.sqrt(Math.pow(pts[k].x - pts[k - 1].x, 2) + Math.pow(pts[k].y - pts[k - 1].y, 2)));
+    var tot = acc[acc.length - 1] || 1, d = clamp(e) * tot;
+    for (k = 1; k < pts.length - 1 && acc[k] < d; k++);
+    var a = pts[k - 1], b = pts[k], u = clamp((d - acc[k - 1]) / ((acc[k] - acc[k - 1]) || 1));
+    return { x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u), dx: b.x - a.x, dy: b.y - a.y, len: tot };
+  }
+  function inOutSine(x) { return -(Math.cos(Math.PI * x) - 1) / 2; }
+
+  function bubHide() { U.bub.on = false; ubub.classList.remove('is-on'); }
+  // Anchos que se prueban para la burbuja, según el lugar libre al lado de Ulises. Junto al teléfono
+  // se prueba además el hueco entero entre el vidrio y el borde de la ventana, que en una compu angosta
+  // puede medir menos de 150 px. Sobre el panel del QR se prueban el hueco a la derecha de Ulises y el
+  // de su izquierda, hasta el vidrio, porque en una compu baja no hay lugar encima de él y una burbuja
+  // más ancha y más baja cabe a su lado.
+  function bubWidths() {
+    var p = spotXY(U.spot), s = U.s, G = glassBox();
+    if (!L.wide) return [Math.round(Math.max(120, Math.min(250, L.vw - 12 - (rigBox().right + 2))))];
+    if (U.spot.kind !== 'qr') {
+      var side = U.spot.side === 'r', w0 = [Math.round(Math.max(150, Math.min(250, side ? L.vw - 12 - (p.x - s * 0.35) : p.x + s * 0.35 - 12)))];
+      var gap = Math.floor(Math.min(250, side ? L.vw - 8 - (G.right + 8) : G.left - 8 - 8));
+      if (gap >= 96 && gap < w0[0]) w0.push(gap);
+      return w0;
+    }
+    var out = s / 2 + 12, ws = [250];
+    [L.vw - 8 - (p.x + out), p.x - out - (G.right + 8)].forEach(function (v) {
+      v = Math.floor(Math.min(250, v));
+      if (v >= 150 && ws.indexOf(v) < 0) ws.push(v);
+    });
+    return ws;
+  }
+  function rectOf(el, pad) {
+    var r = el.getBoundingClientRect(); pad = pad || 0;
+    return { l: r.left - pad, t: r.top - pad, r: r.right + pad, b: r.bottom + pad };
+  }
+  function overlap(a, b) {
+    var w = Math.min(a.r, b.r) - Math.max(a.l, b.l), h = Math.min(a.b, b.b) - Math.max(a.t, b.t);
+    return w > 0 && h > 0 ? w * h : 0;
+  }
+  // Mejor lugar para una burbuja de [w] x [h] junto a Ulises. Prueba arriba, abajo y a los lados, hacia
+  // el lado libre, y se queda con el primer lugar que cabe en la ventana (en el celular, dentro del
+  // escenario) sin pisar nada, o si no con el que menos pisa. La pantalla del teléfono pesa cien veces
+  // más que el resto, así que la burbuja nunca la pisa si hay otro lugar, y el código QR pesa diez
+  // veces más que el borde de su panel. También evita el texto activo y el botón de pausa. Con [keep],
+  // el lugar elegido antes se mantiene mientras siga libre.
+  function bubBest(w, h, keep) {
+    var p = spotXY(U.spot), s = U.s, G = glassBox();
+    var sr = stage.getBoundingClientRect();
+    var lo = { l: 8, r: L.vw - 8, t: L.navH + 6, b: L.wide ? L.vh - 6 : sr.bottom - 4 };
+    var obs = [{ l: G.left - 6, t: G.top - 6, r: G.right + 6, b: G.bottom + 6, wt: 100 }];
+    if (L.wide) {
+      var cp = U.idx > 0 ? copies[U.idx] : hero;
+      if (cp && (U.idx > 0 || parseFloat(hero.style.opacity || '1') > 0.2)) { var rr = restRect(cp); obs.push({ l: rr.left - 10, t: rr.top - 10, r: rr.right + 10, b: rr.bottom + 10, wt: 1 }); }
+      if (stage.classList.contains('is-install') && qrEl) {
+        var qo = rectOf(qrEl, 6); qo.wt = 1; obs.push(qo);
+        if (qrImg) { var qi = rectOf(qrImg, 4); qi.wt = 10; obs.push(qi); }
+      }
+    } else if (pauseSt) { var ps = rectOf(pauseSt, 6); ps.wt = 1; obs.push(ps); }
+    obs.push({ l: p.x - s / 2, t: p.y - s / 2, r: p.x + s / 2, b: p.y + s / 2, wt: 1 });
+    var out = s / 2 + 12, dir = U.spot.kind === 'qr' ? 0 : U.spot.side === 'r' ? 1 : -1;
+    var ax = dir > 0 ? p.x - s * 0.35 : dir < 0 ? p.x + s * 0.35 - w : p.x - w / 2;
+    var cands = {
+      a: { l: ax, t: p.y - out - h, tail: 'b' },
+      d: { l: ax, t: p.y + out, tail: 't' },
+      s: dir >= 0 ? { l: p.x + out, t: p.y - h / 2, tail: 'l' } : { l: p.x - out - w, t: p.y - h / 2, tail: 'r' },
+      o: dir >= 0 ? { l: p.x - out - w, t: p.y - h / 2, tail: 'r' } : { l: p.x + out, t: p.y - h / 2, tail: 'l' }
+    };
+    var order = !L.wide && U.spot.fy < 0.5 ? ['d', 'a', 's'] : ['a', 'd', 's', 'o'];
+    // [hard] es lo que la burbuja nunca debe hacer, pisar el vidrio o, en la compu, salirse de la
+    // ventana. Si el mejor lugar lo hace, la burbuja no se muestra.
+    var GX = { l: G.left, t: G.top, r: G.right, b: G.bottom };
+    function cost(c) {
+      var box = { l: c.l, t: c.t, r: c.l + w, b: c.t + h }, k = 0, outA = w * h - overlap(box, lo);
+      obs.forEach(function (o) { k += o.wt * overlap(box, o); });
+      // En la compu, salirse de la ventana pesa veinte veces, más que rozar el borde del panel del QR.
+      k += (L.wide ? 20 : 2) * outA;
+      c.hard = overlap(box, GX) + (L.wide ? outA : 0);
+      return k;
+    }
+    // Se corre a lo largo de su borde para caber, sin que la cola deje de apuntar a Ulises. Prueba el
+    // lugar centrado y los dos extremos del recorrido, y se queda con el que menos pisa.
+    function fit(name) {
+      var c = cands[name], hz = c.tail === 'b' || c.tail === 't', key = hz ? 'l' : 't';
+      var a = hz ? Math.max(lo.l, p.x - w + 18) : Math.max(lo.t, p.y - h + 16);
+      var z = hz ? Math.min(lo.r - w, p.x - 18) : Math.min(lo.b - h, p.y - 16);
+      var vs = [clamp(c[key], a, z)];
+      if (a <= z) vs.push(a, z);
+      var best = null;
+      vs.forEach(function (v) {
+        var q = { n: name, l: c.l, t: c.t, tail: c.tail };
+        q[key] = v;
+        q.k = cost(q);
+        if (!best || q.k < best.k - 1) best = q;
+      });
+      return best;
+    }
+    if (keep && cands[keep]) { var kept = fit(keep); if (kept.k < 1) return kept; }
+    var best = null;
+    for (var i = 0; i < order.length; i++) {
+      var q = fit(order[i]);
+      if (!best || q.k < best.k) best = q;
+      if (q.k < 1) break;
+    }
+    return best;
+  }
+  function bubPlace() {
+    var b = U.bub, p = spotXY(U.spot), w = b.w, h = b.h, best = bubBest(w, h, b.cand);
+    b.cand = best.n;
+    // Si ni el mejor lugar evita el vidrio y el borde de la ventana, la burbuja espera oculta, sin
+    // desplazar nada, hasta que haya lugar. Lo que dice Ulises sigue en el texto (.udice).
+    ubub.classList.toggle('no-cabe', best.hard > 0.5);
+    // Se ubica con translate y no con left y top, así cambiar de lugar no cuenta como desplazamiento
+    // de diseño (CLS), ni siquiera con movimiento reducido, cuando cambia de texto y de lugar en el
+    // mismo cuadro sin dejar de verse.
+    if (HAS_TRANSLATE) ubub.style.translate = f(best.l) + 'px ' + f(best.t) + 'px';
+    else { ubub.style.left = f(best.l) + 'px'; ubub.style.top = f(best.t) + 'px'; }
+    var tx = clamp(p.x - best.l, 18, w - 18), ty = clamp(p.y - best.t, 16, h - 16), tl = best.tail;
+    ubub.setAttribute('data-tail', tl);
+    ubub.style.setProperty('--tx', f(tx) + 'px');
+    ubub.style.setProperty('--ty', f(ty) + 'px');
+    // La cola sale de la esquina de arriba a la izquierda y llega a su lado con translate, en el mismo
+    // lugar que le darían left, top, right y bottom, así cambiar de lado no suma CLS.
+    ubub.style.setProperty('--px', f(tl === 'l' ? -7 : tl === 'r' ? w - 7 : tx - 6) + 'px');
+    ubub.style.setProperty('--py', f(tl === 't' ? -7 : tl === 'b' ? h - 7 : ty - 6) + 'px');
+  }
+  // Mide la burbuja con cada ancho posible y se queda con el que mejor cabe. Ante un empate gana el
+  // primero, el más ancho. En la compu, si ninguno cabe libre, prueba además una burbuja compacta,
+  // con letra de 13,5 px, que en una compu baja cabe entre la barra y el panel del QR, o en una
+  // angosta, entre el teléfono y el borde de la ventana.
+  function bubFit() {
+    var ws = bubWidths(), best = null, bw = 0, bh = 0, bm = ws[0], bc = false;
+    [false, true].forEach(function (compact) {
+      // En un hueco de menos de 140 px, la compacta gana si cabe libre, porque lleva menos renglones.
+      var narrow = best && bw < 140;
+      if (compact && (!L.wide || (best.k < 1 && !narrow))) return;
+      ubub.classList.toggle('is-compact', compact);
+      ws.forEach(function (mw) {
+        ubub.style.maxWidth = mw + 'px';
+        var w = ubub.offsetWidth, h = ubub.offsetHeight, q = bubBest(w, h, null);
+        var ok = q.hard <= 0.5, bok = best && best.hard <= 0.5;
+        if (!best || (ok !== bok ? ok : q.k < best.k - 1 || (compact && narrow && q.k < 1))) { best = q; bw = w; bh = h; bm = mw; bc = compact; }
+      });
+    });
+    ubub.classList.toggle('is-compact', bc);
+    ubub.style.maxWidth = bm + 'px';
+    U.bub.w = bw; U.bub.h = bh; U.bub.cand = best.n;
+  }
+  function bubShow(ts) {
+    var txt = uliText(U.idx);
+    if (!txt) return;
+    ubT.textContent = txt;
+    bubFit();
+    instant(ubub, bubPlace);
+    U.bub.on = true;
+    ubub.classList.add('is-on');
+    U.talk = ts;
+  }
+  function uliGo(ts, jump) {
+    bubHide();
+    var B = spotXY(U.spot);
+    if (jump || reduce || still) {
+      U.fl = null; U.x = B.x; U.y = B.y; U.land = -1e9; U.showAt = ts; U.face = restFace();
+      return;
+    }
+    var A = { x: U.x, y: U.y }, len = along(pathPts(A, B), 1).len;
+    U.fl = { t0: ts, dur: clamp(380 + len * 0.55, 650, 1300), A: A };
+    U.showAt = 1e15;
+  }
+  // Al pausar a mitad de un vuelo, Ulises llega de una vez.
+  function uliStill() { if (still && U.fl) { U.fl = null; U.land = -1e9; U.showAt = 0; U.face = restFace(); } }
+  function uliOff() { uli.classList.remove('is-on'); bubHide(); }
+
+  // Dibuja a Ulises en el instante [ts] para el paso [idx]. Devuelve si sigue en movimiento.
+  var LKX = [0, 0.2, 0.48, 0.74, 1], LSX = [1, 1.16, 0.95, 1.03, 1], LSY = [1, 0.8, 1.08, 0.98, 1], LDY = [0, 0, -0.11, 0, 0];
+  function renderUli(ts, idx) {
+    if (!L.rig) { if (U.ok || uli.classList.contains('is-on')) uliOff(); U.ok = false; return false; }
+    U.s = uliSize();
+    if (!U.ok) {
+      if (introStart === null) return false;
+      var wait = introStart + NATIVE + INTRO_END[variant] + ARRIVE - ts;
+      if (!reduce && wait > 0) return true;
+      U.ok = true; U.mode = L.mode; U.idx = idx; U.spot = spotOf(idx);
+      var B0 = spotXY(U.spot);
+      // Llega volando desde arriba a la derecha, por fuera del teléfono.
+      U.x = L.vw + U.s; U.y = B0.y - (L.wide ? 220 : 90); U.face = -1;
+      uliGo(ts, false);
+    }
+    if (U.mode !== L.mode) { U.mode = L.mode; U.idx = idx; U.spot = spotOf(idx); uliGo(ts, true); }
+    if (idx !== U.idx) {
+      U.idx = idx;
+      var sp = spotOf(idx), nb = spotXY(sp);
+      if (Math.abs(nb.x - U.x) + Math.abs(nb.y - U.y) < 48) sp = altSpot(sp);
+      U.spot = sp;
+      uliGo(ts, false);
+    }
+    var x, y, rot = 0, sx = 1, sy = 1, busy = false;
+    if (U.fl) {
+      var pr = clamp((ts - U.fl.t0) / U.fl.dur), q = along(pathPts(U.fl.A, spotXY(U.spot)), inOutSine(pr));
+      var env = Math.sin(Math.PI * pr), flap = Math.abs(Math.sin(pr * Math.PI * 5)), ln = Math.sqrt(q.dx * q.dx + q.dy * q.dy) || 1;
+      x = q.x; y = q.y - 3 * Math.sin(pr * Math.PI * 10) * env;
+      if (Math.abs(q.dx) > 0.5) U.face = q.dx > 0 ? 1 : -1;
+      rot = 14 * (q.dx / ln) * env;
+      sy = 1 - 0.1 * flap * env; sx = 1 + 0.04 * flap * env;
+      busy = true;
+      if (pr >= 1) { U.fl = null; U.land = ts; U.showAt = ts + BUB_DELAY; U.face = restFace(); }
+    } else {
+      var B = spotXY(U.spot);
+      x = B.x; y = B.y; U.face = restFace();
+      // Rebote al posarse, con compresión contra el canto, estiramiento y asiento.
+      var lp = (ts - U.land) / LAND;
+      if (lp >= 0 && lp < 1) {
+        var i = 0;
+        while (i < LKX.length - 2 && lp > LKX[i + 1]) i++;
+        var qq = inOutSine(clamp((lp - LKX[i]) / (LKX[i + 1] - LKX[i])));
+        sx = lerp(LSX[i], LSX[i + 1], qq); sy = lerp(LSY[i], LSY[i + 1], qq); y += lerp(LDY[i], LDY[i + 1], qq) * U.s;
+        busy = true;
+      }
+      // Habla con un leve asentimiento cuando aparece su burbuja, salvo con movimiento reducido o con
+      // las animaciones en pausa.
+      var tp = reduce || still ? -1 : (ts - U.talk) / TALK;
+      if (tp >= 0 && tp < 1) { var s1 = Math.sin(Math.PI * tp); sx *= 1 + 0.06 * s1; sy *= 1 + 0.06 * s1; rot = -6 * s1 * U.face; busy = true; }
+      if (!U.bub.on && U.showAt < 1e15) { if (ts >= U.showAt) bubShow(ts); else busy = true; }
+    }
+    U.x = x; U.y = y;
+    // Al final de la página el escenario sube y Ulises se va con él.
+    var R = rigBox(), vis = R.top > L.navH - 36 && R.bottom > L.navH + 80;
+    uli.style.setProperty('--us', U.s + 'px');
+    uli.style.transform = 'translate(' + f(x - U.s / 2) + 'px,' + f(y - U.s / 2) + 'px)';
+    uliF.style.transform = 'rotate(' + f(rot) + 'deg) scale(' + (sx * U.face).toFixed(3) + ',' + sy.toFixed(3) + ')';
+    uli.classList.toggle('is-on', vis);
+    ubub.classList.toggle('is-hid', !vis);
+    if (U.bub.on) bubPlace();
+    return busy;
+  }
+
+  /* ---------- Portada, salida del splash y cuadro a cuadro ---------- */
   var S2 = { idx: -1 };
   // La salida del splash empieza una sola vez. En la compu, al bajar un poco («Baja y la app se
   // abre»); en el celular, sola al terminar la intro y su pausa, o antes si se baja. Bajar nunca
@@ -1242,6 +1599,7 @@
     return reduce ? 1 : seg(ts - EX.t0, 0, EXIT_DUR[variant]);
   }
 
+  var uliBusy = false;
   function update(ts) {
     var y = win.pageYOffset, p = splashProgress(ts, y), idx = 0;
     if (L.rig) {
@@ -1281,6 +1639,7 @@
       setScreen('malla', false);
       leaderOff();
     }
+    uliBusy = renderUli(ts, idx);
     renderFx(ts, p);
     return p;
   }
@@ -1289,7 +1648,7 @@
   function requestRender() { if (!pending) { pending = true; win.requestAnimationFrame(frame); } }
   function frame(ts) {
     pending = false;
-    var p = update(ts), busy = false;
+    var p = update(ts), busy = uliBusy;
     // Sigue pidiendo cuadros mientras corre la intro, la salida o la espera en bucle del logo. La
     // espera se detiene con las animaciones en pausa, salvo en el celular, donde la salida llega sola.
     if (introStart !== null && !reduce && p < 1) {
@@ -1302,12 +1661,12 @@
     if (introStart !== null) return;
     introStart = now();
     requestRender();
-    // Con movimiento reducido no hay cuadros seguidos. La app entra a su hora.
+    // Con movimiento reducido no hay cuadros seguidos. La app y Ulises entran a su hora.
     if (reduce) setTimeout(requestRender, NATIVE + 760);
   }
 
   /* ---------- Arranque ---------- */
-  var remeasure = function () { measure(); requestRender(); };
+  var remeasure = function () { measure(); U.bub.cand = null; if (U.bub.on && U.spot && L.rig) bubFit(); requestRender(); };
   win.addEventListener('scroll', requestRender, { passive: true });
   win.addEventListener('resize', remeasure);
   win.addEventListener('load', remeasure);

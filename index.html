@@ -277,7 +277,17 @@
     </button>
   </div>
 
-  <section class="hero" id="hero" aria-labelledby="titulo">
+  <!-- Ulises acompaña el recorrido junto al teléfono. Lo que dice también está en el texto de cada
+       paso para los lectores de pantalla, así que el dibujo y su burbuja van ocultos. -->
+  <div class="uli" id="uli" aria-hidden="true">
+    <div class="uli-f"><div class="uli-o"><div class="uli-i">
+      <img src="assets/ulises-96.webp" srcset="assets/ulises-96.webp 96w, assets/ulises-192.webp 192w" sizes="72px" width="72" height="72" alt="" decoding="async">
+      <i class="uli-lid"></i>
+    </div></div></div>
+  </div>
+  <div class="ubub" id="ubub" aria-hidden="true"><p class="ub-t"></p></div>
+
+  <section class="hero" id="hero" aria-labelledby="titulo" data-uli="¡Craa! Hola, soy Ulises. Te muestro la app, pantalla por pantalla." data-uli-c="¡Craa! Hola, soy Ulises. Baja y te muestro la app, pantalla por pantalla.">
     <p class="lockup" aria-hidden="true"><svg class="lk-star"><use href="#star"/></svg><span class="lk-wm">ULIMA<span class="lk-pp"><i>+</i><i>+</i></span></span></p>
     <p class="eyebrow">App para alumnos de la Universidad de Lima</p>
     <h1 id="titulo">Todo tu ciclo <span>en una sola app.</span></h1>
@@ -292,6 +302,7 @@
       <p><strong>¿Estás en la compu?</strong> Escanea el código con la cámara de tu celular y la descarga empieza ahí.</p>
     </div>
     <p class="note"><strong>Proyecto académico de alumnos.</strong> ULima++ no es una app oficial de la Universidad de Lima.</p>
+    <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">¡Craa! Hola, soy Ulises. Te muestro la app, pantalla por pantalla.</span></span></p>
   </section>
 
   <section class="story" aria-label="Qué hace ULima++">
@@ -305,11 +316,12 @@
         </button>
       </div>
 
-      <article class="step" id="funciones" data-screen="malla-mapa" data-side="r" data-beats="malla: 263.8 112 110.2 31 ~b | 10 88 370 99 ~b | *4 268.1 116 395.6 ~b =1.6 | *136 268.1 116 315.2 ~b =1.7 | *268 268.1 116 74 ~n =1.7, 268 509.3 116 74 ~b =1.7">
+      <article class="step" id="funciones" data-screen="malla-mapa" data-uli="Los colores te dicen qué aprobaste, qué cursas y qué ya puedes llevar." data-side="r" data-beats="malla: 263.8 112 110.2 31 ~b | 10 88 370 99 ~b | *4 268.1 116 395.6 ~b =1.6 | *136 268.1 116 315.2 ~b =1.7 | *268 268.1 116 74 ~n =1.7, 268 509.3 116 74 ~b =1.7">
         <div class="copy">
           <p class="eyebrow">Malla › Vista mapa</p>
           <h2>Tu avance real, curso por curso.</h2>
           <p>En tu malla, <span class="hl-f" data-b="0">el botón «Vista mapa»</span> abre el mapa de toda la carrera. <span class="hl-f" data-b="1">Arriba suma tu avance</span> y cada curso se pinta según su estado, <span class="hl-f" data-b="2" style="--mk: #10B981">en verde los que ya aprobaste</span>, <span class="hl-f" data-b="3" style="--mk: #F59E0B">en ámbar los que llevas este ciclo</span> y <span class="hl-f" data-b="4" style="--mk: #0EA5E9">en azul los que ya tienes disponibles</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Los colores te dicen qué aprobaste, qué cursas y qué ya puedes llevar.</span></span></p>
         </div>
         <figure class="shot" data-scr="malla-mapa">
           <div class="glass" data-hb="oc">
@@ -320,11 +332,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="horario" data-side="l" data-beats="*66 307.5 310 64.5 ~n, 334.7 311.5 37.3 11 | 102 194 186.1 29 | bloque-cruce: 40 322 310 208 28 | *66 540.3 310 97.8 ~b">
+      <article class="step" data-screen="horario" data-uli="Tus prácticas van en tu horario, y si un bloque choca con una clase, la app te avisa." data-side="l" data-beats="*66 307.5 310 64.5 ~n, 334.7 311.5 37.3 11 | 102 194 186.1 29 | bloque-cruce: 40 322 310 208 28 | *66 540.3 310 97.8 ~b">
         <div class="copy">
           <p class="eyebrow">Pestaña Horario</p>
           <h2>Tus clases y lo que haces fuera de ellas.</h2>
           <p>El horario del día trae tus clases con su aula y <span class="hl-f" data-b="0">marca tus evaluaciones</span>. Arriba ves <span class="hl-f" data-b="1">cuántas horas suman tus bloques en la semana</span>. <span class="hl-f" data-b="2">Si uno se cruza con una clase, la app te avisa</span> al guardarlo, y <span class="hl-f" data-b="3">cada bloque propio, como las prácticas</span>, aparece en su franja del día.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Tus prácticas van en tu horario, y si un bloque choca con una clase, la app te avisa.</span></span></p>
         </div>
         <figure class="shot" data-scr="horario">
           <div class="glass" data-hb="cc">
@@ -335,11 +348,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="mis-bloques" data-side="r" data-beats="16 92 358 101 ~b | horario-hoja: 0 660 390 56 | *horario-cancelado: 66 540.3 310 97.8 ~n, 132 572 178 35, 0 722 390 48 ~n">
+      <article class="step" data-screen="mis-bloques" data-uli="¿Un día no puedes ir? Cancelas solo ese día y el bloque sigue." data-side="r" data-beats="16 92 358 101 ~b | horario-hoja: 0 660 390 56 | *horario-cancelado: 66 540.3 310 97.8 ~n, 132 572 178 35, 0 722 390 48 ~n">
         <div class="copy">
           <p class="eyebrow">Horario › Mis bloques</p>
           <h2>Todos tus bloques en una lista.</h2>
           <p>En «Mis bloques» ves <span class="hl-f" data-b="0">cada bloque con sus días, su hora y sus fechas</span>, y lo editas o lo borras cuando cambia tu semana. Si un día no vas, <span class="hl-f" data-b="1">lo tocas en el horario y cancelas solo ese día</span>, que <span class="hl-f" data-b="2">queda marcado como cancelado</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">¿Un día no puedes ir? Cancelas solo ese día y el bloque sigue.</span></span></p>
         </div>
         <figure class="shot" data-scr="mis-bloques">
           <div class="glass" data-hb="oc">
@@ -350,11 +364,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="calculadora" data-side="l" data-beats="*51 465 288 142 =1.25 @269.1 486 52.9 24 | 30 192 206.4 45 ~b =1.25:1.7 | mis-notas: 16 92 358 70 ~b | mis-notas: 29 251 332 233 ~b | calculadora-hoja: 24 519 342 50 ~b, 24 589 342 59 ~n | calculadora-hoja: 24 696 342 52 ~b | *calculadora-final: 36 281 318 174, 51 465 288 142 ~n">
+      <article class="step" data-screen="calculadora" data-uli="Tus notas de la ULima ya cuentan en tu promedio. Anota la que esperas." data-side="l" data-beats="*51 465 288 142 =1.25 @269.1 486 52.9 24 | 30 192 206.4 45 ~b =1.25:1.7 | mis-notas: 16 92 358 70 ~b | mis-notas: 29 251 332 233 ~b | calculadora-hoja: 24 519 342 50 ~b, 24 589 342 59 ~n | calculadora-hoja: 24 696 342 52 ~b | *calculadora-final: 36 281 318 174, 51 465 288 142 ~n">
         <div class="copy">
           <p class="eyebrow">Pestaña Notas</p>
           <h2>Tu promedio, calculado al instante.</h2>
           <p>En la calculadora, <span class="hl-f" data-b="0 6">las notas que ya publicó la ULima llevan la marca «ULima»</span> y cuentan en tu promedio. <span class="hl-f" data-b="1">La fila «Notas oficiales» dice cuándo se leyeron</span>. Ahí <span class="hl-f" data-b="2">las actualizas</span> y <span class="hl-f" data-b="3">ves cada evaluación con su semana y su peso</span>. Para lo que falta, <span class="hl-f" data-b="4">eliges la evaluación del sílabo, con su peso</span>, <span class="hl-f" data-b="5">anotas la nota que esperas</span> y <span class="hl-f" data-b="6">ves tu promedio al momento</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Tus notas de la ULima ya cuentan en tu promedio. Anota la que esperas.</span></span></p>
         </div>
         <figure class="shot" data-scr="calculadora">
           <div class="glass" data-hb="cc">
@@ -365,11 +380,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="alertas" data-side="r" data-beats="*16 92 358 200 ~b | *16 304 358 138 ~b">
+      <article class="step" data-screen="alertas" data-uli="Si tu promedio peligra o se juntan evaluaciones, te llega un aviso." data-side="r" data-beats="*16 92 358 200 ~b | *16 304 358 138 ~b">
         <div class="copy">
           <p class="eyebrow">Buzón de alertas</p>
           <h2>Un aviso a tiempo, antes del susto.</h2>
           <p>ULima++ te avisa <span class="hl-f" data-b="0">cuando tu promedio de un curso entra en riesgo</span> y <span class="hl-f" data-b="1">cuando se te juntan varias evaluaciones en la misma semana</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Si tu promedio peligra o se juntan evaluaciones, te llega un aviso.</span></span></p>
         </div>
         <figure class="shot" data-scr="alertas">
           <div class="glass" data-hb="oc">
@@ -380,11 +396,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="record" data-side="l" data-beats="16 92 358 126 ~b | *16 305 358 462 ~b">
+      <article class="step" data-screen="record" data-uli="Tu promedio ponderado acumulado y las notas de cada ciclo, traídos de miUlima." data-side="l" data-beats="16 92 358 126 ~b | *16 305 358 462 ~b">
         <div class="copy">
           <p class="eyebrow">Perfil › Mi récord académico</p>
           <h2>Tu récord, traído de miUlima.</h2>
           <p>Sincronizas con el portal una vez y tienes a la mano <span class="hl-f" data-b="0">tu promedio ponderado acumulado</span> y <span class="hl-f" data-b="1">las notas de cada ciclo, curso por curso</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Tu promedio ponderado acumulado y las notas de cada ciclo, traídos de miUlima.</span></span></p>
         </div>
         <figure class="shot" data-scr="record">
           <div class="glass" data-hb="oc">
@@ -395,11 +412,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="curso-anuncios" data-side="r" data-beats="0 146 390 284 ~n, 16 515 358 177 | curso-asesorias: 16 515 358 304 | *curso-asesorias-ok: 16 673 358 146 ~n, 32.5 762.5 162.1 40 20 | *curso-asesorias-ok: 212.3 102 157.7 40 20 ~b">
+      <article class="step" data-screen="curso-anuncios" data-uli="¿Vas a la asesoría? Confírmalo con «Asistiré». Arriba tienes el chat del curso." data-side="r" data-beats="0 146 390 284 ~n, 16 515 358 177 | curso-asesorias: 16 515 358 304 | *curso-asesorias-ok: 16 673 358 146 ~n, 32.5 762.5 162.1 40 20 | *curso-asesorias-ok: 212.3 102 157.7 40 20 ~b">
         <div class="copy">
           <p class="eyebrow">Dentro de cada curso</p>
           <h2>Anuncios y asesorías de tu sección.</h2>
           <p>Cada curso reúne <span class="hl-f" data-b="0">tu asistencia, que actualizas desde la ULima</span>, <span class="hl-f" data-b="0">los anuncios que publican tus delegados</span>, <span class="hl-f" data-b="1">las asesorías</span> y los contactos de la sección. Si vas a una asesoría, <span class="hl-f" data-b="2">la confirmas ahí mismo</span>, y <span class="hl-f" data-b="3">el botón de arriba te lleva al chat del curso</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">¿Vas a la asesoría? Confírmalo con «Asistiré». Arriba tienes el chat del curso.</span></span></p>
         </div>
         <figure class="shot" data-scr="curso-anuncios">
           <div class="glass" data-hb="oc">
@@ -410,11 +428,12 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="chats" data-side="l" data-beats="chats: 16 114 358 74 ~b | chat-seccion: 8 129 291.7 77, 8 527 294 146 ~n, 86.3 396 295.7 34 ~b | *chat-borrar: 55 332.5 280 187 28 | *chat-borrado: 191.3 402 190.7 37 ~b">
+      <article class="step" data-screen="chats" data-uli="Hablas con tu sección, tus delegados y tu profe sin pasar tu número." data-side="l" data-beats="chats: 16 114 358 74 ~b | chat-seccion: 8 129 291.7 77, 8 527 294 146 ~n, 86.3 396 295.7 34 ~b | *chat-borrar: 55 332.5 280 187 28 | *chat-borrado: 191.3 402 190.7 37 ~b">
         <div class="copy">
           <p class="eyebrow">Chats › Tu sección</p>
           <h2>El chat de tu sección, sin pasar tu número.</h2>
           <p><span class="hl-f" data-b="0">Cada sección tiene su propio chat</span>, con sus alumnos, <span class="hl-f" data-b="1">sus delegados y su profesor</span>. <span class="hl-f" data-b="1">Si te equivocas</span>, <span class="hl-f" data-b="2">borras tu mensaje para todos</span> y <span class="hl-f" data-b="3">el chat muestra que lo eliminaste</span>.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Hablas con tu sección, tus delegados y tu profe sin pasar tu número.</span></span></p>
         </div>
         <figure class="shot" data-scr="chat-seccion">
           <div class="glass" data-hb="oc">
@@ -425,12 +444,13 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="ulises" data-side="r" data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^369 759 | *ulises: 46 453 319.8 278 ~o">
+      <article class="step" data-screen="ulises" data-uli="Ese soy yo. Pregúntame por tu horario, tus evaluaciones o tus bloques." data-side="r" data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^369 759 | *ulises: 46 453 319.8 278 ~o">
         <div class="copy">
           <p class="eyebrow">Ulises, el asistente</p>
           <h2>Pregúntale a Ulises.</h2>
           <p><span class="hl-f" data-b="0">Toca al cuervo de la esquina</span> y se abre ULimaBot, el asistente con inteligencia artificial que te responde sobre tu horario, tus evaluaciones, <span class="hl-f" data-b="1">los delegados de tus secciones</span> y <span class="hl-f" data-b="2">tus bloques, y hasta te sugiere cuándo repasar</span>.</p>
           <p class="soon"><b>Nuevo</b><span>El test de especialidad, conversando con Ulises.</span></p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Ese soy yo. Pregúntame por tu horario, tus evaluaciones o tus bloques.</span></span></p>
         </div>
         <figure class="shot" data-scr="ulises">
           <div class="glass" data-hb="oc">
@@ -441,13 +461,14 @@
         </figure>
       </article>
 
-      <article class="step step-install" id="instalar" data-screen="sys1" data-side="l" data-install data-beats="44 318 186 48 ~b | *16 646 358 112">
+      <article class="step step-install" id="instalar" data-screen="sys1" data-uli="Por ahora es solo para Android, y siempre descargas la última versión." data-side="l" data-install data-beats="44 318 186 48 ~b | *16 646 358 112">
         <div class="copy">
           <p class="eyebrow">Instalación · solo Android por ahora</p>
           <h2><span class="num" aria-hidden="true">1</span><span class="vh">Paso 1. </span>Descarga el APK.</h2>
           <p>Abre esta página en tu celular Android y <span class="hl-f" data-b="0">toca el botón</span>. <span class="hl-f" data-b="1">El enlace siempre baja la última versión</span>.</p>
           <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
           <p class="meta">Android · <b data-build>Build 76</b> · <span data-size>72,1 MB</span> · <span data-date>26 de septiembre de 2026</span></p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Por ahora es solo para Android, y siempre descargas la última versión.</span></span></p>
         </div>
         <figure class="shot" data-scr="sys1">
           <div class="glass" data-hb="oc" data-sb="oc">
@@ -479,11 +500,12 @@
         </figure>
       </article>
 
-      <article class="step step-install" data-screen="sys2" data-side="l" data-install data-beats="16 236 358 76">
+      <article class="step step-install" data-screen="sys2" data-uli="Es normal que Android pida este permiso la primera vez." data-side="l" data-install data-beats="16 236 358 76">
         <div class="copy">
           <p class="eyebrow">Instalación</p>
           <h2><span class="num" aria-hidden="true">2</span><span class="vh">Paso 2. </span>Permite la instalación.</h2>
           <p>Al abrir el archivo, Android te pide permiso la primera vez. Entra a la configuración que te muestra y activa <span class="hl-f" data-b="0">«Permitir desde esta fuente»</span> para el navegador que usaste.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">Es normal que Android pida este permiso la primera vez.</span></span></p>
         </div>
         <figure class="shot" data-scr="sys2">
           <div class="glass" data-hb="oc" data-sb="oc">
@@ -510,12 +532,13 @@
         </figure>
       </article>
 
-      <article class="step step-install step-last" data-screen="bienvenida" data-side="l" data-install data-beats="*50 326 271.2 277 | 22 692 346 110 | bienvenida-login: 12 708 366 48 | bienvenida-login: 8 267 314.8 60 ~n, 6 590 378 84 | *bienvenida-contrasena: 8 377 253.7 41 ~n, 6 572 378 142">
+      <article class="step step-install step-last" data-screen="bienvenida" data-uli="El del chat también soy yo. Te pido tu contraseña y entras." data-side="l" data-install data-beats="*50 326 271.2 277 | 22 692 346 110 | bienvenida-login: 12 708 366 48 | bienvenida-login: 8 267 314.8 60 ~n, 6 590 378 84 | *bienvenida-contrasena: 8 377 253.7 41 ~n, 6 572 378 142">
         <div class="copy">
           <p class="eyebrow">Instalación</p>
           <h2><span class="num" aria-hidden="true">3</span><span class="vh">Paso 3. </span>Instala y entra.</h2>
           <p>Vuelve al archivo, toca «Instalar» y abre ULima++. <span class="hl-f" data-b="0">Ulises te recibe junto al logo y te pregunta si ya usas la app</span>. <span class="hl-f" data-b="1">Con «Sí, entrar»</span>, <span class="hl-f" data-b="2">entras con Google</span> o, en la misma conversación, <span class="hl-f" data-b="3">le das tu código</span> <span class="hl-f" data-b="4">y tu contraseña</span>. <span class="hl-f" data-b="1">Con «Soy nuevo»</span>, ahí mismo creas tu cuenta.</p>
           <p>Para actualizarla, descarga el APK otra vez desde esta página.</p>
+          <p class="udice"><img src="assets/ulises-96.webp" width="32" height="32" alt="" loading="lazy" decoding="async"><span><b>Ulises</b> <span class="ud-t">El del chat también soy yo. Te pido tu contraseña y entras.</span></span></p>
         </div>
         <figure class="shot" data-scr="bienvenida">
           <div class="glass" data-hb="cc" data-mk="bn">

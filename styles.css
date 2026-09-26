@@ -3,7 +3,7 @@
    Por defecto las secciones van apiladas (sin JS y en un celular apaisado).
    Con JS y 900 px o más, el teléfono queda fijo al centro y los textos pasan a su lado. En el
    celular y la tableta en vertical, el teléfono queda fijo arriba, más chico, y el texto de cada
-   paso sube por debajo. */
+   paso sube por debajo. Ulises acompaña el recorrido junto al teléfono. */
 
 /* ---------- Tokens ---------- */
 :root {
@@ -183,9 +183,9 @@ html:not(.js) .theme { display: none; }
 .js .pausa-fila { display: flex; justify-content: center; padding-top: 8px; }
 .js .pausa-fila .pausa { display: inline-flex; }
 
-/* En pausa se apaga lo que late o se repite, también el logo en reposo. */
+/* En pausa se apaga lo que late o se repite, también Ulises y el logo en reposo. */
 html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after,
-html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
+html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 
 /* ---------- Botones y textos comunes ---------- */
 .btn {
@@ -244,6 +244,13 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 .handoff strong { display: block; color: var(--ink); font-size: 14.5px; }
 .note { margin: 18px 0 0; max-width: 46ch; font-size: 14px; line-height: 1.45; color: var(--ink2); }
 .note strong { color: var(--ink); font-weight: 600; }
+
+/* Lo que dice Ulises en cada paso, dentro del texto. Se ve con las capturas apiladas y sin JS. Con
+   el teléfono fijo lo muestra su burbuja y aquí queda solo para los lectores de pantalla. */
+.udice { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; max-width: 46ch; font-size: 15px; line-height: 1.45; color: var(--ink2); }
+.copy .udice { margin-top: 14px; }
+.udice img { width: 32px; height: 32px; flex: none; border-radius: 50%; }
+.udice b { color: var(--ink); font-weight: 700; }
 
 /* ---------- Teléfono ---------- */
 .story { position: relative; }
@@ -466,7 +473,81 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 .shot.rv { opacity: 0; transform: translateY(28px) scale(.98); transition: opacity .6s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
 .shot.rv.in { opacity: 1; transform: none; }
 
-.cue, .qrpanel, .leader { display: none; }
+.cue, .qrpanel, .leader, .uli, .ubub { display: none; }
+
+/* ---------- Ulises ---------- */
+/* Ulises, con su imagen del chatbot, va en una capa fija encima de la página, así puede cruzar por
+   encima del teléfono y de la barra al cambiar de lado. El JS lo mueve con transform (.uli al lugar,
+   .uli-f para el giro, el aleteo y hacia dónde mira). En reposo respira con un leve vaivén (.uli-o)
+   y parpadea (.uli-lid, sobre su ojo). */
+.uli {
+  --us: 64px;
+  position: fixed; left: 0; top: 0; z-index: 45;
+  width: var(--us); height: var(--us);
+  pointer-events: none; opacity: 0; transition: opacity .25s ease;
+  will-change: transform;
+}
+.uli.is-on { opacity: 1; }
+.uli-f { width: 100%; height: 100%; transform-origin: 50% 70%; }
+.uli-o { width: 100%; height: 100%; transform-origin: 50% 85%; animation: uli-respira 3.8s ease-in-out infinite; }
+.uli-i {
+  position: relative; width: 100%; height: 100%; border-radius: 50%;
+  box-shadow: 0 10px 22px -8px rgba(60, 20, 0, .5), 0 0 0 2px color-mix(in srgb, var(--bg) 70%, transparent);
+}
+.uli-i img { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.uli-lid {
+  position: absolute; left: 37.6%; top: 31.8%; width: 11.2%; height: 13.4%;
+  border-radius: 50%; background: #212122;
+  transform: scaleY(0); transform-origin: 50% 0;
+  animation: uli-parpadea 5.4s linear infinite;
+}
+@keyframes uli-respira {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  50% { transform: translateY(-2.5%) rotate(-3deg) scale(1.03); }
+}
+@keyframes uli-parpadea {
+  0%, 90%, 100% { transform: scaleY(0); }
+  92%, 94% { transform: scaleY(1); }
+  96% { transform: scaleY(0); }
+}
+
+/* Burbuja de Ulises, con su cola hacia él. El JS la ubica en el lugar libre a su lado. */
+.ubub {
+  --tx: 24px; --ty: 20px;
+  position: fixed; left: 0; top: 0; z-index: 44;
+  width: max-content; max-width: 250px;
+  padding: 10px 14px 11px; border-radius: 18px;
+  background: var(--card); border: 1px solid var(--line);
+  box-shadow: 0 18px 40px -22px rgba(22, 22, 28, .55);
+  color: var(--ink); font: 500 15px/1.36 var(--sans);
+  pointer-events: none;
+  opacity: 0; transform: scale(.9); transform-origin: var(--tx) 100%;
+  transition: opacity .2s ease, transform .3s cubic-bezier(.2, .9, .25, 1.25);
+}
+.ubub[data-tail="t"] { transform-origin: var(--tx) 0; }
+.ubub[data-tail="l"] { transform-origin: 0 var(--ty); }
+.ubub[data-tail="r"] { transform-origin: 100% var(--ty); }
+.ubub.is-on { opacity: 1; transform: none; }
+.ubub.is-hid, .ubub.no-cabe { visibility: hidden; }
+/* Burbuja compacta, solo en la compu cuando la normal no cabe libre, como sobre el panel del QR en una
+   compu baja o en el hueco angosto junto al teléfono en la portada. */
+.ubub.is-compact { padding: 8px 12px 9px; font-size: 13.5px; line-height: 1.3; }
+.ub-t { margin: 0; text-wrap: pretty; }
+.ubub::before {
+  content: ""; position: absolute; width: 12px; height: 12px;
+  background: var(--card); border: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.ubub[data-tail="b"]::before { left: calc(var(--tx) - 6px); bottom: -7px; border-top: 0; border-left: 0; }
+.ubub[data-tail="t"]::before { left: calc(var(--tx) - 6px); top: -7px; border-bottom: 0; border-right: 0; }
+.ubub[data-tail="l"]::before { top: calc(var(--ty) - 6px); left: -7px; border-top: 0; border-right: 0; }
+.ubub[data-tail="r"]::before { top: calc(var(--ty) - 6px); right: -7px; border-bottom: 0; border-left: 0; }
+/* Donde se puede, la cola queda anclada en la esquina de arriba a la izquierda y el JS la lleva a su
+   lado solo con translate (--px y --py), así ni moverla ni cambiarla de lado suman desplazamientos de
+   diseño (CLS). */
+@supports (translate: 1px) {
+  .ubub[data-tail]::before { left: 0; top: 0; right: auto; bottom: auto; translate: var(--px, 0px) var(--py, 0px); }
+}
 
 /* ---------- Pasos (modo apilado) ---------- */
 .steps { max-width: 980px; margin: 0 auto; padding: 0 var(--gutter); }
@@ -592,10 +673,11 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
      0,2 s y encima de la que sale, que espera entera debajo. Así las dos no se ven a medias a la vez. */
   .js .glass.cf .scr { transform: none; transition: opacity 0s linear .2s, visibility 0s linear .2s; }
   .js .glass.cf .scr.is-on { transition: opacity .2s ease, visibility 0s; }
-  .js .shot {
+  .js .shot, .js .udice {
     position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
     overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; box-shadow: none;
   }
+  .js .uli, .js .ubub { display: block; }
 }
 
 /* ---------- Scrollytelling, con JS, 900 px o más de ancho y 560 px o más de alto ---------- */
@@ -678,9 +760,10 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 }
 
 /* ---------- Teléfono fijo arriba, con JS, en el celular y la tableta en vertical ---------- */
-/* El teléfono queda fijo bajo la barra, un poco más chico. El texto de cada paso sube por debajo del
-   teléfono, que lo tapa con el fondo de la página, y el paso activo es el que pasó la línea de
-   lectura. Un celular apaisado, bajo, sigue con las capturas apiladas. */
+/* El teléfono queda fijo bajo la barra, un poco más chico, con Ulises posado en su canto derecho y su
+   burbuja en la columna libre de al lado. El texto de cada paso sube por debajo del teléfono, que lo
+   tapa con el fondo de la página, y el paso activo es el que pasó la línea de lectura. Un celular
+   apaisado, bajo, sigue con las capturas apiladas. */
 @media (max-width: 899px) and (min-height: 500px) {
   .js {
     --gw: min(44vw, calc(((100vh - var(--nav-h)) * .52 - 38px) / 2.1641));
@@ -698,7 +781,7 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
     content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
     background: linear-gradient(var(--bg) 30%, color-mix(in srgb, var(--bg) 0%, transparent));
   }
-  .js .rig { width: var(--pw); margin: 0 auto; }
+  .js .rig { width: var(--pw); margin-left: max(0px, calc(50% - var(--pw) / 2 - 104px)); }
   .js .stage .pausa-st {
     display: inline-flex; justify-content: center;
     position: absolute; right: var(--gutter); bottom: 12px;
@@ -738,4 +821,5 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
   .shot.rv { opacity: 1; transform: none; }
   /* Sin animaciones no hay nada que pausar. */
   .js .pausa-fila, .js .nav .pausa, .js .stage .pausa-st { display: none; }
+  .ubub { transform: none; }
 }
