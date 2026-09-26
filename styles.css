@@ -250,6 +250,46 @@ html:not(.js) .theme { display: none; }
 .scr.is-off .sx-track { fill: var(--s-line); }
 .scr.is-off .sx-knob { transform: translateX(-20px); fill: var(--s-ink2); }
 
+/* ---------- Marco del teléfono ---------- */
+/* Barra de estado, cámara y barra de inicio dibujadas encima de la captura, que trae 24 pt libres
+   arriba y 16 pt abajo. Todo se mide en puntos de la captura, y --u es uno de los 390 de ancho.
+   data-sb y data-hb dicen si la tinta va oscura (o) o clara (c) sobre la captura clara y la oscura. */
+.glass {
+  --u: calc(var(--gw) / 390);
+  --sb-l: #fff; --sb-d: #fff;
+  --hb-l: rgba(255, 255, 255, .92); --hb-d: rgba(255, 255, 255, .92);
+}
+.glass[data-sb^="o"] { --sb-l: #1B1B1F; }
+.glass[data-sb$="o"] { --sb-d: #1B1B1F; }
+.glass[data-hb^="o"] { --hb-l: rgba(18, 18, 24, .8); }
+.glass[data-hb$="o"] { --hb-d: rgba(18, 18, 24, .8); }
+.chrome { position: absolute; inset: 0; z-index: 6; pointer-events: none; color: var(--sb-l); transition: color .3s; }
+.sb {
+  position: absolute; left: 0; right: 0; top: 0; height: calc(var(--u) * 24);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(var(--u) * 1.5) calc(var(--u) * 20) 0 calc(var(--u) * 28);
+}
+.sb b { font: 600 calc(var(--u) * 12.5)/1 var(--sans); letter-spacing: -.01em; }
+.sb svg { width: calc(var(--u) * 56.7); height: calc(var(--u) * 10); }
+.cam {
+  position: absolute; left: 50%; top: calc(var(--u) * 6.5);
+  width: calc(var(--u) * 11); height: calc(var(--u) * 11); margin-left: calc(var(--u) * -5.5);
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 34%, #3A4256 0 10%, #0A0A0E 32%);
+  box-shadow: 0 0 0 calc(var(--u) * 1.2) rgba(0, 0, 0, .28);
+}
+.hb {
+  position: absolute; left: 50%; bottom: calc(var(--u) * 5.5);
+  width: calc(var(--u) * 124); height: calc(var(--u) * 4.6); margin-left: calc(var(--u) * -62);
+  border-radius: 99px; background: var(--hb-l); transition: background-color .3s;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .chrome { color: var(--sb-d); }
+  :root:not([data-theme="light"]) .hb { background: var(--hb-d); }
+}
+:root[data-theme="dark"] .chrome { color: var(--sb-d); }
+:root[data-theme="dark"] .hb { background: var(--hb-d); }
+
 .pin, .cue, .qrpanel, .leader { display: none; }
 
 /* ---------- Pasos (modo apilado) ---------- */

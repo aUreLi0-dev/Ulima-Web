@@ -479,6 +479,11 @@
     if (name === cur) return;
     cur = name;
     Object.keys(scrs).forEach(function (k) { scrs[k].classList.toggle('is-on', k === name); });
+    // La barra de estado y la de inicio toman el tono que pide la captura de esta pantalla.
+    var sc = scrs[name];
+    glass.setAttribute('data-hb', (sc && sc.getAttribute('data-hb')) || 'cc');
+    if (sc && sc.hasAttribute('data-sb')) glass.setAttribute('data-sb', sc.getAttribute('data-sb'));
+    else glass.removeAttribute('data-sb');
     stage.classList.toggle('is-install', !!install);
     // En el paso 2 el interruptor se enciende solo, salvo con movimiento reducido.
     clearTimeout(swTimer);
