@@ -49,8 +49,10 @@ segundos, quedan los valores de respaldo que ya trae `index.html` en los element
 ## Capturas
 
 Las pantallas del teléfono no se dibujan en HTML. Son capturas de la app renderizadas desde su
-propio código con datos ficticios (la prueba `test/capturas_landing` del frontend), a 1170 x 2532
-px. Para reemplazar una se convierte el PNG nuevo a los dos anchos, por ejemplo con `cwebp`.
+propio código con datos ficticios, a 1170 x 2532 px, con una prueba de Flutter que se corre en una
+rama local del frontend y no se publica. Solo las pantallas de Android de los dos primeros pasos de
+instalación son esquemas simples en SVG, dentro de `index.html`, que toman los colores del tema.
+Para reemplazar una captura se convierte el PNG nuevo a los dos anchos, por ejemplo con `cwebp`.
 
 ```bash
 cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 360 0 malla-claro.png -o assets/capturas/malla-claro-360.webp
@@ -63,6 +65,8 @@ cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 720 0 malla-claro.png -o asse
 - Cada captura lleva un texto alternativo que describe lo que muestra, y los dos esquemas de
   Android se leen como imagen con su descripción. Con el teléfono fijo, las capturas del teléfono
   son decorativas y el lector de pantalla lee las que acompañan a cada texto.
+- Los números de los pasos de instalación son decorativos y cada título lleva un «Paso 1.» oculto
+  para el lector de pantalla.
 - Textos con contraste de 4,5 a 1 o más y foco visible en todos los controles. En escritorio, el
   paso activo es el del texto más cercano al centro de la ventana, así que el texto que se lee
   siempre está a contraste pleno. Los textos vecinos que asoman por arriba o por abajo quedan

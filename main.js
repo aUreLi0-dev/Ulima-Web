@@ -2,7 +2,7 @@
    1. Tema claro u oscuro, según el sistema o el conmutador.
    2. Versión, peso y fecha del APK, en vivo desde la API pública de GitHub, con respaldo.
    3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar.
-   4. Scrollytelling en 900 px o más: el teléfono fijo cambia de captura al bajar. */
+   4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar. */
 (function () {
   'use strict';
 
@@ -133,7 +133,7 @@
         try { win.sessionStorage.setItem(CK, JSON.stringify({ t: Date.now(), m: m })); } catch (e) { /* sin caché */ }
       })
       .catch(function () {
-        // La API falló o limitó: quedan los datos de respaldo que ya trae el HTML.
+        // Si la API falla o limita, quedan los datos de respaldo que ya trae el HTML.
         clearTimeout(to);
         root.setAttribute('data-meta', 'respaldo');
       });
@@ -146,8 +146,8 @@
   var DIR = [[0, -1], [0.7071, -0.7071], [1, 0], [0.7071, 0.7071], [0, 1], [-0.7071, 0.7071], [-1, 0], [-0.7071, -0.7071]];
   var CENTROID = 229.4;
   var CR_HOME = [[306.8, -133.5], [401.2, -133.5]], CR_A = 36.3, CR_TH = 8.7;
-  // Destinos en la cabecera real de la app, sin estrella: la estrella se achica a la altura
-  // del texto y se disuelve a su izquierda, y los «++» caen sobre los del texto «ULIMA++».
+  // Destinos en la cabecera real de la app, que no lleva estrella. La estrella se achica a la
+  // altura del texto y se disuelve a su izquierda, y los «++» caen sobre los del texto «ULIMA++».
   var HX = 12, HY = 64.5, KE = 7 / R, CTRL = [60, 200];
   var PP_X = [86.3, 97.3], PP_Y = 64.8, PP_A = 5, PP_TH = 1.4, PP_SK = -10;
   var WM_X = 19, WM_W = 62, WM_STOPS = [14, 24, 31, 47, 62];
@@ -186,7 +186,7 @@
     return P;
   }
 
-  // A, Ensamble (versión adaptada a la spec): parte de la estrella completa del splash nativo,
+  // A, Ensamble (versión adaptada a la spec). Parte de la estrella completa del splash nativo,
   // los ocho rombos se abren juntos y vuelven a encajar uno a uno en sentido horario; un destello
   // asoma por las rendijas y los «++» saltan como un contador.
   function poseEnsamble(t) {
@@ -219,7 +219,7 @@
     return P;
   }
 
-  // B, Incremento: la estrella gira 45° con resorte, late como un +1 y el segundo «+» nace del primero.
+  // B, Incremento. La estrella gira 45° con resorte, late como un +1 y el segundo «+» nace del primero.
   function poseIncremento(t) {
     var P = basePose(), i, off = 0;
     P.rot = 45 * spring(t / 1000, 15.708, 0.55);
@@ -244,7 +244,7 @@
     return P;
   }
 
-  // C, Código: se teclea «ULima» y los «++» saltan del texto a la esquina de la estrella.
+  // C, Código. Se teclea «ULima» y los «++» saltan del texto a la esquina de la estrella.
   var T_CHAR = [250, 318, 386, 454, 522], T_PLUS = [610, 680], FLY = [780, 830], FLY_D = 380;
   function codeStar(t) {
     var p = outCubic(seg(t, 0, 320));
@@ -297,7 +297,7 @@
   var EXIT_DUR = { ensamble: 530, incremento: 620, codigo: 420 };
   var variant = VARIANTS[Math.floor(Math.random() * VARIANTS.length) % VARIANTS.length];
   try {
-    // Para revisar una intro concreta: ?intro=ensamble, ?intro=incremento o ?intro=codigo.
+    // Para revisar una intro concreta se agrega ?intro=ensamble, ?intro=incremento o ?intro=codigo.
     var forcedIntro = /[?&]intro=(\w+)/.exec(win.location.search);
     if (forcedIntro && POSES[forcedIntro[1]]) variant = forcedIntro[1];
   } catch (e) { /* sin parámetros */ }
@@ -525,7 +525,7 @@
       var p = clamp(y / (0.5 * L.vh));
       return reduce ? (p > 0.5 ? 1 : 0) : p;
     }
-    // Apilado: la salida corre sola al terminar la intro, sin tocar el desplazamiento.
+    // En el modo apilado, la salida corre sola al terminar la intro, sin tocar el desplazamiento.
     if (reduce) return 1;
     if (introStart === null) return 0;
     return seg(ts - introStart - NATIVE - INTRO_END[variant] - HOLD, 0, EXIT_DUR[variant]);
