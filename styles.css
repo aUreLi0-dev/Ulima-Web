@@ -36,8 +36,9 @@
   --s-acc: #3D5AFE;
   --s-bar: #ECECF1;
   /* Velo del foco. En claro es más suave (un 10 % de negro), y tras el primer instante de cada
-     momento baja a --calm de su fuerza, así la cabecera naranja y las pantallas siguen en color. Al
-     terminar el recorrido se levanta del todo. */
+     momento baja a --calm de su fuerza, así la cabecera naranja y las pantallas siguen en color. En
+     oscuro enciende con un 50 % y en calma baja a la mitad, un 25 %, para que los otros estados de la
+     pantalla no se apaguen. Al terminar el recorrido se levanta del todo. */
   --dim: .1;
   --calm: .6;
   --mk-a: 30%;
@@ -66,7 +67,7 @@
     --s-acc: #AFC2FF;
     --s-bar: #1A1A20;
     --dim: .5;
-    --calm: .75;
+    --calm: .5;
     --mk-a: 38%;
     --chat-bg: #16151C;
     color-scheme: dark;
@@ -92,7 +93,7 @@
   --s-acc: #AFC2FF;
   --s-bar: #1A1A20;
   --dim: .5;
-  --calm: .75;
+  --calm: .5;
   --mk-a: 38%;
   --chat-bg: #16151C;
   color-scheme: dark;
@@ -405,22 +406,30 @@ html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .
   transition: clip-path .42s cubic-bezier(.3, .7, .2, 1);
 }
 
-/* Pantallas intermedias de un paso en el modo apilado, encima de la captura de la figura. */
+/* Pantallas intermedias de un paso en el modo apilado, encima de la captura de la figura y de su
+   tapa de burbujas, que es solo de la pantalla del paso, y debajo del foco. */
 .lay {
-  position: absolute; inset: 0; z-index: 2;
+  position: absolute; inset: 0; z-index: 4;
   opacity: 0; visibility: hidden;
   transition: opacity .45s ease, visibility 0s linear .45s;
 }
 .lay.is-on { opacity: 1; visibility: visible; transition: opacity .45s ease; }
+/* Entre dos capas, la que sale espera entera bajo la que entra, así no asoma la captura de abajo. Un
+   cambio en su lugar (data-cf), como una hoja que se cierra, entra en 0,2 s. */
+.glass.swap .lay:not(.is-on) { transition: opacity 0s linear .45s, visibility 0s linear .45s; }
+.glass.cf .lay.is-on { transition: opacity .2s ease; }
+.glass.swap.cf .lay:not(.is-on) { transition: opacity 0s linear .2s, visibility 0s linear .2s; }
 
-/* Frase del texto que explica la zona resaltada, con el color del estado cuando lo tiene. */
+/* Frase del texto que explica la zona resaltada, con el color del estado cuando lo tiene. Al
+   encenderse, el texto toma el color pleno antes de que crezca la banda, y al apagarse lo conserva
+   hasta que la banda se retira, así nunca queda gris sobre ella. */
 .hl-f {
   --mk: var(--orange);
   background: linear-gradient(color-mix(in srgb, var(--mk) var(--mk-a), transparent), color-mix(in srgb, var(--mk) var(--mk-a), transparent)) 0 92% / 0 .46em no-repeat;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
-  transition: background-size .6s cubic-bezier(.2, .8, .2, 1), color .3s;
+  transition: background-size .6s cubic-bezier(.2, .8, .2, 1), color .3s ease .55s;
 }
-.hl-f.is-on { background-size: 100% .46em; color: var(--ink); }
+.hl-f.is-on { background-size: 100% .46em; color: var(--ink); transition: background-size .6s cubic-bezier(.2, .8, .2, 1), color 0s; }
 
 /* En el modo apilado, cada captura entra suave al asomar (la clase la pone el JS). */
 .shot.rv { opacity: 0; transform: translateY(28px) scale(.98); transition: opacity .6s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
@@ -517,6 +526,17 @@ html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .
   .wm { font-size: 18px; }
   .cta .btn { flex: 1 1 100%; }
 }
+/* Con menos de 560 px de alto, como en un celular apaisado, las capturas siguen apiladas y el teléfono
+   se achica hasta caber entero bajo la barra, con 8 px de aire arriba y abajo. Así cada zona del
+   recorrido se enciende a la vista y no por encima o por debajo de la ventana. */
+@media (max-height: 559px) {
+  :root { --gw: min(72vw, 280px, calc((100vh - var(--nav-h) - 30px) / 2.1641)); }
+}
+@supports (height: 100svh) {
+  @media (max-height: 559px) {
+    :root { --gw: min(72vw, 280px, calc((100svh - var(--nav-h) - 30px) / 2.1641)); }
+  }
+}
 @media (max-width: 359px) {
   :root { --gutter: 14px; }
   .btn-sm { padding: 8px 12px; }
@@ -561,8 +581,10 @@ html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .
     transition: opacity .4s ease .08s, transform .55s cubic-bezier(.2, .8, .2, 1) .08s, visibility 0s;
   }
   .js .glass.in-splash .scr { transition: none; }
-  /* Una pestaña, un botón o una hoja que cambia dentro de la misma pantalla entra en su lugar. */
-  .js .glass.cf .scr { transform: none; }
+  /* Una pestaña, un botón o una hoja que cambia dentro de la misma pantalla entra en su lugar, en
+     0,2 s y encima de la que sale, que espera entera debajo. Así las dos no se ven a medias a la vez. */
+  .js .glass.cf .scr { transform: none; transition: opacity 0s linear .2s, visibility 0s linear .2s; }
+  .js .glass.cf .scr.is-on { transition: opacity .2s ease, visibility 0s; }
 
   .js .cue {
     position: absolute; left: 50%; top: calc(100% + 16px); transform: translateX(-50%);

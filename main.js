@@ -943,10 +943,13 @@
     if (scrs[s.scr]) s.covers[s.scr] = makeCover(s.glass, scrs[s.scr].getAttribute('data-rev'));
   }
   function figScreen(s, name) {
+    var r = scrs[name], swap = !!(s.cur && s.cur !== name && s.layers[s.cur] && s.layers[name]);
     s.cur = name;
+    // Entre dos capas, la que sale espera tapada por la que entra, y un cambio en su lugar entra rápido.
+    s.glass.classList.toggle('swap', swap);
+    s.glass.classList.toggle('cf', !!(r && r.hasAttribute('data-cf')));
     Object.keys(s.layers).forEach(function (k) { s.layers[k].classList.toggle('is-on', k === name); });
     // La barra de estado y la de inicio toman el tono de la pantalla a la vista.
-    var r = scrs[name];
     if (!r) return;
     s.glass.setAttribute('data-hb', r.getAttribute('data-hb') || 'cc');
     if (r.hasAttribute('data-sb')) s.glass.setAttribute('data-sb', r.getAttribute('data-sb'));
@@ -1037,10 +1040,11 @@
     shotTours.forEach(function (s) { if (L.wide) stopShot(s); else if (s.on) playShot(s); });
   }
 
-  // Pausa del recorrido. Al mover el mouse sobre el texto de un paso, al hacer clic o tocarlo sin
-  // arrastrar o al llevarle el foco, y en el modo apilado también sobre su captura, el recorrido se
-  // detiene y deja su estado final. Desplazar la página no cuenta, ni con la rueda, que no mueve el
-  // mouse, ni con el dedo, porque un toque que se vuelve desplazamiento no dispara click.
+  // Pausa del recorrido. Al hacer clic en el texto de un paso o tocarlo sin arrastrar, o al llevarle
+  // el foco, y en el modo apilado también sobre su captura, el recorrido se detiene y deja su estado
+  // final. Pasar el mouse no cuenta, porque el cursor suele quedar sobre el texto mientras se lee y
+  // cortaría cada paso antes de sus detalles. Desplazar la página tampoco, ni con la rueda ni con el
+  // dedo, porque un toque que se vuelve desplazamiento no dispara click.
   function endTour(i) {
     if (L.wide) { if (T.idx === i && T.spot && T.spot.end) T.spot.end(); return; }
     shotTours.forEach(function (s) { if (s.i === i && s.spot && s.spot.end) s.spot.end(); });
@@ -1048,9 +1052,6 @@
   function pauseOn(el, i) {
     if (!el) return;
     var stop = function () { endTour(i); };
-    el.addEventListener('pointermove', function (e) {
-      if (e.pointerType === 'mouse' && (e.movementX || e.movementY)) stop();
-    }, { passive: true });
     el.addEventListener('click', stop);
     el.addEventListener('focusin', stop);
   }
