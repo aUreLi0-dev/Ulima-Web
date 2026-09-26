@@ -337,7 +337,8 @@ html:not(.js) .theme { display: none; }
 /* ---------- Scrollytelling: con JS y 900 px o más ---------- */
 @media (min-width: 900px) {
   .js {
-    --gw: clamp(220px, calc((100vh - var(--nav-h) - 96px) / 2.1641), 330px);
+    /* Cabe en el alto de la ventana y deja a los textos al menos un cuarto del ancho a cada lado. */
+    --gw: clamp(220px, min(calc((100vh - var(--nav-h) - 96px) / 2.1641), 25vw), 330px);
   }
   .js .top { position: relative; }
   .js .hero {
