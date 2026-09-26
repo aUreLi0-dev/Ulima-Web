@@ -35,10 +35,11 @@
   --s-line: #C9C9D2;
   --s-acc: #3D5AFE;
   --s-bar: #ECECF1;
-  /* Velo del foco. En claro es más suave, y tras el primer instante de cada momento baja a --calm
-     de su fuerza, así la cabecera naranja y las pantallas siguen en color. */
-  --dim: .2;
-  --calm: .5;
+  /* Velo del foco. En claro es más suave (un 10 % de negro), y tras el primer instante de cada
+     momento baja a --calm de su fuerza, así la cabecera naranja y las pantallas siguen en color. Al
+     terminar el recorrido se levanta del todo. */
+  --dim: .1;
+  --calm: .6;
   --mk-a: 30%;
   /* Fondo de la conversación de Ulises en la captura, para la tapa que deja ver sus burbujas. */
   --chat-bg: #F9FBFC;
@@ -159,6 +160,25 @@ html:not(.js) .theme { display: none; }
 .is-dark .theme .i-sun { display: block; }
 .is-dark .theme .i-moon { display: none; }
 
+/* Botón «Pausar animaciones». Con el teléfono fijo va en la barra y con las capturas apiladas al
+   comienzo de Funciones (el JS sincroniza los dos). Sin JS no hay recorridos y no se muestra. */
+.pausa {
+  display: none; align-items: center; gap: 8px;
+  min-height: 40px; padding: 8px 15px 8px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink2);
+  font-size: 14px; font-weight: 600; line-height: 1.1; white-space: nowrap; cursor: pointer;
+}
+.pausa:hover { border-color: var(--ink2); color: var(--ink); }
+.pausa .ic { width: 16px; height: 16px; stroke-width: 2.4; }
+.pausa .i-play, .quieto .pausa .i-pause { display: none; }
+.quieto .pausa .i-play { display: block; }
+.pausa-fila { display: none; }
+.js .pausa-fila { display: flex; justify-content: center; padding-top: 8px; }
+.js .pausa-fila .pausa { display: inline-flex; }
+
+/* En pausa se apaga lo que late o se repite. */
+html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after { animation: none !important; }
+
 /* ---------- Botones y textos comunes ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -267,16 +287,17 @@ html:not(.js) .theme { display: none; }
 .sx-page-ink2 { fill: var(--ink2); }
 .sx-prog-bg { fill: var(--s-line); }
 .sx-prog { fill: var(--s-acc); transform-box: fill-box; transform-origin: left center; transition: transform 1.3s cubic-bezier(.45, 0, .2, 1); }
-/* En el paso 1 la descarga avanza y termina con «Abrir» (la clase la pone el JS al entrar). */
+/* En el paso 1 la descarga avanza y termina con «Abrir», y en el paso 2 el permiso se enciende. El
+   JS pone is-dl o is-off en el vidrio, así las copias de la lupa muestran el mismo cambio. */
 .sx-going, .sx-done { transition: opacity .3s ease 1.35s; }
 .sx-going { opacity: 0; }
-.scr.is-dl .sx-going { opacity: 1; transition: none; }
-.scr.is-dl .sx-done { opacity: 0; transition: none; }
-.scr.is-dl .sx-prog { transform: scaleX(0); transition: none; }
+.is-dl .sx-going { opacity: 1; transition: none; }
+.is-dl .sx-done { opacity: 0; transition: none; }
+.is-dl .sx-prog { transform: scaleX(0); transition: none; }
 .sx-track { fill: var(--s-acc); transition: fill .3s; }
 .sx-knob { fill: var(--s-bg); transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
-.scr.is-off .sx-track { fill: var(--s-line); }
-.scr.is-off .sx-knob { transform: translateX(-20px); fill: var(--s-ink2); }
+.is-off .sx-track { fill: var(--s-line); }
+.is-off .sx-knob { transform: translateX(-20px); fill: var(--s-ink2); }
 
 /* ---------- Marco del teléfono ---------- */
 /* Barra de estado, cámara y barra de inicio dibujadas encima de la captura, que trae 24 pt libres
@@ -335,7 +356,8 @@ html:not(.js) .theme { display: none; }
 }
 .hl.is-on .spot { opacity: 1; }
 .hl.is-on.is-calm .spot { opacity: var(--calm); transition: opacity .9s ease, clip-path .6s cubic-bezier(.2, .8, .2, 1); }
-.hl.is-rest .spot { opacity: 0; transition: opacity 1s ease; }
+/* En reposo el velo se levanta, aunque quede otra clase del recorrido. */
+.hl.is-rest .spot, .hl.is-on.is-calm.is-rest .spot { opacity: 0; transition: opacity 1s ease; }
 .lens {
   position: absolute; border-radius: var(--br, calc(var(--u) * 14));
   opacity: 0; transform: scale(1);
@@ -501,12 +523,16 @@ html:not(.js) .theme { display: none; }
   .hero h1 { font-size: 32px; }
 }
 
-/* ---------- Scrollytelling, con JS y 900 px o más ---------- */
-@media (min-width: 900px) {
+/* ---------- Scrollytelling, con JS, 900 px o más de ancho y 560 px o más de alto ---------- */
+/* Un celular apaisado, ancho pero bajo, sigue con las capturas apiladas, porque el teléfono fijo
+   no le cabe entero. */
+@media (min-width: 900px) and (min-height: 560px) {
   .js {
     /* Cabe en el alto de la ventana y deja a los textos al menos un cuarto del ancho a cada lado. */
     --gw: clamp(220px, min(calc((100vh - var(--nav-h) - 96px) / 2.1641), 25vw), 330px);
   }
+  .js .nav .pausa { display: inline-flex; }
+  .js .pausa-fila { display: none; }
   .js .top { position: relative; }
   .js .hero {
     position: absolute; z-index: 3; top: 0; left: 0;
@@ -603,4 +629,6 @@ html:not(.js) .theme { display: none; }
   .js .scr, .js .scr[data-push] { transform: none; }
   .js .qrpanel { transform: none; }
   .shot.rv { opacity: 1; transform: none; }
+  /* Sin animaciones no hay nada que pausar. */
+  .js .pausa-fila, .js .nav .pausa { display: none; }
 }

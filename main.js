@@ -38,7 +38,8 @@
   function now() { return (win.performance && performance.now) ? performance.now() : Date.now(); }
 
   var mqReduce = mq('(prefers-reduced-motion: reduce)');
-  var mqWide = mq('(min-width: 900px)');
+  // El teléfono fijo pide ancho y también alto, así un celular apaisado usa las capturas apiladas.
+  var mqWide = mq('(min-width: 900px) and (min-height: 560px)');
   var mqDark = mq('(prefers-color-scheme: dark)');
   var reduce = !!(mqReduce && mqReduce.matches);
 
@@ -477,8 +478,24 @@
     return idx && L.copyMid[idx] > y + L.vh ? 0 : idx;
   }
 
-  var cur = null, swTimer = 0, dlTimer = 0;
-  function startDownload() { clearTimeout(dlTimer); if (scrs.sys1) scrs.sys1.classList.remove('is-dl'); }
+  // Los esquemas de Android arrancan en su estado previo, con la descarga en curso (is-dl) y el
+  // permiso apagado (is-off), y pasan al final poco después de que se enciende su momento. La clase
+  // va en el vidrio, así también la heredan las copias de la lupa, que muestran el mismo cambio.
+  // Con movimiento reducido o con las animaciones en pausa se ven ya en su estado final.
+  var PREV = { sys1: ['is-dl', 1], sys2: ['is-off', 0] }, PREV_WAIT = 600;
+  function schemeArm(g, name) {
+    clearTimeout(g.schemeT);
+    Object.keys(PREV).forEach(function (k) { g.classList.toggle(PREV[k][0], k === name && !reduce && !still); });
+  }
+  function schemeGo(g, b, now) {
+    var pv = PREV[b.scr];
+    if (!pv || b.i < pv[1]) return;
+    clearTimeout(g.schemeT);
+    if (now) g.classList.remove(pv[0]);
+    else g.schemeT = setTimeout(function () { g.classList.remove(pv[0]); }, PREV_WAIT);
+  }
+
+  var cur = null;
   function setScreen(name, install) {
     if (name === cur) return;
     cur = name;
@@ -492,22 +509,9 @@
     if (sc && sc.hasAttribute('data-sb')) glass.setAttribute('data-sb', sc.getAttribute('data-sb'));
     else glass.removeAttribute('data-sb');
     stage.classList.toggle('is-install', !!install);
-    // En el paso 1 la descarga avanza hasta «Abrir» cuando el recorrido enciende su aviso (o a los
-    // 4 s, si no llega), y en el paso 2 el interruptor se enciende solo, salvo con movimiento
-    // reducido.
-    clearTimeout(swTimer); clearTimeout(dlTimer);
-    if (scrs.sys1) {
-      if (name === 'sys1' && !reduce) {
-        scrs.sys1.classList.add('is-dl');
-        dlTimer = setTimeout(startDownload, 4000);
-      } else scrs.sys1.classList.remove('is-dl');
-    }
-    if (scrs.sys2) {
-      if (name === 'sys2' && !reduce) {
-        scrs.sys2.classList.add('is-off');
-        swTimer = setTimeout(function () { scrs.sys2.classList.remove('is-off'); }, 700);
-      } else scrs.sys2.classList.remove('is-off');
-    }
+    // En el paso 1 la descarga avanza hasta «Abrir» cuando el recorrido enciende su aviso, y en el
+    // paso 2 el interruptor se enciende cuando el recorrido llega a él.
+    schemeArm(glass, name);
   }
 
   /* ---------- 5. Detalles sobre la captura ---------- */
@@ -515,14 +519,20 @@
   // resto de la pantalla se oscurece un instante y queda bajo un velo suave, la zona sube en una
   // lupa, apenas en las zonas grandes y hasta 2,6 veces en las chicas, un anillo marca un borde
   // libre de la zona y en el texto se marca la frase que la explica (data-b). Los momentos
-  // principales («*») duran más que los de paso. Al terminar, el velo se levanta y quedan la lupa
-  // y el anillo sobre la pantalla en color. Con movimiento reducido no hay recorrido y se ven
-  // quietas, sin zoom y a la vez, las zonas principales (o la última, si ninguna lo está).
-  var SEC = 1100, MAIN = 1700, SWAP = 450, REVEAL = 480, REST = 2400, CALM = 900, RING = 24;
+  // principales («*») duran más que los de paso, que son breves para que lo principal llegue en los
+  // primeros dos segundos y medio. Al terminar, el velo se levanta y quedan la lupa y el anillo sobre
+  // la pantalla en color. Con movimiento reducido no hay recorrido y se ven quietas, sin zoom y a la
+  // vez, las zonas principales (o la última, si ninguna lo está).
+  var SEC = 700, MAIN = 1500, SWAP = 250, REVEAL = 250, REST = 2400, CALM = 600, RING = 24;
+
+  // Con el botón «Pausar animaciones» o con Escape, cada recorrido salta a su estado final y los que
+  // siguen se muestran ya terminados durante la visita.
+  var still = false, QUIETO = 'ulimaplus-quieto';
+  try { still = win.sessionStorage.getItem(QUIETO) === '1'; } catch (e) { /* sin almacenamiento */ }
 
   function nums(s) { return s.trim().split(/\s+/).filter(Boolean).map(Number); }
-  // Un momento es «[*][pantalla:] x y ancho alto [radio] [~t|~b|~o|~n][, otra zona] [@x y | @x y
-  // ancho alto] [^y ...]».
+  // Un momento es «[*][pantalla:] x y ancho alto [radio] [~t|~b|~o|~n] [=zoom][, otra zona] [@x y |
+  // @x y ancho alto] [^y ...]».
   function parseBeats(str, home) {
     var out = [];
     (str || '').split('|').forEach(function (b, i) {
@@ -537,8 +547,10 @@
       q = k >= 0 ? nums(b.slice(k + 1)) : [];
       if ((q.length === 2 || q.length === 4) && q.every(isFinite)) o.mark = q;
       (k >= 0 ? b.slice(0, k) : b).split(',').forEach(function (r) {
-        var h = /~([tbno])/.exec(r), v = nums(r.replace(/~[a-z]/g, ''));
-        if ((v.length === 4 || v.length === 5) && v.every(isFinite)) { v.ring = h ? h[1] : ''; o.z.push(v); }
+        var h = /~([tbno])/.exec(r), zm = /=\s*([\d.]+)/.exec(r), v = nums(r.replace(/~[a-z]/g, '').replace(/=\s*[\d.]+/, ''));
+        if ((v.length === 4 || v.length === 5) && v.every(isFinite)) {
+          v.ring = h ? h[1] : ''; v.zoom = zm && +zm[1] > 1 ? +zm[1] : 0; o.z.push(v);
+        }
       });
       if (o.z.length) out.push(o);
     });
@@ -561,15 +573,16 @@
   function inside(z, x, y) { return x >= z[0] && x <= z[0] + z[2] && y >= z[1] && y <= z[1] + z[3]; }
 
   // La lupa de una zona crece desde su centro. Una zona grande sube apenas; una chica, como una
-  // insignia, un botón o una línea de texto, se amplía hasta que se lee (2,6 veces como mucho). Si la
-  // lupa no cabe, se corre lo justo para quedar entre la barra de estado y la de inicio. Con [flat]
-  // (movimiento reducido) no hay zoom.
+  // insignia, un botón o una línea de texto, se amplía hasta que se lee (2,6 veces como mucho). Una
+  // zona puede fijar su zoom (=1.7), como las columnas del mapa, cuyos nombres son chicos aunque la
+  // zona sea grande. Si la lupa no cabe, se achica o se corre lo justo para quedar entre la barra de
+  // estado y la de inicio. Con [flat] (movimiento reducido) no hay zoom.
   var LENS_T = 140, LENS_MAX = 2.6, SAFE = [4, 27, 386, 826];
   function lensGeo(z, flat) {
     var w = z[2], h = z[3], m = Math.max(w, h), cx = z[0] + w / 2, cy = z[1] + h / 2, s = 1;
     if (!flat) {
       var n = Math.min(w, h);
-      s = Math.max(LENS_T / m, n < 70 ? clamp(46 / n, 1.25, LENS_MAX) : 1, 1 + Math.min(0.07, 12 / m));
+      s = z.zoom || Math.max(LENS_T / m, n < 70 ? clamp(46 / n, 1.25, LENS_MAX) : 1, 1 + Math.min(0.07, 12 / m));
       s = Math.max(1, Math.min(s, LENS_MAX, (SAFE[2] - SAFE[0]) / w, (SAFE[3] - SAFE[1]) / h));
     }
     var hw = w * s / 2, hh = h * s / 2, dx = 0, dy = 0;
@@ -588,14 +601,17 @@
   // texto, a media altura. Si ahí no cabe entero en la pantalla, va al borde de arriba o al de abajo,
   // junto a la esquina que mira al texto. Una zona puede pedir otro borde, ~t arriba o ~b abajo (al
   // medio del borde) u ~o el lado opuesto al texto. Así nunca cae dentro de lo que la zona muestra.
-  // Con ~n la zona no lleva anillo.
+  // Una lupa más baja o más angosta que el anillo, como una insignia sin zoom, lo lleva del todo
+  // afuera, con 2 puntos de aire, porque ahí esos 5 puntos taparían sus letras. Con ~n la zona no
+  // lleva anillo.
   var RING_OUT = RING / 2 - 5, RING_M = RING / 2 + 5;
   function ringAt(g, side) {
     var hint = g.z.ring, l = (side === 'l') !== (hint === 'o');
     if (hint === 'n') return null;
+    var out = Math.min(g.x1 - g.x0, g.y1 - g.y0) < RING ? RING / 2 + 2 : RING_OUT;
     var mid = (g.x0 + g.x1) / 2, ex = hint === 't' || hint === 'b' ? mid : l ? Math.min(g.x0 + RING, mid) : Math.max(g.x1 - RING, mid);
-    var sid = [l ? g.x0 - RING_OUT : g.x1 + RING_OUT, (g.y0 + g.y1) / 2];
-    var top = [ex, g.y0 - RING_OUT], bot = [ex, g.y1 + RING_OUT];
+    var sid = [l ? g.x0 - out : g.x1 + out, (g.y0 + g.y1) / 2];
+    var top = [ex, g.y0 - out], bot = [ex, g.y1 + out];
     var order = hint === 't' ? [top, bot, sid] : hint === 'b' ? [bot, top, sid] : [sid, top, bot];
     for (var i = 0; i < order.length; i++) {
       var p = order[i];
@@ -799,7 +815,8 @@
 
   // Recorre los momentos uno tras otro. Si un momento cambia de pantalla, primero se apaga el foco
   // sin esperar, entra la pantalla nueva y después se enciende en ella. Al final se levanta el velo.
-  // S.end detiene el recorrido y deja su estado final, la última zona con su anillo y sin velo.
+  // S.end detiene el recorrido y deja su estado final, la última zona con su anillo y sin velo. Con
+  // las animaciones en pausa, el recorrido empieza ya en ese estado.
   function play(S, beats, o) {
     stopTour(S);
     S.end = null;
@@ -810,11 +827,23 @@
       if (sc !== o.scr0) o.setScr(sc);
       showAll(S, ms, o.src(sc), o.side());
       o.phr(ms.map(function (b) { return b.i; }));
-      if (o.at) o.at(ms[ms.length - 1]);
+      if (o.at) o.at(ms[ms.length - 1], true);
       o.beat();
       return;
     }
     var t = o.delay, cur = o.scr0, last = beats[beats.length - 1];
+    S.end = function () {
+      stopTour(S);
+      S.end = null;
+      o.setScr(last.scr);
+      o.reveal(null);
+      showBeat(S, last, o.src(last.scr), o.side(), hiOf(last.scr), true);
+      S.box.classList.add('is-rest');
+      o.phr([last.i]);
+      if (o.at) o.at(last, true);
+      o.beat();
+    };
+    if (still) { S.end(); return; }
     beats.forEach(function (b) {
       if (b.scr !== cur) {
         later(S, t, function () { hideSpot(S, true); o.beat(); o.setScr(b.scr); });
@@ -829,18 +858,13 @@
       });
       t += b.main ? MAIN : SEC;
     });
-    later(S, t - (last.main ? MAIN : SEC) + REST, function () { S.box.classList.add('is-rest'); S.end = null; o.beat(); });
-    S.end = function () {
-      stopTour(S);
-      S.end = null;
-      o.setScr(last.scr);
-      o.reveal(null);
-      showBeat(S, last, o.src(last.scr), o.side(), hiOf(last.scr), true);
+    // En reposo el velo se va del todo. Se quita is-calm para que su regla no lo retenga.
+    later(S, t - (last.main ? MAIN : SEC) + REST, function () {
+      S.box.classList.remove('is-calm');
       S.box.classList.add('is-rest');
-      o.phr([last.i]);
-      if (o.at) o.at(last);
+      S.end = null;
       o.beat();
-    };
+    });
   }
   function noop() {}
 
@@ -894,7 +918,7 @@
       src: function (n) { return scrs[n]; },
       reveal: function (n, y) { if (n == null) showBubbles(rigCovers); else setCover(rigCovers[n], y); },
       phr: function (ks) { phrase(i, ks); },
-      at: function (b) { if (b.scr === 'sys1' && b.i >= 1) startDownload(); },
+      at: function (b, now) { schemeGo(glass, b, now); },
       beat: function () { T.lead = T.spot.lead; requestRender(); }
     });
   }
@@ -942,6 +966,7 @@
     prepShot(s);
     if (!s.spot) s.spot = makeSpot(s.glass);
     figScreen(s, firstScreen(s));
+    schemeArm(s.glass, s.scr);
     if (!reduce) hideBubbles(s.beats, s.covers);
     play(s.spot, s.beats, {
       delay: 300, scr0: s.cur,
@@ -950,6 +975,7 @@
       src: function (n) { return s.layers[n] || s.glass; },
       reveal: function (n, y) { if (n == null) showBubbles(s.covers); else setCover(s.covers[n], y); },
       phr: function (ks) { phrase(s.i, ks); },
+      at: function (b, now) { schemeGo(s.glass, b, now); },
       beat: noop
     });
   }
@@ -959,6 +985,7 @@
     if (!s.spot) return;
     stopTour(s.spot); s.spot.end = null; hideSpot(s.spot, true); phrase(s.i, []);
     if (s.ready) figScreen(s, firstScreen(s));
+    schemeArm(s.glass, s.scr);
   }
   var TH = [];
   for (var th = 0; th <= 20; th++) TH.push(th / 20);
@@ -969,7 +996,7 @@
       if (e.isIntersecting && e.intersectionRatio > 0.08) {
         s.fig.classList.add('in');
         // Al asomar, la figura ya muestra la pantalla con la que empieza su recorrido.
-        if (!L.wide && !s.primed) { s.primed = true; prepShot(s); figScreen(s, firstScreen(s)); }
+        if (!L.wide && !s.primed) { s.primed = true; prepShot(s); figScreen(s, firstScreen(s)); schemeArm(s.glass, s.scr); }
       }
       // La parte visible se mide contra lo que cabe en la ventana, así una figura más alta que la
       // ventana, como en un celular apaisado, también arranca su recorrido.
@@ -1010,25 +1037,57 @@
     shotTours.forEach(function (s) { if (L.wide) stopShot(s); else if (s.on) playShot(s); });
   }
 
-  // Pausa del recorrido. Al mover el puntero sobre el texto de un paso, al tocarlo o al llevarle el
-  // foco, y en el modo apilado también sobre su captura, el recorrido se detiene y deja su estado
-  // final. El desplazamiento solo no cuenta, porque no mueve el puntero.
+  // Pausa del recorrido. Al mover el mouse sobre el texto de un paso, al hacer clic o tocarlo sin
+  // arrastrar o al llevarle el foco, y en el modo apilado también sobre su captura, el recorrido se
+  // detiene y deja su estado final. Desplazar la página no cuenta, ni con la rueda, que no mueve el
+  // mouse, ni con el dedo, porque un toque que se vuelve desplazamiento no dispara click.
   function endTour(i) {
     if (L.wide) { if (T.idx === i && T.spot && T.spot.end) T.spot.end(); return; }
     shotTours.forEach(function (s) { if (s.i === i && s.spot && s.spot.end) s.spot.end(); });
   }
   function pauseOn(el, i) {
     if (!el) return;
-    var stop = function (e) {
-      if (e.type === 'pointermove' && !(e.movementX || e.movementY)) return;
-      endTour(i);
-    };
-    el.addEventListener('pointermove', stop, { passive: true });
-    el.addEventListener('pointerdown', stop, { passive: true });
+    var stop = function () { endTour(i); };
+    el.addEventListener('pointermove', function (e) {
+      if (e.pointerType === 'mouse' && (e.movementX || e.movementY)) stop();
+    }, { passive: true });
+    el.addEventListener('click', stop);
     el.addEventListener('focusin', stop);
   }
   copies.forEach(function (c, i) { if (i > 0) pauseOn(c, i); });
   shotTours.forEach(function (s) { pauseOn(s.fig, s.i); });
+
+  // Botón «Pausar animaciones», en la barra con el teléfono fijo y al comienzo de Funciones con las
+  // capturas apiladas. Termina cada recorrido en su estado final, deja quietos los que siguen y
+  // apaga lo que late (halos, anillos, resplandor y flecha de la portada). Escape también pausa. Al
+  // reanudar, el paso a la vista vuelve a recorrer sus momentos.
+  var pauseBtns = all('[data-pausa]');
+  function syncPause() {
+    root.classList.toggle('quieto', still);
+    pauseBtns.forEach(function (b) {
+      var t = b.querySelector('.pausa-t');
+      if (t) t.textContent = still ? 'Reanudar animaciones' : 'Pausar animaciones';
+    });
+  }
+  function setStill(v) {
+    if (v === still) return;
+    still = v;
+    try { if (v) win.sessionStorage.setItem(QUIETO, '1'); else win.sessionStorage.removeItem(QUIETO); } catch (e) { /* vale solo para esta página */ }
+    syncPause();
+    if (v) {
+      if (T.spot && T.spot.end) T.spot.end();
+      shotTours.forEach(function (s) { if (s.spot && s.spot.end) s.spot.end(); });
+    } else {
+      if (T.idx > 0) T.idx = -2;
+      shotTours.forEach(function (s) { if (s.on && !L.wide) playShot(s); });
+    }
+    requestRender();
+  }
+  pauseBtns.forEach(function (b) { b.addEventListener('click', function () { setStill(!still); }); });
+  doc.addEventListener('keydown', function (e) {
+    if ((e.key === 'Escape' || e.key === 'Esc') && !still) setStill(true);
+  });
+  syncPause();
 
   var leader = $('leader'), leadp = $('leadp'), leadc = $('leadc'), leade = $('leade');
   // Caja del texto en reposo, sin el desplazamiento de su transición de entrada.

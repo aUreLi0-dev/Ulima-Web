@@ -44,6 +44,8 @@
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
     <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
     <symbol id="i-sb" viewBox="0 0 68 12"><g fill="currentColor"><rect y="8" width="3" height="4" rx=".8"/><rect x="4.5" y="6" width="3" height="6" rx=".8"/><rect x="9" y="3.5" width="3" height="8.5" rx=".8"/><rect x="13.5" y="1" width="3" height="11" rx=".8"/><path d="M29 11.6 26.4 8.9a3.7 3.7 0 0 1 5.2 0z"/><rect x="43.8" y="3.3" width="16.5" height="5.9" rx="1.6"/><path d="M65.3 4.7v3.1a1.6 1.6 0 0 0 0-3.1z" opacity=".45"/></g><path d="M24.3 6.8a6.7 6.7 0 0 1 9.4 0M22 4.5a10 10 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="42" y="1.5" width="22" height="9.5" rx="2.8" fill="none" stroke="currentColor" stroke-opacity=".45"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5.5v13M15 5.5v13"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
   </defs>
 </svg>
@@ -59,6 +61,11 @@
     <a href="#funciones">Funciones</a>
     <a href="#instalar">Instalar</a>
   </nav>
+  <button class="pausa" type="button" data-pausa>
+    <svg class="ic i-pause" aria-hidden="true"><use href="#i-pause"/></svg>
+    <svg class="ic i-play" aria-hidden="true"><use href="#i-play"/></svg>
+    <span class="pausa-t">Pausar animaciones</span>
+  </button>
   <button class="theme" type="button" id="tema" aria-label="Cambiar a modo oscuro">
     <svg class="ic i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
     <svg class="ic i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
@@ -77,7 +84,7 @@
       <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
       <a class="how" href="#instalar">Cómo instalarla</a>
     </div>
-    <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+    <p class="meta">Android · <b data-build>Build 74</b> · <span data-size>78,7 MB</span> · <span data-date>26 de septiembre de 2026</span></p>
     <div class="handoff">
       <img src="assets/qr-apk.svg" width="88" height="88" alt="Código QR que descarga el APK de ULima++">
       <p><strong>¿Estás en la compu?</strong> Escanea el código con la cámara de tu celular y la descarga empieza ahí.</p>
@@ -96,7 +103,7 @@
                 <img class="cap cap-oscuro" src="assets/capturas/malla-oscuro-360.webp" srcset="assets/capturas/malla-oscuro-360.webp 360w, assets/capturas/malla-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
               </div>
               <script>(function(d){var i=d.querySelector('.rig [data-scr="malla"] .cap-'+(d.documentElement.classList.contains('is-dark')?'oscuro':'claro'));if(i){i.loading='eager';i.fetchPriority='high'}})(document)</script>
-              <div class="scr" data-scr="malla-mapa" data-push data-hb="oc">
+              <div class="scr" data-scr="malla-mapa" data-push data-hb="oc" data-hi>
                 <img class="cap cap-claro" src="assets/capturas/malla-mapa-claro-360.webp" srcset="assets/capturas/malla-mapa-claro-360.webp 360w, assets/capturas/malla-mapa-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
                 <img class="cap cap-oscuro" src="assets/capturas/malla-mapa-oscuro-360.webp" srcset="assets/capturas/malla-mapa-oscuro-360.webp 360w, assets/capturas/malla-mapa-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
               </div>
@@ -189,8 +196,8 @@
                   <circle class="sx-bar" cx="60" cy="702" r="23"/>
                   <path class="sx-acc-s" d="M60 690v18m-7-7 7 7 7-7m-14 13h14"/>
                   <text class="sx-ink" x="96" y="696" font-size="17" font-weight="700">ULimaPlus.apk</text>
-                  <g class="sx-going"><text class="sx-ink2" x="96" y="720" font-size="14">Descargando… <tspan data-size>78,1 MB</tspan></text><rect class="sx-prog-bg" x="96" y="734" width="254" height="4" rx="2"/><rect class="sx-prog" x="96" y="734" width="254" height="4" rx="2"/></g>
-                  <g class="sx-done"><text class="sx-ink2" x="96" y="720" font-size="14"><tspan data-size>78,1 MB</tspan> · Descarga completa</text><text class="sx-acc" x="350" y="708" font-size="16" font-weight="800" text-anchor="end">Abrir</text></g>
+                  <g class="sx-going"><text class="sx-ink2" x="96" y="720" font-size="14">Descargando… <tspan data-size>78,7 MB</tspan></text><rect class="sx-prog-bg" x="96" y="734" width="254" height="4" rx="2"/><rect class="sx-prog" x="96" y="734" width="254" height="4" rx="2"/></g>
+                  <g class="sx-done"><text class="sx-ink2" x="96" y="720" font-size="14"><tspan data-size>78,7 MB</tspan> · Descarga completa</text><text class="sx-acc" x="350" y="708" font-size="16" font-weight="800" text-anchor="end">Abrir</text></g>
                 </svg>
               </div>
               <div class="scr" data-scr="sys2" data-hb="oc" data-sb="oc">
@@ -261,15 +268,22 @@
         <img src="assets/qr-apk.svg" width="224" height="224" alt="" loading="lazy">
         <p class="qr-t">Pásala a tu celular</p>
         <p>Escanea el código con la cámara y la descarga empieza en tu celular.</p>
-        <p class="meta"><b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+        <p class="meta"><b data-build>Build 74</b> · <span data-size>78,7 MB</span> · <span data-date>26 de septiembre de 2026</span></p>
       </div>
       <svg class="leader" id="leader" aria-hidden="true" focusable="false"><path id="leadp" d=""/><circle id="leadc" r="3.5" cx="-10" cy="-10"/><circle id="leade" r="3" cx="-10" cy="-10"/></svg>
     </div>
 
     <div class="steps" id="steps">
       <div class="step step-intro" data-screen="malla"></div>
+      <div class="pausa-fila">
+        <button class="pausa" type="button" data-pausa>
+          <svg class="ic i-pause" aria-hidden="true"><use href="#i-pause"/></svg>
+          <svg class="ic i-play" aria-hidden="true"><use href="#i-play"/></svg>
+          <span class="pausa-t">Pausar animaciones</span>
+        </button>
+      </div>
 
-      <article class="step" id="funciones" data-screen="malla-mapa" data-side="r" data-beats="malla: 263.8 112 110.2 31 | 10 149 370 38 ~b | *4 268.1 116 395.6 | *136 268.1 116 315.2 | *268 268.1 116 74, 268 509.3 116 74">
+      <article class="step" id="funciones" data-screen="malla-mapa" data-side="r" data-beats="malla: 263.8 112 110.2 31 ~b | 10 149 370 38 ~b | *4 268.1 116 395.6 =1.7 | *136 268.1 116 315.2 ~b =1.7 | *268 268.1 116 74 ~n =1.7, 268 509.3 116 74 ~b =1.7">
         <div class="copy">
           <p class="eyebrow">Malla › Vista mapa</p>
           <h2>Tu avance real, curso por curso.</h2>
@@ -329,7 +343,7 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="alertas" data-side="r" data-beats="*16 92 358 200 | *16 304 358 138">
+      <article class="step" data-screen="alertas" data-side="r" data-beats="*16 92 358 200 ~b | *16 304 358 138 ~b">
         <div class="copy">
           <p class="eyebrow">Buzón de alertas</p>
           <h2>Un aviso a tiempo, antes del susto.</h2>
@@ -374,11 +388,11 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="chats" data-side="l" data-beats="chats: 16 114 358 74 | chat-seccion: 8 129 291.7 77, 8 527 294 146 ~n | chat-seccion: 86.3 396 295.7 34 | *chat-borrar: 55 332.5 280 187 28 | *chat-borrado: 191.3 402 190.7 37">
+      <article class="step" data-screen="chats" data-side="l" data-beats="chats: 16 114 358 74 | chat-seccion: 8 129 291.7 77, 8 527 294 146 ~n, 86.3 396 295.7 34 ~b | *chat-borrar: 55 332.5 280 187 28 | *chat-borrado: 191.3 402 190.7 37 ~b">
         <div class="copy">
           <p class="eyebrow">Chats › Tu sección</p>
           <h2>El chat de tu sección, sin pasar tu número.</h2>
-          <p><span class="hl-f" data-b="0">Cada sección tiene su propio chat</span>, con sus alumnos, <span class="hl-f" data-b="1">sus delegados y su profesor</span>. <span class="hl-f" data-b="2">Si te equivocas</span>, <span class="hl-f" data-b="3">borras tu mensaje para todos</span> y <span class="hl-f" data-b="4">el chat muestra que lo eliminaste</span>.</p>
+          <p><span class="hl-f" data-b="0">Cada sección tiene su propio chat</span>, con sus alumnos, <span class="hl-f" data-b="1">sus delegados y su profesor</span>. <span class="hl-f" data-b="1">Si te equivocas</span>, <span class="hl-f" data-b="2">borras tu mensaje para todos</span> y <span class="hl-f" data-b="3">el chat muestra que lo eliminaste</span>.</p>
         </div>
         <figure class="shot" data-scr="chat-seccion">
           <div class="glass" data-hb="oc">
@@ -389,7 +403,7 @@
         </figure>
       </article>
 
-      <article class="step" data-screen="ulises" data-side="r" data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^268 369 | *ulises: 46 453 319.8 278 ~o ^447 759">
+      <article class="step" data-screen="ulises" data-side="r" data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^369 759 | *ulises: 46 453 319.8 278 ~o">
         <div class="copy">
           <p class="eyebrow">Ulises, el asistente</p>
           <h2>Pregúntale a Ulises.</h2>
@@ -411,7 +425,7 @@
           <h2><span class="num" aria-hidden="true">1</span><span class="vh">Paso 1. </span>Descarga el APK.</h2>
           <p>Abre esta página en tu celular Android y <span class="hl-f" data-b="0">toca el botón</span>. <span class="hl-f" data-b="1">El enlace siempre baja la última versión</span>.</p>
           <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
-          <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+          <p class="meta">Android · <b data-build>Build 74</b> · <span data-size>78,7 MB</span> · <span data-date>26 de septiembre de 2026</span></p>
         </div>
         <figure class="shot" data-scr="sys1">
           <div class="glass" data-hb="oc" data-sb="oc">
@@ -435,8 +449,8 @@
               <circle class="sx-bar" cx="60" cy="702" r="23"/>
               <path class="sx-acc-s" d="M60 690v18m-7-7 7 7 7-7m-14 13h14"/>
               <text class="sx-ink" x="96" y="696" font-size="17" font-weight="700">ULimaPlus.apk</text>
-              <g class="sx-going"><text class="sx-ink2" x="96" y="720" font-size="14">Descargando… <tspan data-size>78,1 MB</tspan></text><rect class="sx-prog-bg" x="96" y="734" width="254" height="4" rx="2"/><rect class="sx-prog" x="96" y="734" width="254" height="4" rx="2"/></g>
-              <g class="sx-done"><text class="sx-ink2" x="96" y="720" font-size="14"><tspan data-size>78,1 MB</tspan> · Descarga completa</text><text class="sx-acc" x="350" y="708" font-size="16" font-weight="800" text-anchor="end">Abrir</text></g>
+              <g class="sx-going"><text class="sx-ink2" x="96" y="720" font-size="14">Descargando… <tspan data-size>78,7 MB</tspan></text><rect class="sx-prog-bg" x="96" y="734" width="254" height="4" rx="2"/><rect class="sx-prog" x="96" y="734" width="254" height="4" rx="2"/></g>
+              <g class="sx-done"><text class="sx-ink2" x="96" y="720" font-size="14"><tspan data-size>78,7 MB</tspan> · Descarga completa</text><text class="sx-acc" x="350" y="708" font-size="16" font-weight="800" text-anchor="end">Abrir</text></g>
             </svg>
             <div class="chrome" aria-hidden="true"><span class="sb"><b>9:41</b><svg viewBox="0 0 68 12"><use href="#i-sb"/></svg></span><i class="cam"></i><i class="hb"></i></div>
           </div>
@@ -498,7 +512,7 @@
     <h2 id="fin">Tu próximo ciclo <span>empieza aquí.</span></h2>
     <div class="end-cta">
       <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
-      <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+      <p class="meta">Android · <b data-build>Build 74</b> · <span data-size>78,7 MB</span> · <span data-date>26 de septiembre de 2026</span></p>
     </div>
   </div>
   <p class="disclaimer"><svg class="ic" aria-hidden="true"><use href="#i-cap"/></svg><span><strong>Proyecto académico, no oficial.</strong> ULima++ lo desarrollan alumnos como proyecto del curso Ingeniería de Software II. No es una app de la Universidad de Lima ni la representa.</span></p>
