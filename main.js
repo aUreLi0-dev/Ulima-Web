@@ -155,11 +155,12 @@
   var DIR = [[0, -1], [0.7071, -0.7071], [1, 0], [0.7071, 0.7071], [0, 1], [-0.7071, 0.7071], [-1, 0], [-0.7071, -0.7071]];
   var CENTROID = 229.4;
   var CR_HOME = [[306.8, -133.5], [401.2, -133.5]], CR_A = 36.3, CR_TH = 8.7;
-  // Destinos en la cabecera real de la app, que no lleva estrella. La estrella se achica a la
-  // altura del texto y se disuelve a su izquierda, y los «++» caen sobre los del texto «ULIMA++».
-  var HX = 12, HY = 64.5, KE = 7 / R, CTRL = [60, 200];
-  var PP_X = [86.3, 97.3], PP_Y = 64.8, PP_A = 5, PP_TH = 1.4, PP_SK = -10;
-  var WM_X = 19, WM_W = 62, WM_STOPS = [14, 24, 31, 47, 62];
+  // Destinos en la cabecera real de la app, medidos en sus capturas. La estrella vuela a la de la
+  // cabecera, que mide 26 dp de punta a punta y va 10 dp antes del texto, y los «++» caen sobre los
+  // del texto «ULIMA++».
+  var HX = 33, HY = 65, KE = 13 / R, CTRL = [60, 200];
+  var PP_X = [122.3, 133.3], PP_Y = 64.8, PP_A = 5, PP_TH = 1.4, PP_SK = -10;
+  var WM_X = 55, WM_W = 62, WM_STOPS = [14, 24, 31, 47, 62];
   var FS = 29.9, BASE = CY + 71.5, S = 1.3;
 
   var splash = $('splash'), glass = $('glass');
@@ -419,8 +420,9 @@
     attr(n.panelg, 'opacity', f(1 - seg(p, 0.88, 1)));
 
     var x = quad(P.x, CTRL[0], HX, q), y = quad(P.y, CTRL[1], HY, q), k = P.k * Math.pow(KE / P.k, q);
+    // La estrella no se desvanece. Se posa sobre la de la cabecera, que espera debajo, y el panel se
+    // funde a su alrededor.
     attr(n.logo, 'transform', 'translate(' + f(x) + ' ' + f(y) + ') scale(' + k.toFixed(5) + ')');
-    attr(n.logo, 'opacity', f(1 - seg(q, 0.62, 1)));
     attr(n.starg, 'transform', 'rotate(' + f(P.rot) + ')');
     attr(n.inner, 'transform', 'scale(' + lerp(P.inS, 1, q).toFixed(4) + ')');
     for (i = 0; i < 8; i++) {
@@ -581,6 +583,9 @@
     glass.setAttribute('data-hb', (sc && sc.getAttribute('data-hb')) || 'cc');
     if (sc && sc.hasAttribute('data-sb')) glass.setAttribute('data-sb', sc.getAttribute('data-sb'));
     else glass.removeAttribute('data-sb');
+    // Sobre una captura naranja, las lupas y los anillos van en blanco (data-mk).
+    if (sc && sc.hasAttribute('data-mk')) glass.setAttribute('data-mk', sc.getAttribute('data-mk'));
+    else glass.removeAttribute('data-mk');
     stage.classList.toggle('is-install', !!install);
     // En el paso 1 la descarga avanza hasta «Abrir» cuando el recorrido enciende su aviso, y en el
     // paso 2 el interruptor se enciende cuando el recorrido llega a él.
@@ -1044,6 +1049,8 @@
     s.glass.setAttribute('data-hb', r.getAttribute('data-hb') || 'cc');
     if (r.hasAttribute('data-sb')) s.glass.setAttribute('data-sb', r.getAttribute('data-sb'));
     else s.glass.removeAttribute('data-sb');
+    if (r.hasAttribute('data-mk')) s.glass.setAttribute('data-mk', r.getAttribute('data-mk'));
+    else s.glass.removeAttribute('data-mk');
   }
   function firstScreen(s) {
     if (!s.beats.length) return s.scr;

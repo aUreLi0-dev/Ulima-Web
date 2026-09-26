@@ -24,7 +24,7 @@
   --ink: #16161C;
   --ink2: #50505E;
   --accent: #B84A00;
-  /* Los textos chicos en naranja (la ceja de cada paso y «Próximamente») van sobre el resplandor del
+  /* Los textos chicos en naranja (la ceja de cada paso y «Nuevo») van sobre el resplandor del
      teléfono, que aclara el fondo. Este tono les da 4,5 a 1 o más también ahí. */
   --accent-sm: #A94300;
   --glow: .34;
@@ -358,6 +358,16 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 }
 :root[data-theme="dark"] .chrome { color: var(--sb-d); }
 :root[data-theme="dark"] .hb { background: var(--hb-d); }
+/* Las lupas y los anillos van en naranja. Sobre una captura naranja, como la bienvenida clara, el
+   naranja no se ve, y data-mk los pasa a blanco (b) o los deja en naranja (n), primero sobre la
+   captura clara y después sobre la oscura. */
+.glass { --mk-l: var(--orange); --mk-d: var(--orange); --mk: var(--mk-l); }
+.glass[data-mk^="b"] { --mk-l: #fff; }
+.glass[data-mk$="b"] { --mk-d: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .glass { --mk: var(--mk-d); }
+}
+:root[data-theme="dark"] .glass { --mk: var(--mk-d); }
 
 /* ---------- Detalles sobre la captura ---------- */
 /* Mientras un texto está activo, el resto de la pantalla queda bajo un velo, la zona que explica
@@ -381,7 +391,7 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 .lens {
   position: absolute; border-radius: var(--br, calc(var(--u) * 14));
   opacity: 0; transform: scale(1);
-  box-shadow: 0 0 0 calc(var(--u) * 2 / var(--s, 1)) var(--orange), 0 calc(var(--u) * 18 / var(--s, 1)) calc(var(--u) * 34 / var(--s, 1)) calc(var(--u) * -14 / var(--s, 1)) rgba(0, 0, 0, .7);
+  box-shadow: 0 0 0 calc(var(--u) * 2 / var(--s, 1)) var(--mk, var(--orange)), 0 calc(var(--u) * 18 / var(--s, 1)) calc(var(--u) * 34 / var(--s, 1)) calc(var(--u) * -14 / var(--s, 1)) rgba(0, 0, 0, .7);
   transition: opacity .25s ease, transform .6s cubic-bezier(.2, .9, .25, 1.15);
 }
 .lens.is-on { opacity: 1; transform: translate(calc(var(--u) * var(--dx, 0)), calc(var(--u) * var(--dy, 0))) scale(var(--s, 1.04)); }
@@ -403,7 +413,7 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
    chico. */
 .ring {
   position: absolute; box-sizing: border-box;
-  border: 2px solid var(--orange); border-radius: 50%;
+  border: 2px solid var(--mk, var(--orange)); border-radius: 50%;
   box-shadow: 0 0 0 calc(var(--u) * 4) rgba(255, 102, 0, .2);
   opacity: 0; transform: scale(.5);
   transition: opacity .3s ease, transform .5s cubic-bezier(.2, .9, .25, 1.35);
@@ -412,7 +422,7 @@ html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 .ring.pill { border-radius: 99px; box-shadow: 0 0 0 calc(var(--u) * 2.5) rgba(255, 102, 0, .2); }
 .ring::after {
   content: ""; position: absolute; inset: -2px; border-radius: inherit;
-  border: 2px solid var(--orange); opacity: 0;
+  border: 2px solid var(--mk, var(--orange)); opacity: 0;
 }
 .ring.is-on::after { animation: ping 1.8s ease-out .35s 3; }
 .ring.pill.is-on::after { animation-name: ping-pill; }
