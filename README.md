@@ -56,16 +56,28 @@ Las pantallas del teléfono no se dibujan en HTML. Son capturas de la app render
 propio código con datos ficticios, a 1170 x 2532 px, con una prueba de Flutter que se corre en una
 rama local del frontend y no se publica. La prueba llega a cada pantalla por el mismo camino que un
 alumno, con toques y arrastres, y además de la pantalla principal de cada paso guarda las
-intermedias que el recorrido alterna, como la lista de la malla con su botón «Vista mapa», la hoja
-que se abre al tocar un bloque en el horario o la pestaña de asesorías antes y después de tocar
-«Asistiré». Solo las pantallas de Android de los dos primeros pasos de
-instalación son esquemas simples en SVG, dentro de `index.html`, que toman los colores del tema.
+intermedias que el recorrido alterna. Entre ellas están la lista de la malla con su botón «Vista
+mapa», el mapa al 60 % con los niveles 7, 8 y 9 enteros, la calculadora antes y después de anotar
+el Examen Final en la hoja «Registrar Nota», el aviso «Hay un cruce» al guardar un bloque, la hoja
+de un bloque en el horario y el día cancelado que deja, la pestaña de asesorías antes y después de
+tocar «Asistiré» y el mensaje propio, el diálogo «¿Eliminar mensaje?» y la lápida del chat. Solo
+las pantallas de Android de los dos primeros pasos de instalación son esquemas simples en SVG,
+dentro de `index.html`, que toman los colores del tema.
+
 Para reemplazar una captura se convierte el PNG nuevo a los dos anchos, por ejemplo con `cwebp`.
+Las pantallas con `data-hi` (la malla, el horario, el día cancelado y la calculadora final) tienen
+además una versión de 1170 px, que solo baja cuando una lupa amplía mucho una zona chica, como la
+insignia de la PC2 o el birrete.
 
 ```bash
 cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 360 0 malla-claro.png -o assets/capturas/malla-claro-360.webp
 cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 720 0 malla-claro.png -o assets/capturas/malla-claro-720.webp
+cwebp -q 70 -m 6 -sharp_yuv -metadata none malla-claro.png -o assets/capturas/malla-claro-1170.webp
 ```
+
+En el teléfono fijo, las pantallas de los pasos 2 en adelante llevan su fuente en `data-src` y
+`data-srcset`, y `main.js` las carga cuando su paso se acerca, así la página no baja todas al
+abrirse. La malla del tema activo baja sin esperar, porque es la primera pantalla que se ve.
 
 Las capturas traen 24 pt libres arriba y 16 pt abajo. Ahí la página dibuja con HTML y CSS la barra
 de estado (la hora 9:41, la señal, el wifi y la batería), la cámara y la barra de inicio, así que
@@ -78,13 +90,14 @@ después sobre la oscura. Sin el atributo, la tinta es clara en los dos temas.
 Cada paso tiene en `data-beats` los momentos que recorre la pantalla mientras su texto está activo,
 separados por `|`. Un momento es una o varias zonas `x y ancho alto` en puntos de la captura, que
 mide 390 x 844, separadas por coma. Una zona puede llevar un quinto número con el radio de sus
-esquinas, que por defecto es 14 y con la mitad del lado la vuelve un círculo. Además, el momento
-puede llevar estas marcas.
+esquinas, que por defecto es 14 y con la mitad del lado la vuelve un círculo, y una marca para su
+anillo, `~t` (al medio del borde de arriba), `~b` (al medio del de abajo), `~o` (del lado opuesto al
+texto) o `~n` (sin anillo). Además, el momento puede llevar estas marcas.
 
 - `pantalla:` al comienzo, cuando el momento se ve en otra captura que la del paso
   (`data-screen`). Sin ella, el momento usa la captura del paso.
-- `*` antes de todo, para marcar un momento principal. Con «reducir movimiento» se ven a la vez los
-  principales, o el último si ninguno lo está.
+- `*` antes de todo, para marcar un momento principal, que dura 1,7 s en lugar de 1,1 s. Con
+  «reducir movimiento» se ven a la vez los principales, o el último si ninguno lo está.
 - `@x y` al final, para sumar un anillo sobre un elemento chico, o `@x y ancho alto`, para rodearlo
   con una píldora de 3 puntos de aire, como la insignia de una evaluación.
 - `^y ...` al final, para descubrir la conversación de la captura hasta cada una de esas alturas
@@ -93,23 +106,33 @@ puede llevar estas marcas.
 
 ```html
 <article class="step" data-screen="ulises" data-side="r"
-  data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ^268 369 | *ulises: 46 453 319.8 278 ^447 759">
+  data-beats="horario: 7.3 693.3 69.4 69.4 34.7 | ulises: 46 274 319.8 89 ~o ^268 369 | *ulises: 46 453 319.8 278 ~o ^447 759">
 ```
 
-En cada momento el resto de la pantalla se oscurece, la zona sube con un leve zoom y un borde que
-late, un anillo marca el borde de la zona que mira al texto y en el texto se marca la frase que
-tiene el mismo número en `data-b` (una frase puede llevar varios, separados por espacio). En
-escritorio, una línea punteada une el texto con ese anillo y su punta viaja de un anillo al
-siguiente. Al terminar el recorrido, el oscurecido se levanta y quedan el borde y el anillo sobre la
-pantalla en color. El oscurecido se recorta con `clip-path` y las lupas y los anillos nacen en su
-lugar, así que nada cambia la geometría de la página ni suma desplazamientos de diseño (CLS).
+En cada momento el resto de la pantalla se oscurece un instante y queda bajo un velo suave, más
+leve en el tema claro, y la zona sube en una lupa con un borde que late. La lupa amplía apenas las
+zonas grandes y hasta 2,6 veces las chicas, como la insignia de una evaluación, una línea de texto o
+el birrete, y si no cabe se corre lo justo para quedar dentro de la pantalla. Un anillo toca desde
+afuera un borde libre de la zona, del lado del texto cuando hay lugar y si no arriba o abajo, así
+nunca cae sobre lo que explica, y en el texto se marca la frase que tiene el mismo número en
+`data-b` (una frase puede llevar varios, separados por espacio). En escritorio, una línea punteada
+une el texto con el canto del teléfono a la altura de ese anillo, sin entrar a la pantalla, y su
+punta sube o baja por el canto de un anillo al siguiente. Al terminar el recorrido, el velo se
+levanta y quedan la lupa y el anillo sobre la pantalla en color. El velo se recorta con `clip-path`
+y las lupas y los anillos nacen en su lugar y se mueven con `transform`, así que nada cambia la
+geometría de la página ni suma desplazamientos de diseño (CLS).
+
+El recorrido empieza a los 0,3 s de llegar al paso y los momentos de paso duran 1,1 s, así el
+momento principal de cada paso llega en los primeros segundos. Al mover el puntero sobre el texto
+de un paso, al tocarlo o al llevarle el foco con el teclado, y en celular también al tocar su
+captura, el recorrido se detiene y deja su estado final.
 
 Las pantallas intermedias también son capturas reales. Un cambio dentro de la misma pantalla, como
 una pestaña, un botón que cambia de estado o una hoja que se abre, lleva `data-cf` en su pantalla
 del teléfono fijo y entra en su lugar, sin deslizarse. En celular y tableta, cada figura suma encima
 las pantallas intermedias de su paso y corre el mismo recorrido cuando queda a la vista, sin tocar
 el desplazamiento. En el paso 1 de la instalación, el esquema de Chrome muestra la descarga que
-avanza hasta «Abrir».
+avanza hasta «Abrir» cuando el recorrido enciende su aviso.
 
 Las zonas salen del `zonas.json` que la prueba de Flutter escribe junto a las capturas, así que al
 cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
@@ -122,13 +145,17 @@ cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
   son decorativas y el lector de pantalla lee las que acompañan a cada texto.
 - Los números de los pasos de instalación son decorativos y cada título lleva un «Paso 1.» oculto
   para el lector de pantalla.
-- Textos con contraste de 4,5 a 1 o más y foco visible en todos los controles. En escritorio, el
+- Textos con contraste de 4,5 a 1 o más y foco visible en todos los controles. La ceja de cada paso
+  y el rótulo «Próximamente» usan en el tema claro un naranja más oscuro (`--accent-sm`), porque
+  quedan sobre el resplandor del teléfono. En escritorio, el
   paso activo es el del texto más cercano al centro de la ventana, así que el texto que se lee
   siempre está a contraste pleno. Los textos vecinos que asoman por arriba o por abajo quedan
   atenuados a propósito hasta que llegan al centro.
 - Con «reducir movimiento» activado en el sistema no hay animaciones, el logo queda quieto y cada
-  paso muestra, sin moverse ni oscurecer la captura, sus zonas principales a la vez.
+  paso muestra, sin moverse, sin zoom ni oscurecer la captura, sus zonas principales a la vez, con
+  un anillo por momento.
 - El borde de la zona y el anillo laten unas pocas veces y se quedan quietos, y el recorrido de
-  cada paso termina en unos segundos, con la captura otra vez en color.
+  cada paso termina en unos segundos, con la captura otra vez en color. Mover el puntero sobre el
+  texto, tocarlo o llevarle el foco detiene el recorrido en su estado final.
 - La barra de estado, la cámara, la barra de inicio y las copias ampliadas de cada zona son
   decorativas y quedan ocultas para el lector de pantalla.
