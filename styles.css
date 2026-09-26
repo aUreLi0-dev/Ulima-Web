@@ -177,8 +177,9 @@ html:not(.js) .theme { display: none; }
 .js .pausa-fila { display: flex; justify-content: center; padding-top: 8px; }
 .js .pausa-fila .pausa { display: inline-flex; }
 
-/* En pausa se apaga lo que late o se repite. */
-html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after { animation: none !important; }
+/* En pausa se apaga lo que late o se repite, también el logo en reposo. */
+html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after,
+html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
 
 /* ---------- Botones y textos comunes ---------- */
 .btn {
@@ -204,6 +205,18 @@ html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .
 
 /* ---------- Portada ---------- */
 .hero { max-width: 640px; margin: 0 auto; padding: 36px var(--gutter) 24px; }
+/* El logo entero, la estrella de ocho rombos y «ULIMA++» en cursiva. En reposo la estrella respira
+   y los «++» saltan de a uno, como el contador de la intro. */
+.lockup { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
+.lk-star { width: 48px; height: 48px; flex: none; fill: var(--orange); transform-origin: 50% 50%; }
+.lk-wm { font: italic 800 32px/1 var(--display); letter-spacing: -.012em; white-space: nowrap; }
+.lk-pp { color: var(--accent); }
+.lk-pp i { display: inline-block; font-style: inherit; transform-origin: 50% 60%; }
+.js .lk-star { animation: lk-respira 5.2s ease-in-out infinite; }
+.js .lk-pp i { animation: lk-mas 5.2s ease-in-out infinite; }
+.js .lk-pp i + i { animation-delay: .14s; }
+@keyframes lk-respira { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.06) rotate(7deg); } }
+@keyframes lk-mas { 0%, 72%, 100% { transform: none; } 78% { transform: translateY(-3px) scale(1.3); } 86% { transform: scale(.94); } 92% { transform: none; } }
 .hero h1 {
   margin: 0 0 16px;
   font: italic 800 clamp(34px, 9.6vw, 56px)/.98 var(--display);

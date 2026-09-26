@@ -1,7 +1,8 @@
 /* ULima++ · landing
    1. Tema claro u oscuro, según el sistema o el conmutador.
    2. Versión, peso y fecha del APK, en vivo desde la API pública de GitHub, con respaldo.
-   3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar.
+   3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar y distinta de
+      la de la visita anterior, y la espera en bucle de cada intro mientras el logo reposa.
    4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar.
    5. Detalles sobre la captura, con velo, lupa, anillo, línea guía y frase, al ritmo del texto
       activo, y las pantallas intermedias de cada paso, que también son capturas reales. */
@@ -163,8 +164,12 @@
     code: $('sp-code'), caret: $('sp-caret'), crClip: $('sp-crclipr'),
     holeWm: $('sp-hole-wm'), holePp: $('sp-hole-pp')
   };
+  n.wait = $('sp-wait');
   var rhEls = all('.sp-rh', splash);
   var pr = [$('sp-pr0'), $('sp-pr1')];
+  // La espera en bucle de cada intro, el movimiento del logo en reposo mientras la página espera.
+  // Con movimiento reducido o con las animaciones en pausa no hay espera.
+  function waitOn() { return !reduce && !still; }
   var crEls = [$('sp-cr0'), $('sp-cr1')].map(function (g) { var r = g.querySelectorAll('rect'); return { g: g, h: r[0], v: r[1] }; });
 
   var CW = 0.6 * FS, LEFT = CX - 3.5 * CW;
@@ -189,11 +194,16 @@
     return P;
   }
 
+  // Cada pose recibe el instante de la intro [t], el instante de la intro en que empezó la salida
+  // [tEx] (Infinity si todavía no empieza) y el avance de la salida [p].
+
   // A, Ensamble (versión adaptada a la spec). Parte de la estrella completa del splash nativo,
   // los ocho rombos se abren juntos y vuelven a encajar uno a uno en sentido horario; un destello
-  // asoma por las rendijas y los «++» saltan como un contador.
-  function poseEnsamble(t) {
-    var P = basePose(), kick = 0, k, j;
+  // asoma por las rendijas y los «++» saltan como un contador. En la espera, una onda recorre los
+  // rombos en sentido horario, como en ensamble-adaptada.html.
+  function poseEnsamble(t, tEx, p) {
+    var P = basePose(), kick = 0, k, j, wa = 0, ph = 0;
+    if (waitOn() && t > 1250) { wa = clamp((t - 1250) / 300) * (1 - clamp((p || 0) * 3)); ph = (t - 1250) / 1100; }
     var po = outCubic(seg(t, 80, 260));
     for (k = 0; k < 8; k++) {
       var r = P.rh[k], start = 260 + 50 * k, dur = 264, p = clamp((t - start) / dur), off, ang, sc, op;
@@ -202,6 +212,7 @@
         off = 200 * (1 - outBack(p, 1.25)); ang = -60 * (1 - outCubic(p));
         sc = 0.6 + 0.4 * outCubic(p); op = 0.4 + 0.6 * seg(t, start, start + 50);
       }
+      if (wa > 0) { var sw = Math.sin(2 * Math.PI * (ph - k / 8)); off += wa * 20 * (sw > 0 ? Math.pow(sw, 6) : 0); }
       r.tx = DIR[k][0] * off; r.ty = DIR[k][1] * off; r.rot = ang; r.sc = sc; r.op = op;
       var x = (t - start - dur * 0.45) / 190;
       if (x > 0 && x < 1) kick += Math.sin(Math.PI * x);
@@ -223,13 +234,32 @@
   }
 
   // B, Incremento. La estrella gira 45° con resorte, late como un +1 y el segundo «+» nace del primero.
-  function poseIncremento(t) {
-    var P = basePose(), i, off = 0;
+  // En la espera da un tic de 45° cada 1,3 s desde los 1400 ms, con un latido de los rombos y un
+  // asentimiento de los «++», como en incremento.html. Un tic ya empezado termina aunque empiece la
+  // salida, y la salida no lo espera (RF-SPL-10).
+  function poseIncremento(t, tEx) {
+    var P = basePose(), i, off = 0, nod = [1, 1];
     P.rot = 45 * spring(t / 1000, 15.708, 0.55);
     var bp = (t - 180) / 380;
     if (bp > 0 && bp < 1) {
       var b = bp < 0.32 ? outCubic(bp / 0.32) : 1 - inOutCubic((bp - 0.32) / 0.68);
       off = 24 * b; P.inS = 1 - 0.05 * b;
+    }
+    var lim = Math.min(t, tEx == null ? Infinity : tEx);
+    if (waitOn() && lim >= 1400) {
+      var nt = Math.floor((lim - 1400) / 1300) + 1, q0 = Math.max(0, nt - 2);
+      // Los tics viejos ya se asentaron y suman 45° cada uno. Solo los dos últimos se mueven.
+      P.rot += 45 * q0;
+      for (var q = q0; q < nt; q++) {
+        var tt = 1400 + 1300 * q, tp = (t - tt) / 420;
+        P.rot += 45 * spring((t - tt) / 1000, 12.566, 0.72);
+        if (tp > 0 && tp < 1) { var sb = Math.sin(Math.PI * tp); off += 8 * sb; P.inS -= 0.02 * sb; }
+        for (var jn = 0; jn < 2; jn++) {
+          var nq = (t - (tt + 60 + 110 * jn)) / 320;
+          if (nq > 0 && nq < 1) nod[jn] *= 1 + 0.14 * Math.sin(Math.PI * nq);
+        }
+      }
+      P.rot %= 360;
     }
     for (i = 0; i < 8; i++) { P.rh[i].tx = DIR[i][0] * off; P.rh[i].ty = DIR[i][1] * off; }
     var rp = (t - 230) / 560;
@@ -241,7 +271,7 @@
     if (c2 > 0) { var e2 = outBack(Math.min(c2, 1), 1.5); x2 = x1 + (CR_HOME[1][0] - CR_HOME[0][0]) * e2; s2 = s1 * (0.8 + 0.2 * e2); }
     var xs = [x1, x2], ss = [s1, s2], on = [c1 > 0, c2 > 0];
     for (var j = 0; j < 2; j++) {
-      P.cr[j] = { x: P.x + xs[j] * K0, y: P.y + CR_HOME[j][1] * K0, a: CR_A * K0 * ss[j], th: CR_TH * K0 * ss[j], rot: 0, op: on[j] ? 1 : 0, tint: 0 };
+      P.cr[j] = { x: P.x + xs[j] * K0, y: P.y + CR_HOME[j][1] * K0, a: CR_A * K0 * ss[j] * nod[j], th: CR_TH * K0 * ss[j] * nod[j], rot: 0, op: on[j] ? 1 : 0, tint: 0 };
     }
     if (t < 920) P.clipX = P.x + 236 * K0;
     return P;
@@ -258,9 +288,18 @@
     if (kb > 0 && kb < 1) k *= 1 + 0.035 * Math.sin(Math.PI * kb);
     return { x: CX, y: y, k: k };
   }
-  function poseCodigo(t) {
-    var P = basePose(), s = codeStar(t), j;
+  // En la espera, un cursor parpadea junto a los «++» como un programa que espera, como en
+  // codigo.html, y se apaga en 120 ms cuando empieza la salida. Mientras la salida no empieza, te
+  // es Infinity y el apagado no corre, porque Infinity − Infinity daría NaN y el cursor no se vería.
+  function poseCodigo(t, tEx) {
+    var P = basePose(), s = codeStar(t), j, te = tEx == null ? Infinity : tEx;
     P.x = s.x; P.y = s.y; P.k = s.k;
+    var w = t - 1330;
+    if (waitOn() && w > 0 && te > 1330 && t < te + 140) {
+      var wop = w < 200 ? w / 200 : 0.5 + 0.5 * Math.cos(2 * Math.PI * (w - 200) / 1060);
+      if (te !== Infinity) wop *= 1 - seg(t, te, te + 120);
+      P.wait = { x: s.x + (402.5 + 36.4 + 22) * s.k, y: s.y - 133.8 * s.k - 36.4 * s.k * 1.2, h: 36.4 * s.k * 2.4, op: wop };
+    }
     var rk = seg(t, 1190, 1410);
     if (rk > 0 && rk < 1) P.ring = { r: R * lerp(1.02, 1.5, outCubic(rk)), w: lerp(1.8, 0.4, rk) * S / s.k, op: 0.38 * (1 - rk) };
     var nc = 0, np = 0;
@@ -302,15 +341,25 @@
   // «++» termina en 930 + 150 + 300 = 1380 ms, después de INTRO_END, y el bucle de cuadros sigue
   // hasta entonces para que el anillo no quede congelado a medio desvanecer.
   var FX_END = { ensamble: 1400, incremento: 1230, codigo: 1410 };
-  var variant = VARIANTS[Math.floor(Math.random() * VARIANTS.length) % VARIANTS.length];
+  // Al azar entre las tres, como en la app, y nunca la misma de la visita anterior, que se guarda en
+  // el navegador. Sin almacenamiento, el sorteo es entre las tres.
+  var INTRO_KEY = 'ulimaplus-intro', prevIntro = null;
+  try { prevIntro = win.localStorage.getItem(INTRO_KEY); } catch (e) { /* sin almacenamiento */ }
+  var pool = VARIANTS.filter(function (v) { return v !== prevIntro; });
+  var variant = pool[Math.floor(Math.random() * pool.length) % pool.length];
   try {
     // Para revisar una intro concreta se agrega ?intro=ensamble, ?intro=incremento o ?intro=codigo.
     var forcedIntro = /[?&]intro=(\w+)/.exec(win.location.search);
     if (forcedIntro && POSES[forcedIntro[1]]) variant = forcedIntro[1];
   } catch (e) { /* sin parámetros */ }
+  try { win.localStorage.setItem(INTRO_KEY, variant); } catch (e) { /* vale solo para esta visita */ }
   root.setAttribute('data-intro', variant);
 
-  var NATIVE = 450, HOLD = 650, introStart = null;
+  // NATIVE es el splash nativo quieto antes del primer cuadro animado, 700 ms como en las maquetas.
+  var NATIVE = 700, HOLD = 650, introStart = null;
+  // Salida del splash a la app. Empieza una sola vez, al bajar o al terminar la intro en el celular,
+  // y desde ahí corre por tiempo hasta el final, así nunca queda a medias (EX.t0 es su comienzo).
+  var EX = { t0: null };
   function introT(ts) {
     if (reduce) return 1e6;
     if (introStart === null) return 0;
@@ -355,7 +404,8 @@
     if (lastP >= 1 || lastP < 0) { splash.style.display = ''; glass.classList.add('in-splash'); }
     lastP = p;
 
-    var t = introT(ts), P = POSES[variant](t), i, j;
+    var tEx = EX.t0 === null || introStart === null ? Infinity : Math.max(EX.t0 - introStart - NATIVE, 0);
+    var t = introT(ts), P = POSES[variant](t, tEx, p), i, j;
     var q = inOutCubic(clamp(p / 0.92)), qp = inOutCubic(clamp(p / 0.9));
     var h = lerp(844, HEAD_H, qp);
     attr(n.panel, 'd', panelPath(h, qp));
@@ -414,6 +464,10 @@
     if (P.code && P.code.cop * fxOut > 0.002) {
       attr(n.caret, 'x', f(P.code.cx)); attr(n.caret, 'y', f(BASE - 23.4 + P.code.dy)); attr(n.caret, 'opacity', f(P.code.cop * fxOut));
     } else attr(n.caret, 'opacity', '0');
+    if (P.wait && P.wait.op > 0.002) {
+      attr(n.wait, 'x', f(P.wait.x)); attr(n.wait, 'y', f(P.wait.y));
+      attr(n.wait, 'height', f(P.wait.h)); attr(n.wait, 'opacity', f(P.wait.op));
+    } else attr(n.wait, 'opacity', '0');
 
     // «ULIMA» aparece de izquierda a derecha por una ventana del panel que deja ver la cabecera
     // de la captura; en Código se teclea letra por letra.
@@ -1135,15 +1189,21 @@
   }
 
   var S2 = { idx: -1 };
+  // La salida del splash empieza una sola vez. En la compu, al bajar un poco («Baja y la app se
+  // abre»); en el celular, sola al terminar la intro y su pausa, o antes si se baja. Bajar nunca
+  // corta la intro del logo. Solo adelanta la salida hasta el fin de la intro (como mucho 1,33 s
+  // después del splash nativo), como pide la spec, que la empieza en max(fin de la intro, carga).
+  // Desde ahí corre por tiempo hasta el final, se baje como se baje, así nunca queda congelada a
+  // medias. Con movimiento reducido el logo aparece entero y la app entra de una vez.
   function splashProgress(ts, y) {
-    if (L.wide) {
-      var p = clamp(y / (0.5 * L.vh));
-      return reduce ? (p > 0.5 ? 1 : 0) : p;
+    if (EX.t0 === null && introStart !== null) {
+      var scrolled = y > (L.wide ? 0.04 * L.vh : 6);
+      var auto = !L.wide && ts - introStart - NATIVE >= (reduce ? 700 : INTRO_END[variant] + HOLD);
+      if (auto || (scrolled && reduce)) EX.t0 = ts;
+      else if (scrolled) EX.t0 = Math.max(ts, introStart + NATIVE + INTRO_END[variant]);
     }
-    // En el modo apilado, la salida corre sola al terminar la intro, sin tocar el desplazamiento.
-    if (reduce) return 1;
-    if (introStart === null) return 0;
-    return seg(ts - introStart - NATIVE - INTRO_END[variant] - HOLD, 0, EXIT_DUR[variant]);
+    if (EX.t0 === null) return 0;
+    return reduce ? 1 : seg(ts - EX.t0, 0, EXIT_DUR[variant]);
   }
 
   function update(ts) {
@@ -1187,15 +1247,22 @@
   function requestRender() { if (!pending) { pending = true; win.requestAnimationFrame(frame); } }
   function frame(ts) {
     pending = false;
-    var p = update(ts);
-    // Sigue pidiendo cuadros mientras la intro o la salida automática están en curso.
-    if (introStart !== null && !reduce) {
+    var p = update(ts), busy = false;
+    // Sigue pidiendo cuadros mientras corre la intro, la salida o la espera en bucle del logo. La
+    // espera se detiene con las animaciones en pausa, salvo en el celular, donde la salida llega sola.
+    if (introStart !== null && !reduce && p < 1) {
       var el = ts - introStart - NATIVE;
-      var busy = el < FX_END[variant] || (!L.wide && p < 1);
-      if (busy) requestRender();
+      if (el < FX_END[variant] || EX.t0 !== null || !still || !L.wide) busy = true;
     }
+    if (busy) requestRender();
   }
-  function startIntro() { if (introStart === null) { introStart = now(); requestRender(); } }
+  function startIntro() {
+    if (introStart !== null) return;
+    introStart = now();
+    requestRender();
+    // Con movimiento reducido no hay cuadros seguidos. La app entra a su hora.
+    if (reduce) setTimeout(requestRender, NATIVE + 760);
+  }
 
   /* ---------- Arranque ---------- */
   var remeasure = function () { measure(); requestRender(); };
