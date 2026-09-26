@@ -1,80 +1,461 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>ULima++ | Descarga la app</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ULima++ · Todo tu ciclo en una sola app</title>
+  <meta name="description" content="ULima++ reúne tu malla, tu horario con tus propios bloques, tus notas, tus alertas, tu récord, los anuncios y el chat de tu sección, con Ulises para responder tus dudas. App para Android hecha por alumnos de la Universidad de Lima.">
+  <link rel="canonical" href="https://ulimaweb.vercel.app/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#F3F3F6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0E0E12" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ULima++">
+  <meta property="og:locale" content="es_PE">
+  <meta property="og:url" content="https://ulimaweb.vercel.app/">
+  <meta property="og:title" content="ULima++ · Todo tu ciclo en una sola app">
+  <meta property="og:description" content="Tu malla, tu horario, tus notas y el chat de tu sección en el mismo lugar, con Ulises para responder tus dudas. Proyecto académico de alumnos para Android.">
+  <meta property="og:image" content="https://ulimaweb.vercel.app/assets/og-ulimaplus.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Dos pantallas reales de ULima++, la malla y el horario, junto al logo y el lema Todo tu ciclo en una sola app.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ULima++ · Todo tu ciclo en una sola app">
+  <meta name="twitter:description" content="Tu malla, tu horario, tus notas y el chat de tu sección en el mismo lugar, con Ulises para responder tus dudas.">
+  <meta name="twitter:image" content="https://ulimaweb.vercel.app/assets/og-ulimaplus.jpg">
+  <meta name="twitter:image:alt" content="Dos pantallas reales de ULima++, la malla y el horario, junto al logo y el lema Todo tu ciclo en una sola app.">
+
+  <!-- Tema y modo con JS antes del primer pintado, para que no parpadee. -->
+  <script>(function(d){d.classList.add('js');var t=null;try{t=localStorage.getItem('ulimaplus-tema')}catch(e){}if(t==='light'||t==='dark')d.setAttribute('data-theme',t);var k=t?t==='dark':!!(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);if(k)d.classList.add('is-dark')})(document.documentElement)</script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="main.js" defer></script>
 </head>
-
 <body>
-  <header class="header">
-    <div class="header-content">
-      <img src="assets/logo-ulima.png" alt="Logo Universidad de Lima" class="logo">
-      <div>
-        <h1>ULima++</h1>
-        <p class="header-subtitle">Universidad de Lima</p>
-      </div>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="star" viewBox="-360 -360 720 720"><polygon points="-89.1,-215.1 0,-103.4 89.1,-215.1 73.1,-73.1 215.1,-89.1 103.4,0 215.1,89 73.1,73 89.1,215 0,103.3 -89.1,215 -73,73 -215.1,89 -103.4,0 -215.1,-89.1 -73,-73.1"/><polygon points="0,-114.6 89.5,-226.9 0,-348.9 -89.5,-226.9"/><polygon points="81.1,-81.1 223.7,-97.2 246.7,-246.7 97.2,-223.7"/><polygon points="226.9,-89.5 114.6,0 226.9,89.4 348.9,0"/><polygon points="81.1,81 97.2,223.6 246.7,246.7 223.7,97.1"/><polygon points="0,114.5 -89.5,226.8 0,348.9 89.5,226.8"/><polygon points="-81,81 -223.6,97.1 -246.7,246.7 -97.1,223.6"/><polygon points="-114.6,0 -226.9,-89.5 -348.9,0 -226.9,89.4"/><polygon points="-81,-81.1 -97.1,-223.7 -246.7,-246.7 -223.6,-97.2"/></symbol>
+    <symbol id="i-dl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
+  </defs>
+</svg>
+
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<header class="nav">
+  <a class="brand" href="#inicio" aria-label="ULima++, ir al inicio">
+    <svg class="brand-star" aria-hidden="true"><use href="#star"/></svg>
+    <span class="wm" aria-hidden="true">ULIMA++</span>
+  </a>
+  <nav class="links" aria-label="Secciones">
+    <a href="#funciones">Funciones</a>
+    <a href="#instalar">Instalar</a>
+  </nav>
+  <button class="theme" type="button" id="tema" aria-label="Cambiar a modo oscuro">
+    <svg class="ic i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+    <svg class="ic i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+  </button>
+  <a class="btn btn-sm" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk">Descargar</a>
+</header>
+
+<main id="contenido" tabindex="-1">
+<div class="top" id="inicio">
+
+  <section class="hero" id="hero" aria-labelledby="titulo">
+    <p class="eyebrow">App para alumnos de la Universidad de Lima</p>
+    <h1 id="titulo">Todo tu ciclo <span>en una sola app.</span></h1>
+    <p class="lead">Tu malla, tu horario, tus notas y el chat de tu sección en el mismo lugar, con Ulises para responder tus dudas.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
+      <a class="how" href="#instalar">Cómo instalarla</a>
     </div>
-  </header>
+    <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+    <div class="handoff">
+      <img src="assets/qr-apk.svg" width="88" height="88" alt="Código QR que descarga el APK de ULima++">
+      <p><strong>¿Estás en la compu?</strong> Escanea el código con la cámara de tu celular y la descarga empieza ahí.</p>
+    </div>
+    <p class="note"><strong>Proyecto académico de alumnos.</strong> ULima++ no es una app oficial de la Universidad de Lima.</p>
+  </section>
 
-  <main class="main">
-    <section class="hero">
-      <div class="hero-text">
-        <span class="tag">Proyecto académico</span>
-        <h2>Una app pensada para acompañar la vida universitaria</h2>
-        <p>
-          ULima++ reúne en un solo lugar herramientas útiles para estudiantes de la Universidad de Lima:
-          malla curricular, horario, simulador de notas, asesorías, anuncios y contactos por curso.
-        </p>
-
-        <div class="download-buttons">
-          <a href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"
-            class="btn android" download>
-            <span>Descargar versión</span>
-            <strong>Android APK</strong>
-          </a>
-
-
+  <section class="story" aria-label="Qué hace ULima++">
+    <div class="stage" id="stage">
+      <div class="rig" id="rig" aria-hidden="true">
+        <div class="glow"></div>
+        <div class="phone" id="phone">
+          <div class="glass" id="glass">
+              <div class="scr is-on" data-scr="malla">
+                <img class="cap cap-claro" src="assets/capturas/malla-claro-360.webp" srcset="assets/capturas/malla-claro-360.webp 360w, assets/capturas/malla-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/malla-oscuro-360.webp" srcset="assets/capturas/malla-oscuro-360.webp 360w, assets/capturas/malla-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="horario">
+                <img class="cap cap-claro" src="assets/capturas/horario-claro-360.webp" srcset="assets/capturas/horario-claro-360.webp 360w, assets/capturas/horario-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/horario-oscuro-360.webp" srcset="assets/capturas/horario-oscuro-360.webp 360w, assets/capturas/horario-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="mis-bloques" data-push>
+                <img class="cap cap-claro" src="assets/capturas/mis-bloques-claro-360.webp" srcset="assets/capturas/mis-bloques-claro-360.webp 360w, assets/capturas/mis-bloques-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/mis-bloques-oscuro-360.webp" srcset="assets/capturas/mis-bloques-oscuro-360.webp 360w, assets/capturas/mis-bloques-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="notas">
+                <img class="cap cap-claro" src="assets/capturas/notas-claro-360.webp" srcset="assets/capturas/notas-claro-360.webp 360w, assets/capturas/notas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/notas-oscuro-360.webp" srcset="assets/capturas/notas-oscuro-360.webp 360w, assets/capturas/notas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="alertas" data-push>
+                <img class="cap cap-claro" src="assets/capturas/alertas-claro-360.webp" srcset="assets/capturas/alertas-claro-360.webp 360w, assets/capturas/alertas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/alertas-oscuro-360.webp" srcset="assets/capturas/alertas-oscuro-360.webp 360w, assets/capturas/alertas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="record" data-push>
+                <img class="cap cap-claro" src="assets/capturas/record-claro-360.webp" srcset="assets/capturas/record-claro-360.webp 360w, assets/capturas/record-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/record-oscuro-360.webp" srcset="assets/capturas/record-oscuro-360.webp 360w, assets/capturas/record-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="curso-anuncios" data-push>
+                <img class="cap cap-claro" src="assets/capturas/curso-anuncios-claro-360.webp" srcset="assets/capturas/curso-anuncios-claro-360.webp 360w, assets/capturas/curso-anuncios-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/curso-anuncios-oscuro-360.webp" srcset="assets/capturas/curso-anuncios-oscuro-360.webp 360w, assets/capturas/curso-anuncios-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="chat-seccion" data-push>
+                <img class="cap cap-claro" src="assets/capturas/chat-seccion-claro-360.webp" srcset="assets/capturas/chat-seccion-claro-360.webp 360w, assets/capturas/chat-seccion-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/chat-seccion-oscuro-360.webp" srcset="assets/capturas/chat-seccion-oscuro-360.webp 360w, assets/capturas/chat-seccion-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="ulises" data-push>
+                <img class="cap cap-claro" src="assets/capturas/ulises-claro-360.webp" srcset="assets/capturas/ulises-claro-360.webp 360w, assets/capturas/ulises-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/ulises-oscuro-360.webp" srcset="assets/capturas/ulises-oscuro-360.webp 360w, assets/capturas/ulises-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <div class="scr" data-scr="sys1">
+                <svg class="sx" viewBox="0 0 390 844" aria-hidden="true" focusable="false">
+                  <rect class="sx-bg" width="390" height="844"/>
+                  <rect class="sx-bar" width="390" height="112"/>
+                  <path class="sx-line2" d="M22 84V73l10-8 10 8v11z"/>
+                  <rect class="sx-card" x="58" y="54" width="266" height="40" rx="20"/>
+                  <path class="sx-line2" d="M78 76v-5a5 5 0 0 1 10 0v5M75 76h16v9H75z"/>
+                  <text class="sx-ink" x="100" y="80" font-size="15">ulimaweb.vercel.app</text>
+                  <rect class="sx-line2" x="338" y="63" width="22" height="22" rx="5"/>
+                  <rect class="sx-page" x="20" y="136" width="350" height="290" rx="24"/>
+                  <text class="sx-page-ink" x="44" y="200" font-size="29" font-weight="800" font-style="italic">Todo tu ciclo</text>
+                  <text class="sx-page-acc" x="44" y="235" font-size="29" font-weight="800" font-style="italic">en una sola app.</text>
+                  <rect class="sx-page-line" x="44" y="258" width="262" height="9" rx="4.5"/>
+                  <rect class="sx-page-line" x="44" y="276" width="196" height="9" rx="4.5"/>
+                  <rect x="44" y="318" width="186" height="48" rx="24" fill="#FF6600"/>
+                  <text x="137" y="348" font-size="16" font-weight="700" fill="#16161C" text-anchor="middle">Descargar APK</text>
+                  <rect class="sx-card sx-shadow" x="16" y="646" width="358" height="112" rx="24"/>
+                  <circle class="sx-bar" cx="60" cy="702" r="23"/>
+                  <path class="sx-acc-s" d="M60 690v18m-7-7 7 7 7-7m-14 13h14"/>
+                  <text class="sx-ink" x="96" y="696" font-size="17" font-weight="700">ULimaPlus.apk</text>
+                  <text class="sx-ink2" x="96" y="720" font-size="14"><tspan data-size>78,1 MB</tspan> · Descarga completa</text>
+                  <text class="sx-acc" x="350" y="708" font-size="16" font-weight="800" text-anchor="end">Abrir</text>
+                </svg>
+              </div>
+              <div class="scr" data-scr="sys2">
+                <svg class="sx" viewBox="0 0 390 844" aria-hidden="true" focusable="false">
+                  <rect class="sx-bg" width="390" height="844"/>
+                  <path class="sx-line" d="M40 92H22m8-8-8 8 8 8"/>
+                  <text class="sx-ink" x="60" y="99" font-size="21">Instalar apps desconocidas</text>
+                  <circle class="sx-bar" cx="46" cy="178" r="24"/>
+                  <circle class="sx-acc-s" cx="46" cy="178" r="11"/>
+                  <path class="sx-acc-s" d="M35 178h22M46 167c-6 7-6 15 0 22 6-7 6-15 0-22"/>
+                  <text class="sx-ink" x="84" y="174" font-size="18" font-weight="600">Chrome</text>
+                  <text class="sx-ink2" x="84" y="196" font-size="14">Navegador</text>
+                  <rect class="sx-card" x="16" y="236" width="358" height="76" rx="24"/>
+                  <text class="sx-ink" x="40" y="280" font-size="17" font-weight="600">Permitir desde esta fuente</text>
+                  <rect class="sx-track" x="300" y="258" width="52" height="32" rx="16"/>
+                  <circle class="sx-knob" cx="336" cy="274" r="11"/>
+                  <circle class="sx-line2" cx="36" cy="352" r="9"/>
+                  <path class="sx-line2" d="M36 356v-5m0-4h.01"/>
+                  <text class="sx-ink2" x="56" y="357" font-size="14">Activa el permiso solo para el navegador</text>
+                  <text class="sx-ink2" x="56" y="378" font-size="14">con el que descargaste el APK.</text>
+                </svg>
+              </div>
+              <div class="scr" data-scr="login">
+                <img class="cap cap-claro" src="assets/capturas/login-claro-360.webp" srcset="assets/capturas/login-claro-360.webp 360w, assets/capturas/login-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+                <img class="cap cap-oscuro" src="assets/capturas/login-oscuro-360.webp" srcset="assets/capturas/login-oscuro-360.webp 360w, assets/capturas/login-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="">
+              </div>
+              <svg class="splash" id="splash" viewBox="0 0 390 844" aria-hidden="true" focusable="false">
+                <defs>
+                  <linearGradient id="sp-bandg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+                  <linearGradient id="sp-sweepg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+                  <mask id="sp-bandm" maskUnits="userSpaceOnUse" x="-1200" y="-1200" width="2400" height="2400"><rect id="sp-band" x="-80" y="-900" width="160" height="1800" fill="url(#sp-bandg)"/></mask>
+                  <mask id="sp-hole" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="844"><rect width="390" height="844" fill="#fff"/><rect id="sp-hole-wm" x="19" y="54" width="0" height="22" fill="#000"/><rect id="sp-hole-pp" x="79" y="54" width="26" height="22" fill="#000" fill-opacity="0"/></mask>
+                  <clipPath id="sp-crclip"><rect id="sp-crclipr" x="-400" y="-400" width="1200" height="1600"/></clipPath>
+                </defs>
+                <g id="sp-panelg" mask="url(#sp-hole)"><path id="sp-panel" d="M0 0H390V844H0Z" fill="#E77330"/></g>
+                <rect id="sp-sweep" x="-72" y="-910" width="144" height="1820" fill="url(#sp-sweepg)" opacity="0"/>
+                <g id="sp-logo" transform="translate(195 422) scale(.2537)">
+                  <circle id="sp-ring" r="370" fill="none" stroke="#fff" opacity="0"/>
+                  <g id="sp-glint" mask="url(#sp-bandm)" opacity="0"><g fill="#fff"><polygon points="-93.9,-226.8 0,-109 93.9,-226.8 77.1,-77.1 226.8,-93.9 109,0 226.8,93.8 77.1,77 93.9,226.7 0,108.9 -93.9,226.7 -77,77 -226.8,93.8 -109,0 -226.8,-93.9 -77,-77.1"/><polygon points="0,-109 93.9,-226.8 0,-354.8 -93.9,-226.8"/><polygon points="77.1,-77.1 226.8,-94 250.9,-250.9 94,-226.8"/><polygon points="226.8,-93.9 109,0 226.8,93.8 354.8,0"/><polygon points="77.1,77 94,226.7 250.9,250.9 226.8,93.9"/><polygon points="0,108.9 -93.9,226.7 0,354.8 93.9,226.7"/><polygon points="-77,77 -226.7,93.9 -250.9,250.9 -93.9,226.7"/><polygon points="-109,0 -226.8,-93.9 -354.8,0 -226.8,93.8"/><polygon points="-77,-77.1 -93.9,-226.8 -250.9,-250.9 -226.7,-94"/></g></g>
+                  <g id="sp-starg" fill="#fff">
+                    <polygon id="sp-inner" points="-89.1,-215.1 0,-103.4 89.1,-215.1 73.1,-73.1 215.1,-89.1 103.4,0 215.1,89 73.1,73 89.1,215 0,103.3 -89.1,215 -73,73 -215.1,89 -103.4,0 -215.1,-89.1 -73,-73.1"/>
+                    <g class="sp-rh"><polygon points="0,-114.6 89.5,-226.9 0,-348.9 -89.5,-226.9"/></g>
+                    <g class="sp-rh"><polygon points="81.1,-81.1 223.7,-97.2 246.7,-246.7 97.2,-223.7"/></g>
+                    <g class="sp-rh"><polygon points="226.9,-89.5 114.6,0 226.9,89.4 348.9,0"/></g>
+                    <g class="sp-rh"><polygon points="81.1,81 97.2,223.6 246.7,246.7 223.7,97.1"/></g>
+                    <g class="sp-rh"><polygon points="0,114.5 -89.5,226.8 0,348.9 89.5,226.8"/></g>
+                    <g class="sp-rh"><polygon points="-81,81 -223.6,97.1 -246.7,246.7 -97.1,223.6"/></g>
+                    <g class="sp-rh"><polygon points="-114.6,0 -226.9,-89.5 -348.9,0 -226.9,89.4"/></g>
+                    <g class="sp-rh"><polygon points="-81,-81.1 -97.1,-223.7 -246.7,-246.7 -223.6,-97.2"/></g>
+                  </g>
+                </g>
+                <circle id="sp-pr0" r="10" fill="none" stroke="#fff" opacity="0"/>
+                <circle id="sp-pr1" r="10" fill="none" stroke="#fff" opacity="0"/>
+                <g clip-path="url(#sp-crclip)">
+                  <g id="sp-cr0" fill="#fff" opacity="0"><rect/><rect/></g>
+                  <g id="sp-cr1" fill="#fff" opacity="0"><rect/><rect/></g>
+                </g>
+                <text id="sp-code" x="120" y="493" font-size="30" font-weight="600" fill="#fff" opacity="0"></text>
+                <rect id="sp-caret" x="120" y="470" width="2.9" height="28.6" fill="#fff" opacity="0"/>
+              </svg>
+              <span class="pin" id="pin"></span>
+          </div>
         </div>
-
-        <p class="note">
-          Por ahora, la aplicación está disponible para Android mediante APK. La versión para iOS se considera para una
-          siguiente etapa del proyecto.
-        </p>
+        <p class="cue" id="cue"><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg>Baja y la app se abre</p>
       </div>
 
-      <div class="hero-image">
-        <div class="phone-card">
-          <img src="assets/app-preview.png" alt="Vista previa de ULima++">
-        </div>
+      <div class="qrpanel" aria-hidden="true">
+        <img src="assets/qr-apk.svg" width="224" height="224" alt="" loading="lazy">
+        <p class="qr-t">Pásala a tu celular</p>
+        <p>Escanea el código con la cámara y la descarga empieza en tu celular.</p>
+        <p class="meta"><b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
       </div>
-    </section>
+      <svg class="leader" id="leader" aria-hidden="true" focusable="false"><path id="leadp" d=""/><circle id="leadc" r="3.5" cx="-10" cy="-10"/></svg>
+    </div>
 
-    <section class="features">
-      <article>
-        <h3>Malla curricular</h3>
-        <p>Revisa tu avance académico y los cursos que forman parte de tu plan de estudios.</p>
+    <div class="steps" id="steps">
+      <div class="step step-intro" data-screen="malla"></div>
+
+      <article class="step" id="funciones" data-screen="malla" data-side="r" data-pin="272,154">
+        <div class="copy">
+          <p class="eyebrow">Pestaña Malla</p>
+          <h2>Tu avance real, curso por curso.</h2>
+          <p>La malla cuenta tus créditos aprobados y te dice qué parte de la carrera llevas. Ciclo por ciclo ves los cursos que ya terminaste, los que estás llevando y los que tienes disponibles.</p>
+        </div>
+        <figure class="shot shot-first">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/malla-claro-360.webp" srcset="assets/capturas/malla-claro-360.webp 360w, assets/capturas/malla-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Malla de ULima++ con el avance de la carrera en 151 de 211 créditos, el 72 %, y los cuatro cursos del ciclo 8 marcados como Cursando.">
+            <img class="cap cap-oscuro" src="assets/capturas/malla-oscuro-360.webp" srcset="assets/capturas/malla-oscuro-360.webp 360w, assets/capturas/malla-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Malla de ULima++ con el avance de la carrera en 151 de 211 créditos, el 72 %, y los cuatro cursos del ciclo 8 marcados como Cursando.">
+          </div>
+        </figure>
       </article>
 
-      <article>
-        <h3>Horario y cursos</h3>
-        <p>Accede a tus clases, asesorías, anuncios y contactos según la sección matriculada.</p>
+      <article class="step" data-screen="horario" data-side="l" data-pin="92,671">
+        <div class="copy">
+          <p class="eyebrow">Pestaña Horario</p>
+          <h2>Tus clases y lo que haces fuera de ellas.</h2>
+          <p>El horario del día trae tus clases con su aula y marca tus evaluaciones. Sumas tus propios bloques, como las prácticas o el gimnasio, y la app te avisa si alguno se cruza con una clase.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/horario-claro-360.webp" srcset="assets/capturas/horario-claro-360.webp 360w, assets/capturas/horario-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Horario del martes 29 de septiembre, semana 6 del ciclo, con cuatro clases de colores, la evaluación PC2 marcada en Ingeniería de Software II y el bloque propio Prácticas preprofesionales en la noche. Arriba dice «Tus bloques: 12 h esta semana».">
+            <img class="cap cap-oscuro" src="assets/capturas/horario-oscuro-360.webp" srcset="assets/capturas/horario-oscuro-360.webp 360w, assets/capturas/horario-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pestaña Horario del martes 29 de septiembre, semana 6 del ciclo, con cuatro clases de colores, la evaluación PC2 marcada en Ingeniería de Software II y el bloque propio Prácticas preprofesionales en la noche. Arriba dice «Tus bloques: 12 h esta semana».">
+          </div>
+        </figure>
       </article>
 
-      <article>
-        <h3>Simulador de notas</h3>
-        <p>Registra tus evaluaciones y calcula tu promedio de manera rápida durante el ciclo.</p>
+      <article class="step" data-screen="mis-bloques" data-side="r" data-pin="40,120">
+        <div class="copy">
+          <p class="eyebrow">Horario › Mis bloques</p>
+          <h2>Todos tus bloques en una lista.</h2>
+          <p>En «Mis bloques» ves cada bloque con sus días, su hora y sus fechas, y lo editas o lo borras cuando cambia tu semana. Si un día no vas, lo tocas en el horario y cancelas solo ese día.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/mis-bloques-claro-360.webp" srcset="assets/capturas/mis-bloques-claro-360.webp 360w, assets/capturas/mis-bloques-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla Mis bloques con cuatro bloques propios, Prácticas preprofesionales, Gimnasio, Clases de inglés y Taller de oratoria, cada uno con sus días, su horario y sus fechas.">
+            <img class="cap cap-oscuro" src="assets/capturas/mis-bloques-oscuro-360.webp" srcset="assets/capturas/mis-bloques-oscuro-360.webp 360w, assets/capturas/mis-bloques-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla Mis bloques con cuatro bloques propios, Prácticas preprofesionales, Gimnasio, Clases de inglés y Taller de oratoria, cada uno con sus días, su horario y sus fechas.">
+          </div>
+        </figure>
       </article>
-    </section>
 
-  </main>
+      <article class="step" data-screen="notas" data-side="l" data-pin="347,146">
+        <div class="copy">
+          <p class="eyebrow">Pestaña Notas</p>
+          <h2>Tu promedio, calculado al instante.</h2>
+          <p>En la calculadora eliges cada evaluación del sílabo, que ya trae su peso, anotas tu nota y ves tu promedio al momento. El birrete de arriba te lleva a tus notas oficiales, las que publica tu profesor.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/notas-claro-360.webp" srcset="assets/capturas/notas-claro-360.webp 360w, assets/capturas/notas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Calculadora de Notas con Ingeniería de Software II en 15,30 y sus evaluaciones con peso y nota, como la Práctica Calificada 1 con 16 y el Examen Parcial con 14. Arriba a la derecha está el birrete de las notas oficiales.">
+            <img class="cap cap-oscuro" src="assets/capturas/notas-oscuro-360.webp" srcset="assets/capturas/notas-oscuro-360.webp 360w, assets/capturas/notas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Calculadora de Notas con Ingeniería de Software II en 15,30 y sus evaluaciones con peso y nota, como la Práctica Calificada 1 con 16 y el Examen Parcial con 14. Arriba a la derecha está el birrete de las notas oficiales.">
+          </div>
+        </figure>
+      </article>
 
-  <footer class="footer">
-    <p>ULima++ · Ingenieria de Software II · Universidad de Lima</p>
-  </footer>
+      <article class="step" data-screen="alertas" data-side="r" data-pin="56,131">
+        <div class="copy">
+          <p class="eyebrow">Buzón de alertas</p>
+          <h2>Un aviso a tiempo, antes del susto.</h2>
+          <p>ULima++ te avisa cuando tu promedio de un curso entra en riesgo y cuando se te juntan varias evaluaciones en la misma semana.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/alertas-claro-360.webp" srcset="assets/capturas/alertas-claro-360.webp 360w, assets/capturas/alertas-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Buzón de Alertas con una alerta de riesgo académico en Sistemas ERP, con promedio de 9,60 y el 40 % evaluado, y una alerta de alta carga por cuatro evaluaciones en la semana 6.">
+            <img class="cap cap-oscuro" src="assets/capturas/alertas-oscuro-360.webp" srcset="assets/capturas/alertas-oscuro-360.webp 360w, assets/capturas/alertas-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Buzón de Alertas con una alerta de riesgo académico en Sistemas ERP, con promedio de 9,60 y el 40 % evaluado, y una alerta de alta carga por cuatro evaluaciones en la semana 6.">
+          </div>
+        </figure>
+      </article>
 
+      <article class="step" data-screen="record" data-side="l" data-pin="144,114">
+        <div class="copy">
+          <p class="eyebrow">Perfil › Mi récord académico</p>
+          <h2>Tu récord, traído de miUlima.</h2>
+          <p>Sincronizas con el portal una vez y tienes a la mano tu promedio ponderado acumulado y las notas de cada ciclo, curso por curso.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/record-claro-360.webp" srcset="assets/capturas/record-claro-360.webp 360w, assets/capturas/record-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Mi récord académico con un promedio ponderado acumulado (PPA) de 15,42 en el tercio superior, sincronizado hace 3 días, y las notas del ciclo 2026-1 curso por curso.">
+            <img class="cap cap-oscuro" src="assets/capturas/record-oscuro-360.webp" srcset="assets/capturas/record-oscuro-360.webp 360w, assets/capturas/record-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Mi récord académico con un promedio ponderado acumulado (PPA) de 15,42 en el tercio superior, sincronizado hace 3 días, y las notas del ciclo 2026-1 curso por curso.">
+          </div>
+        </figure>
+      </article>
+
+      <article class="step" data-screen="curso-anuncios" data-side="r" data-pin="368,483">
+        <div class="copy">
+          <p class="eyebrow">Dentro de cada curso</p>
+          <h2>Anuncios y asesorías de tu sección.</h2>
+          <p>Cada curso reúne tu asistencia, los anuncios que publican tus delegados, las asesorías y los contactos de la sección. Si vas a una asesoría, confirmas tu asistencia ahí mismo.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/curso-anuncios-claro-360.webp" srcset="assets/capturas/curso-anuncios-claro-360.webp 360w, assets/capturas/curso-anuncios-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Curso Ingeniería de Software II, sección 812, con la asistencia en 18 horas, la pestaña Anuncios abierta y dos anuncios del delegado. También se ven las pestañas Asesorías y Contactos.">
+            <img class="cap cap-oscuro" src="assets/capturas/curso-anuncios-oscuro-360.webp" srcset="assets/capturas/curso-anuncios-oscuro-360.webp 360w, assets/capturas/curso-anuncios-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Curso Ingeniería de Software II, sección 812, con la asistencia en 18 horas, la pestaña Anuncios abierta y dos anuncios del delegado. También se ven las pestañas Asesorías y Contactos.">
+          </div>
+        </figure>
+      </article>
+
+      <article class="step" data-screen="chat-seccion" data-side="l" data-pin="210,460">
+        <div class="copy">
+          <p class="eyebrow">Chats › Tu sección</p>
+          <h2>El chat de tu sección, sin pasar tu número.</h2>
+          <p>Cada sección tiene su propio chat, con sus alumnos, sus delegados y su profesor. Si te equivocas, borras tu mensaje para todos y el chat muestra que lo eliminaste.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/chat-seccion-claro-360.webp" srcset="assets/capturas/chat-seccion-claro-360.webp 360w, assets/capturas/chat-seccion-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat de la sección 812 de Ingeniería de Software II con mensajes del delegado, de alumnos y del profesor, y un mensaje propio borrado que dice «Eliminaste este mensaje».">
+            <img class="cap cap-oscuro" src="assets/capturas/chat-seccion-oscuro-360.webp" srcset="assets/capturas/chat-seccion-oscuro-360.webp 360w, assets/capturas/chat-seccion-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat de la sección 812 de Ingeniería de Software II con mensajes del delegado, de alumnos y del profesor, y un mensaje propio borrado que dice «Eliminaste este mensaje».">
+          </div>
+        </figure>
+      </article>
+
+      <article class="step" data-screen="ulises" data-side="r" data-pin="367,452">
+        <div class="copy">
+          <p class="eyebrow">Ulises, el asistente</p>
+          <h2>Pregúntale a Ulises.</h2>
+          <p>Toca al cuervo de la esquina y se abre ULimaBot, el asistente con inteligencia artificial que te responde sobre tu horario, tus bloques, tus evaluaciones y los delegados de tus secciones.</p>
+          <p class="soon"><b>Próximamente</b><span>El test de especialidad, conversando con Ulises.</span></p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/ulises-claro-360.webp" srcset="assets/capturas/ulises-claro-360.webp 360w, assets/capturas/ulises-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat con ULimaBot, el asistente académico con la cara de Ulises. Responde qué clases hay el martes 29 de septiembre con sus aulas y horas, y quién es el delegado de Ingeniería de Software II.">
+            <img class="cap cap-oscuro" src="assets/capturas/ulises-oscuro-360.webp" srcset="assets/capturas/ulises-oscuro-360.webp 360w, assets/capturas/ulises-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Chat con ULimaBot, el asistente académico con la cara de Ulises. Responde qué clases hay el martes 29 de septiembre con sus aulas y horas, y quién es el delegado de Ingeniería de Software II.">
+          </div>
+        </figure>
+      </article>
+
+      <article class="step step-install" id="instalar" data-screen="sys1" data-side="l" data-pin="60,702" data-install>
+        <div class="copy">
+          <p class="eyebrow">Instalación · solo Android por ahora</p>
+          <h2><span class="num" aria-hidden="true">1</span><span class="vh">Paso 1. </span>Descarga el APK.</h2>
+          <p>Abre esta página en tu celular Android y toca el botón. El enlace siempre baja la última versión.</p>
+          <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
+          <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <svg class="sx" viewBox="0 0 390 844" role="img" aria-label="Esquema de Chrome en un celular Android con esta página abierta y el aviso de descarga de ULimaPlus.apk terminado, con el botón Abrir.">
+              <rect class="sx-bg" width="390" height="844"/>
+              <rect class="sx-bar" width="390" height="112"/>
+              <path class="sx-line2" d="M22 84V73l10-8 10 8v11z"/>
+              <rect class="sx-card" x="58" y="54" width="266" height="40" rx="20"/>
+              <path class="sx-line2" d="M78 76v-5a5 5 0 0 1 10 0v5M75 76h16v9H75z"/>
+              <text class="sx-ink" x="100" y="80" font-size="15">ulimaweb.vercel.app</text>
+              <rect class="sx-line2" x="338" y="63" width="22" height="22" rx="5"/>
+              <rect class="sx-page" x="20" y="136" width="350" height="290" rx="24"/>
+              <text class="sx-page-ink" x="44" y="200" font-size="29" font-weight="800" font-style="italic">Todo tu ciclo</text>
+              <text class="sx-page-acc" x="44" y="235" font-size="29" font-weight="800" font-style="italic">en una sola app.</text>
+              <rect class="sx-page-line" x="44" y="258" width="262" height="9" rx="4.5"/>
+              <rect class="sx-page-line" x="44" y="276" width="196" height="9" rx="4.5"/>
+              <rect x="44" y="318" width="186" height="48" rx="24" fill="#FF6600"/>
+              <text x="137" y="348" font-size="16" font-weight="700" fill="#16161C" text-anchor="middle">Descargar APK</text>
+              <rect class="sx-card sx-shadow" x="16" y="646" width="358" height="112" rx="24"/>
+              <circle class="sx-bar" cx="60" cy="702" r="23"/>
+              <path class="sx-acc-s" d="M60 690v18m-7-7 7 7 7-7m-14 13h14"/>
+              <text class="sx-ink" x="96" y="696" font-size="17" font-weight="700">ULimaPlus.apk</text>
+              <text class="sx-ink2" x="96" y="720" font-size="14"><tspan data-size>78,1 MB</tspan> · Descarga completa</text>
+              <text class="sx-acc" x="350" y="708" font-size="16" font-weight="800" text-anchor="end">Abrir</text>
+            </svg>
+          </div>
+        </figure>
+      </article>
+
+      <article class="step step-install" data-screen="sys2" data-side="l" data-pin="326,274" data-install>
+        <div class="copy">
+          <p class="eyebrow">Instalación</p>
+          <h2><span class="num" aria-hidden="true">2</span><span class="vh">Paso 2. </span>Permite la instalación.</h2>
+          <p>Al abrir el archivo, Android te pide permiso la primera vez. Entra a la configuración que te muestra y activa «Permitir desde esta fuente» para el navegador que usaste.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <svg class="sx" viewBox="0 0 390 844" role="img" aria-label="Esquema de la pantalla Instalar apps desconocidas de Android, con Chrome y el interruptor Permitir desde esta fuente activado.">
+              <rect class="sx-bg" width="390" height="844"/>
+              <path class="sx-line" d="M40 92H22m8-8-8 8 8 8"/>
+              <text class="sx-ink" x="60" y="99" font-size="21">Instalar apps desconocidas</text>
+              <circle class="sx-bar" cx="46" cy="178" r="24"/>
+              <circle class="sx-acc-s" cx="46" cy="178" r="11"/>
+              <path class="sx-acc-s" d="M35 178h22M46 167c-6 7-6 15 0 22 6-7 6-15 0-22"/>
+              <text class="sx-ink" x="84" y="174" font-size="18" font-weight="600">Chrome</text>
+              <text class="sx-ink2" x="84" y="196" font-size="14">Navegador</text>
+              <rect class="sx-card" x="16" y="236" width="358" height="76" rx="24"/>
+              <text class="sx-ink" x="40" y="280" font-size="17" font-weight="600">Permitir desde esta fuente</text>
+              <rect class="sx-track" x="300" y="258" width="52" height="32" rx="16"/>
+              <circle class="sx-knob" cx="336" cy="274" r="11"/>
+              <circle class="sx-line2" cx="36" cy="352" r="9"/>
+              <path class="sx-line2" d="M36 356v-5m0-4h.01"/>
+              <text class="sx-ink2" x="56" y="357" font-size="14">Activa el permiso solo para el navegador</text>
+              <text class="sx-ink2" x="56" y="378" font-size="14">con el que descargaste el APK.</text>
+            </svg>
+          </div>
+        </figure>
+      </article>
+
+      <article class="step step-install step-last" data-screen="login" data-side="l" data-pin="54,330" data-install>
+        <div class="copy">
+          <p class="eyebrow">Instalación</p>
+          <h2><span class="num" aria-hidden="true">3</span><span class="vh">Paso 3. </span>Instala y entra.</h2>
+          <p>Vuelve al archivo, toca «Instalar» y abre ULima++. Entras con tu código y tu contraseña o con Google, y si es tu primera vez, creas tu cuenta ahí mismo.</p>
+          <p>Para actualizarla, descarga el APK otra vez desde esta página.</p>
+        </div>
+        <figure class="shot">
+          <div class="glass">
+            <img class="cap cap-claro" src="assets/capturas/login-claro-360.webp" srcset="assets/capturas/login-claro-360.webp 360w, assets/capturas/login-claro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla de inicio de sesión de ULima++ con el ícono de la app, los campos Código y Contraseña, el botón Entrar y la opción de entrar con Google.">
+            <img class="cap cap-oscuro" src="assets/capturas/login-oscuro-360.webp" srcset="assets/capturas/login-oscuro-360.webp 360w, assets/capturas/login-oscuro-720.webp 720w" sizes="(max-width: 899px) 280px, 330px" width="390" height="844" loading="lazy" decoding="async" alt="Pantalla de inicio de sesión de ULima++ con el ícono de la app, los campos Código y Contraseña, el botón Entrar y la opción de entrar con Google.">
+          </div>
+        </figure>
+      </article>
+    </div>
+  </section>
+</div>
+
+<section class="end" aria-labelledby="fin">
+  <div class="end-in">
+    <h2 id="fin">Tu próximo ciclo <span>empieza aquí.</span></h2>
+    <div class="end-cta">
+      <a class="btn" href="https://github.com/meltiruiz/ULima_Frontend_IS2/releases/download/latest/ULimaPlus.apk"><svg class="ic" aria-hidden="true"><use href="#i-dl"/></svg>Descargar APK</a>
+      <p class="meta">Android · <b data-build>Build 73</b> · <span data-size>78,1 MB</span> · <span data-date>25 de septiembre de 2026</span></p>
+    </div>
+  </div>
+  <p class="disclaimer"><svg class="ic" aria-hidden="true"><use href="#i-cap"/></svg><span><strong>Proyecto académico, no oficial.</strong> ULima++ lo desarrollan alumnos como proyecto del curso Ingeniería de Software II. No es una app de la Universidad de Lima ni la representa.</span></p>
+</section>
+</main>
+
+<footer class="foot">
+  <a class="brand" href="#inicio" aria-label="ULima++, volver al inicio">
+    <svg class="brand-star" aria-hidden="true"><use href="#star"/></svg>
+    <span class="wm" aria-hidden="true">ULIMA++</span>
+  </a>
+  <p>Ingeniería de Software II · Universidad de Lima</p>
+  <p>Proyecto académico de alumnos, no oficial de la Universidad de Lima.</p>
+</footer>
 </body>
-
 </html>
