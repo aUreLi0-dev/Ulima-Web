@@ -148,7 +148,7 @@
   var CR_HOME = [[306.8, -133.5], [401.2, -133.5]], CR_A = 36.3, CR_TH = 8.7;
   // Destinos en la cabecera real de la app, sin estrella: la estrella se achica a la altura
   // del texto y se disuelve a su izquierda, y los «++» caen sobre los del texto «ULIMA++».
-  var HX = 12, HY = 64.5, KE = 7 / R, CTRL = [150, 120];
+  var HX = 12, HY = 64.5, KE = 7 / R, CTRL = [60, 200];
   var PP_X = [86.3, 97.3], PP_Y = 64.8, PP_A = 5, PP_TH = 1.4, PP_SK = -10;
   var WM_X = 19, WM_W = 62, WM_STOPS = [14, 24, 31, 47, 62];
   var FS = 29.9, BASE = CY + 71.5, S = 1.3;
@@ -352,7 +352,8 @@
     var q = inOutCubic(clamp(p / 0.92)), qp = inOutCubic(clamp(p / 0.9));
     var h = lerp(844, HEAD_H, qp);
     attr(n.panel, 'd', panelPath(h, qp));
-    attr(n.panel, 'fill', mix(SPLASH, HEAD, clamp((qp - 0.55) / 0.45)));
+    // El color llega al de la cabecera antes de que se abra la ventana de «ULIMA», para que no se note el borde.
+    attr(n.panel, 'fill', mix(SPLASH, HEAD, clamp((qp - 0.35) / 0.4)));
     attr(n.panelg, 'opacity', f(1 - seg(p, 0.88, 1)));
 
     var x = quad(P.x, CTRL[0], HX, q), y = quad(P.y, CTRL[1], HY, q), k = P.k * Math.pow(KE / P.k, q);
