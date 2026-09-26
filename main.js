@@ -3,7 +3,8 @@
    2. Versión, peso y fecha del APK, en vivo desde la API pública de GitHub, con respaldo.
    3. Logo animado de la entrada, con una de las tres intros aprobadas elegida al azar.
    4. Scrollytelling en 900 px o más, con el teléfono fijo que cambia de captura al bajar.
-   5. Detalles sobre la captura, con foco, leve zoom, anillo y frase, al ritmo del texto activo. */
+   5. Detalles sobre la captura, con foco, leve zoom, anillo, línea guía y frase, al ritmo del texto
+      activo, y las pantallas intermedias de cada paso, que también son capturas reales. */
 (function () {
   'use strict';
 
@@ -476,19 +477,29 @@
     return idx && L.copyMid[idx] > y + L.vh ? 0 : idx;
   }
 
-  var cur = null, swTimer = 0;
+  var cur = null, swTimer = 0, dlTimer = 0;
   function setScreen(name, install) {
     if (name === cur) return;
     cur = name;
     Object.keys(scrs).forEach(function (k) { scrs[k].classList.toggle('is-on', k === name); });
     // La barra de estado y la de inicio toman el tono que pide la captura de esta pantalla.
     var sc = scrs[name];
+    // Un cambio dentro de la misma pantalla, como una pestaña, un botón o una hoja que se abre, entra
+    // en su lugar y sin deslizarse (data-cf).
+    glass.classList.toggle('cf', !!(sc && sc.hasAttribute('data-cf')));
     glass.setAttribute('data-hb', (sc && sc.getAttribute('data-hb')) || 'cc');
     if (sc && sc.hasAttribute('data-sb')) glass.setAttribute('data-sb', sc.getAttribute('data-sb'));
     else glass.removeAttribute('data-sb');
     stage.classList.toggle('is-install', !!install);
-    // En el paso 2 el interruptor se enciende solo, salvo con movimiento reducido.
-    clearTimeout(swTimer);
+    // En el paso 1 la descarga avanza hasta «Abrir», y en el paso 2 el interruptor se enciende solo,
+    // salvo con movimiento reducido.
+    clearTimeout(swTimer); clearTimeout(dlTimer);
+    if (scrs.sys1) {
+      if (name === 'sys1' && !reduce) {
+        scrs.sys1.classList.add('is-dl');
+        dlTimer = setTimeout(function () { scrs.sys1.classList.remove('is-dl'); }, 450);
+      } else scrs.sys1.classList.remove('is-dl');
+    }
     if (scrs.sys2) {
       if (name === 'sys2' && !reduce) {
         scrs.sys2.classList.add('is-off');
@@ -498,38 +509,95 @@
   }
 
   /* ---------- 5. Detalles sobre la captura ---------- */
-  // Cada paso recorre sus momentos (data-beats) mientras su texto está activo. En cada uno, el
-  // resto de la pantalla se oscurece, la zona sube con un leve zoom y un anillo que late, y en el
-  // texto se marca la frase que la explica (data-b). Con movimiento reducido queda quieto el último.
-  var BEAT = 1900, SWAP = 560;
-  function parseBeats(str) {
+  // Cada paso recorre sus momentos (data-beats) mientras su texto está activo. En cada momento, el
+  // resto de la pantalla se oscurece, la zona sube con un leve zoom y un borde que late, un anillo
+  // marca el borde de la zona que mira al texto y en el texto se marca la frase que la explica
+  // (data-b). Al terminar, el oscurecido se levanta y quedan el borde y el anillo sobre la pantalla
+  // en color. Con movimiento reducido no hay recorrido y se ven quietas, a la vez, las zonas
+  // principales (las marcadas con «*», o la última si ninguna lo está).
+  var BEAT = 1900, SWAP = 560, REVEAL = 480, REST = 2400, RING = 24;
+
+  function nums(s) { return s.trim().split(/\s+/).filter(Boolean).map(Number); }
+  // Un momento es «[*][pantalla:] x y ancho alto [radio][, otra zona] [@x y | @x y ancho alto] [^y ...]».
+  function parseBeats(str, home) {
     var out = [];
     (str || '').split('|').forEach(function (b, i) {
-      var o = { i: i, scr: null, z: [], pin: null }, m = /^\s*([a-z0-9-]+):/.exec(b);
+      var o = { i: i, scr: home, z: [], mark: null, rev: [], main: false }, m, k, q;
+      b = b.trim();
+      if (b.charAt(0) === '*') { o.main = true; b = b.slice(1); }
+      m = /^\s*([a-z0-9-]+):/.exec(b);
       if (m) { o.scr = m[1]; b = b.slice(m[0].length); }
-      var parts = b.split('@');
-      parts[0].split(',').forEach(function (r) {
-        var v = r.trim().split(/\s+/).map(Number);
-        if (v.length === 4 && v.every(isFinite)) o.z.push(v);
+      k = b.indexOf('^');
+      if (k >= 0) { o.rev = nums(b.slice(k + 1)).filter(isFinite); b = b.slice(0, k); }
+      k = b.indexOf('@');
+      q = k >= 0 ? nums(b.slice(k + 1)) : [];
+      if ((q.length === 2 || q.length === 4) && q.every(isFinite)) o.mark = q;
+      (k >= 0 ? b.slice(0, k) : b).split(',').forEach(function (r) {
+        var v = nums(r);
+        if ((v.length === 4 || v.length === 5) && v.every(isFinite)) o.z.push(v);
       });
-      var q = parts[1] ? parts[1].trim().split(/\s+/).map(Number) : [];
-      if (q.length === 2 && q.every(isFinite)) o.pin = q;
       if (o.z.length) out.push(o);
     });
     return out;
   }
-  function pct(v) { return f(v * 100) + '%'; }
-  function place(el, z) {
-    el.style.left = pct(z[0] / 390); el.style.top = pct(z[1] / 844);
-    el.style.width = pct(z[2] / 390); el.style.height = pct(z[3] / 844);
+  // Los momentos que se ven a la vez con movimiento reducido, todos en la misma pantalla.
+  function mainBeats(beats) {
+    var m = beats.filter(function (b) { return b.main; });
+    if (!m.length) m = beats.slice(-1);
+    var sc = m[m.length - 1].scr;
+    return m.filter(function (b) { return b.scr === sc; });
   }
-  function makeSpot(g, pinEl) {
-    var box = doc.createElement('div'), spot = doc.createElement('i');
-    box.className = 'hl'; box.setAttribute('aria-hidden', 'true');
-    spot.className = 'spot'; box.appendChild(spot);
-    g.insertBefore(box, g.querySelector('.chrome'));
-    if (!pinEl) { pinEl = doc.createElement('span'); pinEl.className = 'pin'; pinEl.setAttribute('aria-hidden', 'true'); g.appendChild(pinEl); }
-    return { box: box, spot: spot, pin: pinEl, lenses: [], timers: [] };
+
+  function pct(v) { return f(v * 100) + '%'; }
+  function box(el, x, y, w, h) {
+    el.style.left = pct(x / 390); el.style.top = pct(y / 844);
+    el.style.width = pct(w / 390); el.style.height = pct(h / 844);
+  }
+  // Leve zoom de la lupa, nulo en las zonas que tocan el borde de la pantalla.
+  function lensScale(z) { return z[0] < 2 || z[0] + z[2] > 388 ? 1 : 1 + Math.min(0.07, 12 / Math.max(z[2], z[3])); }
+  // Un punto de la zona tal como queda con la lupa, que crece desde el centro de la zona.
+  function onLens(z, x, y) {
+    var s = lensScale(z), cx = z[0] + z[2] / 2, cy = z[1] + z[3] / 2;
+    return [cx + (x - cx) * s, cy + (y - cy) * s, s];
+  }
+  function radius(z) { return z.length > 4 ? z[4] : 14; }
+  function inside(z, x, y) { return x >= z[0] && x <= z[0] + z[2] && y >= z[1] && y <= z[1] + z[3]; }
+  // Centro del anillo, a media altura del borde de la zona que mira al texto. Queda casi todo
+  // afuera, con 5 puntos adentro, así toca el borde sin tapar lo que la zona muestra.
+  var RING_OUT = RING / 2 - 5;
+  function edgeRing(z, side) {
+    var p = onLens(z, side === 'l' ? z[0] : z[0] + z[2], z[1] + z[3] / 2);
+    p[0] += side === 'l' ? -RING_OUT : RING_OUT;
+    return [clamp(p[0], RING / 2 + 3, 390 - RING / 2 - 3), p[1]];
+  }
+
+  // El oscurecido cubre la pantalla entera y se recorta con clip-path, con un hueco por zona (hasta
+  // tres), así moverlo no desplaza nada en la página. Cada hueco queda 5 puntos adentro de su zona,
+  // bajo la lupa, y los que sobran se reducen a un punto para que el paso entre momentos sea continuo.
+  var HOLES = 3;
+  function dimClip(zs) {
+    var hs = zs.slice(0, HOLES).map(function (z) {
+      // Con esquinas más redondas, como un círculo, el hueco se achica para quedar bajo la lupa.
+      var i = Math.min(Math.max(5, 1 + 0.3 * radius(z)), z[2] / 4, z[3] / 4);
+      return [z[0] + i, z[1] + i, z[0] + z[2] - i, z[1] + z[3] - i];
+    });
+    var c = hs[0], mx = (c[0] + c[2]) / 2, my = (c[1] + c[3]) / 2;
+    while (hs.length < HOLES) hs.push([mx, my, mx, my]);
+    function p(x, y) { return pct(x / 390) + ' ' + pct(y / 844); }
+    var d = ['0% 0%', '100% 0%', '100% 100%', '0% 100%', '0% 0%'];
+    hs.forEach(function (h) { d.push(p(h[0], h[1]), p(h[0], h[3]), p(h[2], h[3]), p(h[2], h[1]), p(h[0], h[1]), '0% 0%'); });
+    return 'polygon(evenodd, ' + d.join(', ') + ')';
+  }
+  function instant(el, fn) {
+    el.style.transition = 'none'; fn(); void el.offsetWidth; el.style.transition = '';
+  }
+
+  function makeSpot(g) {
+    var hl = doc.createElement('div'), dim = doc.createElement('i');
+    hl.className = 'hl'; hl.setAttribute('aria-hidden', 'true');
+    dim.className = 'spot'; hl.appendChild(dim);
+    g.insertBefore(hl, g.querySelector('.chrome'));
+    return { box: hl, dim: dim, marks: [], timers: [], lead: null };
   }
   function later(S, ms, fn) { S.timers.push(setTimeout(fn, ms)); }
   function stopTour(S) { S.timers.forEach(clearTimeout); S.timers = []; }
@@ -538,140 +606,278 @@
       return c.classList && (c.classList.contains('cap') || c.classList.contains('sx'));
     });
   }
-  function dropLenses(S) {
-    S.lenses.forEach(function (l) {
+  // Copia las capturas de una pantalla en [dest]. Una imagen copiada con cloneNode empieza a bajar
+  // antes de entrar a la página, y ahí la carga diferida no la frena. Por eso cada imagen se crea
+  // vacía y recibe su fuente ya insertada, así la del tema que no se ve (display: none) no se baja.
+  function copyCaps(caps, dest) {
+    var back = [];
+    caps.forEach(function (c) {
+      var k;
+      if (c.tagName === 'IMG') {
+        k = doc.createElement('img');
+        k.className = c.className; k.alt = '';
+        k.setAttribute('loading', 'lazy'); k.setAttribute('decoding', 'async');
+        k.setAttribute('sizes', c.getAttribute('sizes') || '');
+        back.push([k, c.getAttribute('srcset'), c.getAttribute('src')]);
+      } else {
+        k = c.cloneNode(true);
+        k.removeAttribute('role'); k.removeAttribute('aria-label');
+      }
+      dest.appendChild(k);
+    });
+    return function () { back.forEach(function (x) { if (x[1]) x[0].setAttribute('srcset', x[1]); if (x[2]) x[0].setAttribute('src', x[2]); }); };
+  }
+
+  function dropMarks(S) {
+    S.marks.forEach(function (l) {
       l.classList.remove('is-on');
       setTimeout(function () { if (l.parentNode) l.parentNode.removeChild(l); }, reduce ? 0 : 420);
     });
-    S.lenses = [];
+    S.marks = [];
+    S.lead = null;
   }
-  function hideSpot(S) { S.box.classList.remove('is-on'); dropLenses(S); S.pin.classList.remove('is-on'); }
-  function showBeat(S, b, src) {
-    var wasOn = S.box.classList.contains('is-on'), caps = capsOf(src);
-    place(S.spot, b.z[0]);
-    S.box.classList.add('is-on');
-    dropLenses(S);
-    b.z.forEach(function (z) {
-      // La lupa es una copia de la captura recortada a la zona, que sube un poco sobre el resto.
-      var lens = doc.createElement('div'), inner = doc.createElement('div');
-      var edge = z[0] < 2 || z[0] + z[2] > 388;
-      lens.className = 'lens';
-      place(lens, z);
-      lens.style.setProperty('--s', edge ? '1' : (1 + Math.min(0.07, 12 / Math.max(z[2], z[3]))).toFixed(3));
-      lens.style.setProperty('--iw', pct(390 / z[2]));
-      lens.style.setProperty('--ih', pct(844 / z[3]));
-      lens.style.setProperty('--ix', pct(-z[0] / z[2]));
-      lens.style.setProperty('--iy', pct(-z[1] / z[3]));
-      // Una imagen copiada con cloneNode empieza a bajar antes de entrar a la página, y ahí la carga
-      // diferida no la frena. Por eso cada imagen de la lupa se crea vacía y recibe su fuente ya
-      // insertada, así la captura del tema que no se ve (display: none) no se descarga.
-      var back = [];
-      caps.forEach(function (c) {
-        var k;
-        if (c.tagName === 'IMG') {
-          k = doc.createElement('img');
-          k.className = c.className; k.alt = '';
-          k.setAttribute('loading', 'lazy'); k.setAttribute('decoding', 'async');
-          k.setAttribute('sizes', c.getAttribute('sizes') || '');
-          back.push([k, c.getAttribute('srcset'), c.getAttribute('src')]);
-        } else {
-          k = c.cloneNode(true);
-          k.removeAttribute('role'); k.removeAttribute('aria-label');
-        }
-        inner.appendChild(k);
-      });
-      lens.appendChild(inner);
-      S.box.appendChild(lens);
-      back.forEach(function (x) { if (x[1]) x[0].setAttribute('srcset', x[1]); if (x[2]) x[0].setAttribute('src', x[2]); });
-      S.lenses.push(lens);
-      if (reduce) lens.classList.add('is-on');
-      else later(S, wasOn ? 380 : 200, function () { lens.classList.add('is-on'); });
+  function addMark(S, el, wasOn) {
+    S.box.appendChild(el);
+    S.marks.push(el);
+    if (reduce) el.classList.add('is-on');
+    else later(S, wasOn ? 380 : 200, function () { el.classList.add('is-on'); });
+  }
+  // La lupa es una copia de la captura recortada a la zona, que sube un poco sobre el resto.
+  function addLens(S, z, caps, wasOn) {
+    var lens = doc.createElement('div'), inner = doc.createElement('div');
+    lens.className = 'lens';
+    box(lens, z[0], z[1], z[2], z[3]);
+    lens.style.setProperty('--s', lensScale(z).toFixed(3));
+    if (z.length > 4) lens.style.setProperty('--r', f(z[4]));
+    // El halo de una zona baja no pasa de un 40 % de su alto, así no tapa la línea de arriba.
+    lens.style.setProperty('--hs', f(Math.min(16, 0.4 * Math.min(z[2], z[3]))));
+    lens.style.setProperty('--iw', pct(390 / z[2]));
+    lens.style.setProperty('--ih', pct(844 / z[3]));
+    lens.style.setProperty('--ix', pct(-z[0] / z[2]));
+    lens.style.setProperty('--iy', pct(-z[1] / z[3]));
+    var load = copyCaps(caps, inner);
+    lens.appendChild(inner);
+    addMark(S, lens, wasOn);
+    load();
+  }
+  function addRing(S, x, y, w, h, pill, wasOn) {
+    var r = doc.createElement('span');
+    r.className = pill ? 'ring pill' : 'ring';
+    box(r, x - w / 2, y - h / 2, w, h);
+    addMark(S, r, wasOn);
+  }
+  // Los anillos de un momento. Uno en el borde de cada zona que mira al texto, donde termina la
+  // línea guía, y otro opcional sobre un elemento chico (@x y) o una píldora que lo rodea con 3
+  // puntos de aire (@x y ancho alto), los dos con el mismo zoom de la lupa que los contiene.
+  function addRings(S, b, side, wasOn, one) {
+    (one ? b.z.slice(0, 1) : b.z).forEach(function (z, j) {
+      var p = edgeRing(z, side);
+      if (j === 0 && !S.lead) S.lead = { x: p[0], y: p[1], r: RING / 2 };
+      addRing(S, p[0], p[1], RING, RING, false, wasOn);
     });
-    if (b.pin) {
-      S.pin.style.left = pct(b.pin[0] / 390);
-      S.pin.style.top = pct(b.pin[1] / 844);
-      // Se reinicia para que el anillo vuelva a latir en cada momento que lo usa.
-      S.pin.classList.remove('is-on'); void S.pin.offsetWidth; S.pin.classList.add('is-on');
-    } else S.pin.classList.remove('is-on');
+    var q = b.mark, z0 = b.z[0];
+    if (!q) return;
+    var cx = q.length === 4 ? q[0] + q[2] / 2 : q[0], cy = q.length === 4 ? q[1] + q[3] / 2 : q[1];
+    var at = inside(z0, cx, cy) ? onLens(z0, cx, cy) : [cx, cy, 1];
+    if (q.length === 4) addRing(S, at[0], at[1], (q[2] + 6) * at[2], (q[3] + 6) * at[2], true, wasOn);
+    else addRing(S, at[0], at[1], RING + 10, RING + 10, false, wasOn);
   }
-  function phrase(i, k) {
+  function hideSpot(S) { S.box.classList.remove('is-on', 'is-rest'); dropMarks(S); }
+  function showBeat(S, b, src, side) {
+    var wasOn = S.box.classList.contains('is-on'), caps = capsOf(src), c = dimClip(b.z);
+    if (wasOn && !S.box.classList.contains('is-rest')) S.dim.style.clipPath = c;
+    else instant(S.dim, function () { S.dim.style.clipPath = c; });
+    S.box.classList.remove('is-rest');
+    S.box.classList.add('is-on');
+    dropMarks(S);
+    b.z.forEach(function (z) { addLens(S, z, caps, wasOn); });
+    addRings(S, b, side, wasOn);
+  }
+  // Las zonas principales a la vez, sin oscurecido ni movimiento.
+  function showAll(S, list, src, side) {
+    S.box.classList.remove('is-on');
+    dropMarks(S);
+    var caps = capsOf(src);
+    list.forEach(function (b) { b.z.forEach(function (z) { addLens(S, z, caps, true); }); });
+    list.forEach(function (b) { addRings(S, b, side, true, true); });
+  }
+  function phrase(i, ks) {
     if (!copies[i]) return;
-    all('.hl-f', copies[i]).forEach(function (el) { el.classList.toggle('is-on', +el.getAttribute('data-b') === k); });
+    all('.hl-f', copies[i]).forEach(function (el) {
+      var own = (el.getAttribute('data-b') || '').split(/\s+/).map(Number);
+      el.classList.toggle('is-on', own.some(function (k) { return ks.indexOf(k) >= 0; }));
+    });
   }
-  // Recorre los momentos uno tras otro y deja el último quieto. Si un momento cambia de pantalla,
-  // primero se apaga el foco, entra la pantalla nueva y después se enciende en ella.
+
+  // Burbujas que aparecen una tras otra. Una tapa del color del fondo del chat cubre la
+  // conversación de la captura entre las alturas de data-rev y se corre hacia abajo hasta cada
+  // línea «^y» del momento. No agrega nada, solo deja ver la captura por partes.
+  function makeCover(host, spec) {
+    var v = nums(spec || '');
+    if (v.length !== 2) return null;
+    var c = doc.createElement('i');
+    c.className = 'rev'; c.setAttribute('aria-hidden', 'true');
+    box(c, 0, v[0], 390, v[1] - v[0]);
+    host.insertBefore(c, host.querySelector('.chrome'));
+    return { el: c, top: v[0], bot: v[1] };
+  }
+  function setCover(cv, y, now) {
+    if (!cv) return;
+    var set = function () { cv.el.style.clipPath = 'inset(' + pct(clamp((y - cv.top) / (cv.bot - cv.top))) + ' 0 0 0)'; };
+    if (now) instant(cv.el, set); else set();
+  }
+  function hideBubbles(beats, covers) {
+    beats.forEach(function (b) { var cv = covers[b.scr]; if (b.rev.length && cv) setCover(cv, cv.top, true); });
+  }
+  function showBubbles(covers) { Object.keys(covers).forEach(function (k) { setCover(covers[k], 1e5, true); }); }
+
+  // Recorre los momentos uno tras otro. Si un momento cambia de pantalla, primero se apaga el foco,
+  // entra la pantalla nueva y después se enciende en ella. Al final se levanta el oscurecido.
   function play(S, beats, o) {
     stopTour(S);
     if (!beats.length) return;
     if (reduce) {
-      var last = beats[beats.length - 1], ls = last.scr || o.scr0;
-      if (ls !== o.scr0) o.setScr(ls);
-      showBeat(S, last, o.src(ls)); o.phr(last.i); o.beat(last);
+      var ms = mainBeats(beats), sc = ms[0].scr;
+      o.reveal(null);
+      if (sc !== o.scr0) o.setScr(sc);
+      showAll(S, ms, o.src(sc), o.side());
+      o.phr(ms.map(function (b) { return b.i; }));
+      o.beat();
       return;
     }
-    var t = o.delay, now0 = o.scr0;
+    var t = o.delay, cur = o.scr0;
     beats.forEach(function (b) {
-      var sc = b.scr || now0;
-      if (sc !== now0) {
-        later(S, t, function () { hideSpot(S); o.setScr(sc); });
-        t += SWAP; now0 = sc;
+      if (b.scr !== cur) {
+        later(S, t, function () { hideSpot(S); o.beat(); o.setScr(b.scr); });
+        t += SWAP; cur = b.scr;
       }
-      later(S, t, function () { showBeat(S, b, o.src(sc)); o.phr(b.i); o.beat(b); });
+      b.rev.forEach(function (y) { later(S, t, function () { o.reveal(b.scr, y); }); t += REVEAL; });
+      later(S, t, function () { showBeat(S, b, o.src(b.scr), o.side()); o.phr([b.i]); o.beat(); });
       t += BEAT;
     });
+    later(S, t - BEAT + REST, function () { S.box.classList.add('is-rest'); o.beat(); });
   }
   function noop() {}
 
-  var beatsOf = steps.map(function (s) { return parseBeats(s.getAttribute('data-beats')); });
-  var pin = $('pin');
-  // Recorrido del teléfono fijo, con su paso activo, la pantalla que muestra y el momento en curso.
-  var T = { idx: -1, scr: null, beat: null, spot: null };
+  var beatsOf = steps.map(function (s) { return parseBeats(s.getAttribute('data-beats'), s.getAttribute('data-screen')); });
+  function sideOf(i) { return steps[i].getAttribute('data-side') || 'r'; }
+
+  // Tapas del teléfono fijo, una por pantalla con data-rev.
+  var rigCovers = {};
+  Object.keys(scrs).forEach(function (k) {
+    var cv = makeCover(scrs[k], scrs[k].getAttribute('data-rev'));
+    if (cv) rigCovers[k] = cv;
+  });
+
+  // Recorrido del teléfono fijo, con su paso activo, la pantalla que muestra y el anillo de la línea.
+  var T = { idx: -1, scr: null, lead: null, spot: null };
   function startRigTour(i) {
-    if (!T.spot) T.spot = makeSpot(glass, pin);
+    if (!T.spot) T.spot = makeSpot(glass);
     stopTour(T.spot);
-    if (T.idx > 0) phrase(T.idx, -1);
+    if (T.idx > 0) phrase(T.idx, []);
     hideSpot(T.spot);
-    T.idx = i; T.scr = null; T.beat = null;
+    T.idx = i; T.scr = null; T.lead = null;
     if (i <= 0) return;
-    T.scr = steps[i].getAttribute('data-screen');
-    play(T.spot, beatsOf[i], {
+    var bs = beatsOf[i];
+    T.scr = bs.length ? bs[0].scr : steps[i].getAttribute('data-screen');
+    if (!reduce) hideBubbles(bs, rigCovers);
+    play(T.spot, bs, {
       delay: SWAP, scr0: T.scr,
+      side: function () { return sideOf(i); },
       setScr: function (n) { T.scr = n; requestRender(); },
       src: function (n) { return scrs[n]; },
-      phr: function (k) { phrase(i, k); },
-      beat: function (b) { T.beat = b; requestRender(); }
+      reveal: function (n, y) { if (n == null) showBubbles(rigCovers); else setCover(rigCovers[n], y); },
+      phr: function (ks) { phrase(i, ks); },
+      beat: function () { T.lead = T.spot.lead; requestRender(); }
     });
   }
 
-  // Recorridos de las capturas apiladas. Cada una corre los momentos de su pantalla al quedar a la vista.
+  // Recorridos de las capturas apiladas. Cada figura corre los momentos de su paso al quedar a la
+  // vista, y las pantallas de los momentos que no son la suya entran como capas encima.
   var shotTours = [];
+  function prepShot(s) {
+    if (s.ready) return;
+    s.ready = true;
+    var chrome = s.glass.querySelector('.chrome');
+    s.beats.forEach(function (b) {
+      var name = b.scr, r = scrs[name];
+      if (name === s.scr || !r || s.layers[name]) return;
+      var lay = doc.createElement('div');
+      lay.className = 'lay'; lay.setAttribute('aria-hidden', 'true');
+      s.glass.insertBefore(lay, chrome);
+      copyCaps(capsOf(r), lay)();
+      s.layers[name] = lay;
+      s.covers[name] = makeCover(lay, r.getAttribute('data-rev'));
+    });
+    if (scrs[s.scr]) s.covers[s.scr] = makeCover(s.glass, scrs[s.scr].getAttribute('data-rev'));
+  }
+  function figScreen(s, name) {
+    s.cur = name;
+    Object.keys(s.layers).forEach(function (k) { s.layers[k].classList.toggle('is-on', k === name); });
+    // La barra de estado y la de inicio toman el tono de la pantalla a la vista.
+    var r = scrs[name];
+    if (!r) return;
+    s.glass.setAttribute('data-hb', r.getAttribute('data-hb') || 'cc');
+    if (r.hasAttribute('data-sb')) s.glass.setAttribute('data-sb', r.getAttribute('data-sb'));
+    else s.glass.removeAttribute('data-sb');
+  }
+  function firstScreen(s) {
+    if (!s.beats.length) return s.scr;
+    return reduce ? mainBeats(s.beats)[0].scr : s.beats[0].scr;
+  }
+  // En el modo apilado el texto va arriba o al lado de la captura, así que el anillo va a la derecha
+  // de la zona en el celular y, desde 600 px, del lado del texto.
+  function shotSide(s) {
+    if (L.vw < 600) return 'r';
+    return sideOf(s.i) === 'l' ? 'r' : 'l';
+  }
   function playShot(s) {
+    prepShot(s);
     if (!s.spot) s.spot = makeSpot(s.glass);
-    play(s.spot, s.beats, { delay: 300, scr0: s.scr, setScr: noop, src: function () { return s.glass; }, phr: function (k) { phrase(s.i, k); }, beat: noop });
+    figScreen(s, firstScreen(s));
+    if (!reduce) hideBubbles(s.beats, s.covers);
+    play(s.spot, s.beats, {
+      delay: 300, scr0: s.cur,
+      side: function () { return shotSide(s); },
+      setScr: function (n) { figScreen(s, n); },
+      src: function (n) { return s.layers[n] || s.glass; },
+      reveal: function (n, y) { if (n == null) showBubbles(s.covers); else setCover(s.covers[n], y); },
+      phr: function (ks) { phrase(s.i, ks); },
+      beat: noop
+    });
   }
   function stopShot(s) {
     if (!s.spot) return;
-    stopTour(s.spot); hideSpot(s.spot); phrase(s.i, -1);
+    stopTour(s.spot); hideSpot(s.spot); phrase(s.i, []);
   }
+  var TH = [];
+  for (var th = 0; th <= 20; th++) TH.push(th / 20);
   var shotIO = 'IntersectionObserver' in win ? new IntersectionObserver(function (entries) {
     entries.forEach(function (e) {
       var s = e.target.tour;
       if (!s) return;
-      if (e.isIntersecting && e.intersectionRatio > 0.08) s.fig.classList.add('in');
-      var vis = e.isIntersecting && e.intersectionRatio >= 0.6;
+      if (e.isIntersecting && e.intersectionRatio > 0.08) {
+        s.fig.classList.add('in');
+        // Al asomar, la figura ya muestra la pantalla con la que empieza su recorrido.
+        if (!L.wide && !s.primed) { s.primed = true; prepShot(s); figScreen(s, firstScreen(s)); }
+      }
+      // La parte visible se mide contra lo que cabe en la ventana, así una figura más alta que la
+      // ventana, como en un celular apaisado, también arranca su recorrido.
+      var vh = e.rootBounds ? e.rootBounds.height : L.vh;
+      var room = Math.min(e.boundingClientRect.height, vh) || 1;
+      var vis = e.isIntersecting && e.intersectionRect.height / room >= 0.6;
       if (vis === s.on) return;
       s.on = vis;
       if (L.wide) return;
       if (vis) playShot(s); else stopShot(s);
     });
-  }, { threshold: [0, 0.1, 0.6] }) : null;
+  }, { threshold: TH }) : null;
   all('.shot').forEach(function (fig) {
     var st = fig.closest ? fig.closest('.step') : null, i = steps.indexOf(st);
     if (i < 1 || !shotIO) return;
-    var name = fig.getAttribute('data-scr'), scr0 = st.getAttribute('data-screen');
     var s = {
-      fig: fig, glass: fig.querySelector('.glass'), i: i, scr: name, on: false, spot: null,
-      beats: beatsOf[i].filter(function (b) { return (b.scr || scr0) === name; })
+      fig: fig, glass: fig.querySelector('.glass'), i: i, scr: fig.getAttribute('data-scr'), cur: null,
+      on: false, spot: null, ready: false, primed: false, layers: {}, covers: {}, beats: beatsOf[i]
     };
     fig.tour = s;
     if (!reduce) fig.classList.add('rv');
@@ -695,25 +901,30 @@
     } catch (e) { /* sin transformación */ }
     return { left: r.left - tx, right: r.right - tx, top: r.top, bottom: r.bottom };
   }
-  // La línea punteada une el texto activo con la altura del anillo o, si no hay, con la de la zona.
-  function updateLeader(idx, p) {
-    var st = steps[idx], b = T.beat;
-    if (!b || idx !== T.idx || idx === 0 || p < 1) { leader.classList.remove('is-on'); return; }
-    var py = b.pin ? b.pin[1] : b.z[0][1] + b.z[0][3] / 2;
-    var copy = copies[idx], side = st.getAttribute('data-side') || 'r';
-    if (!copy) { leader.classList.remove('is-on'); return; }
-    var cr = restRect(copy), gr = glass.getBoundingClientRect(), sr = stage.getBoundingClientRect();
-    var eb = copy.querySelector('.eyebrow'), er = eb ? eb.getBoundingClientRect() : cr;
-    var y0 = er.top + er.height / 2 - sr.top, y1 = gr.top + py / 844 * gr.height - sr.top;
+  // La línea punteada une el texto activo con el anillo del momento y termina en su borde. Cuando
+  // el momento cambia, su punta viaja de un anillo al otro.
+  var LD = { on: false, x: 0, y: 0, ts: 0 };
+  function leaderOff() { leader.classList.remove('is-on'); LD.on = false; }
+  function updateLeader(idx, p, ts) {
+    var lead = T.lead, copy = copies[idx];
+    if (!lead || !copy || idx !== T.idx || idx === 0 || p < 1) { leaderOff(); return; }
+    var side = sideOf(idx), cr = restRect(copy), gr = glass.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    var eb = copy.querySelector('.eyebrow'), er = eb ? eb.getBoundingClientRect() : cr, k = gr.width / 390;
+    var y0 = er.top + er.height / 2 - sr.top;
     var x0 = side === 'l' ? cr.right + 12 - sr.left : cr.left - 12 - sr.left;
-    var x1 = side === 'l' ? gr.left - 12 - sr.left : gr.right + 12 - sr.left;
-    var visible = cr.bottom > L.navH + 20 && cr.top < L.vh - 20 && Math.abs(x1 - x0) > 18;
-    if (visible) {
-      var mx = (x0 + x1) / 2;
-      attr(leadp, 'd', 'M' + f(x0) + ' ' + f(y0) + 'C' + f(mx) + ' ' + f(y0) + ' ' + f(mx) + ' ' + f(y1) + ' ' + f(x1) + ' ' + f(y1));
-      attr(leadc, 'cx', f(x0)); attr(leadc, 'cy', f(y0));
+    var tx = gr.left - sr.left + (side === 'l' ? lead.x - lead.r : lead.x + lead.r) * k;
+    var ty = gr.top - sr.top + lead.y * k;
+    if (!(cr.bottom > L.navH + 20 && cr.top < L.vh - 20 && Math.abs(tx - x0) > 18)) { leaderOff(); return; }
+    if (!LD.on || reduce) { LD.x = tx; LD.y = ty; } else {
+      var a = 1 - Math.exp(-clamp(ts - LD.ts, 0, 64) / 90);
+      LD.x += (tx - LD.x) * a; LD.y += (ty - LD.y) * a;
+      if (Math.abs(tx - LD.x) + Math.abs(ty - LD.y) > 0.4) requestRender(); else { LD.x = tx; LD.y = ty; }
     }
-    leader.classList.toggle('is-on', visible);
+    LD.ts = ts; LD.on = true;
+    var mx = (x0 + LD.x) / 2;
+    attr(leadp, 'd', 'M' + f(x0) + ' ' + f(y0) + 'C' + f(mx) + ' ' + f(y0) + ' ' + f(mx) + ' ' + f(LD.y) + ' ' + f(LD.x) + ' ' + f(LD.y));
+    attr(leadc, 'cx', f(x0)); attr(leadc, 'cy', f(y0));
+    leader.classList.add('is-on');
   }
 
   var S2 = { idx: -1 };
@@ -751,7 +962,7 @@
       var want = p >= 1 ? idx : -1;
       if (want !== T.idx) startRigTour(want);
       setScreen(p < 1 ? 'malla' : (T.scr || steps[idx].getAttribute('data-screen')), p >= 1 && steps[idx].hasAttribute('data-install'));
-      updateLeader(idx, p);
+      updateLeader(idx, p, ts);
     } else {
       rig.style.transform = '';
       hero.style.opacity = '';
@@ -759,7 +970,7 @@
       root.style.removeProperty('--gk');
       if (T.idx !== -1) startRigTour(-1);
       setScreen('malla', false);
-      leader.classList.remove('is-on');
+      leaderOff();
     }
     renderFx(ts, p);
     return p;
