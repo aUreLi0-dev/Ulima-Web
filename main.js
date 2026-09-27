@@ -1046,8 +1046,8 @@
   // El 67. Un compañero manda «67» en el chat de la sección, el teléfono entero se inclina de un lado
   // a otro durante 2 s, como el truco de la app (−3° · sen(2π · 4 · avance), primero a la izquierda),
   // y Ulises responde «SIX SEVEN!!!». Con movimiento reducido, con las animaciones en pausa o al
-  // saltar al estado final no hay vaivén, y la burbuja de Ulises trae su comentario del paso y,
-  // debajo, la respuesta.
+  // saltar al estado final no hay vaivén, y si ya había empezado se corta ahí mismo. La burbuja de
+  // Ulises trae entonces su comentario del paso y, debajo, la respuesta.
   function stopTilt(el) {
     if (!el) return;
     clearTimeout(el.t67);
@@ -1055,8 +1055,9 @@
   }
   function six7(el, now, uli) {
     if (uli) { U.t67 = true; U.t67both = !!(now || reduce || still); uliSay(); }
-    if (now || reduce || still || !el) return;
+    if (!el) return;
     stopTilt(el);
+    if (now || reduce || still) return;
     void el.offsetWidth;
     el.classList.add('t67');
     el.t67 = setTimeout(function () { el.classList.remove('t67'); }, 2100);
@@ -1187,8 +1188,17 @@
   // cortaría cada paso antes de sus detalles. Desplazar la página tampoco, ni con la rueda ni con el
   // dedo, porque un toque que se vuelve desplazamiento no dispara click.
   function endTour(i) {
-    if (L.rig) { if (T.idx === i && T.spot && T.spot.end) T.spot.end(); return; }
-    shotTours.forEach(function (s) { if (s.i === i && s.spot && s.spot.end) s.spot.end(); });
+    if (L.rig) {
+      if (T.idx !== i) return;
+      stopTilt(phone);
+      if (T.spot && T.spot.end) T.spot.end();
+      return;
+    }
+    shotTours.forEach(function (s) {
+      if (s.i !== i) return;
+      stopTilt(s.fig);
+      if (s.spot && s.spot.end) s.spot.end();
+    });
   }
   function pauseOn(el, i) {
     if (!el) return;
@@ -1215,6 +1225,9 @@
     try { if (v) win.sessionStorage.setItem(QUIETO, '1'); else win.sessionStorage.removeItem(QUIETO); } catch (e) { /* vale solo para esta página */ }
     syncPause();
     if (v) {
+      // El vaivén del 67 se corta al instante, en el teléfono fijo y en las capturas apiladas.
+      stopTilt(phone);
+      shotTours.forEach(function (s) { stopTilt(s.fig); });
       if (T.spot && T.spot.end) T.spot.end();
       shotTours.forEach(function (s) { if (s.spot && s.spot.end) s.spot.end(); });
     } else {

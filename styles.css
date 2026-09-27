@@ -183,9 +183,11 @@ html:not(.js) .theme { display: none; }
 .js .pausa-fila { display: flex; justify-content: center; padding-top: 8px; }
 .js .pausa-fila .pausa { display: inline-flex; }
 
-/* En pausa se apaga lo que late o se repite, también Ulises y el logo en reposo. */
+/* En pausa se apaga lo que late o se repite, también Ulises y el logo en reposo, y el 67 llega
+   quieto, sin vaivén y con la conversación ya subida. */
 html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after,
-html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-pp i { animation: none !important; }
+html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-pp i,
+html.quieto .phone.t67, html.quieto .shot.t67, html.quieto .c67-sube, html.quieto .c67-msg { animation: none !important; }
 
 /* ---------- Botones y textos comunes ---------- */
 .btn {
