@@ -301,6 +301,9 @@ html.quieto .phone.t67, html.quieto .shot.t67, html.quieto .c67-sube, html.quiet
 .scr { position: absolute; inset: 0; }
 .rig .scr:not([data-scr="malla"]) { display: none; }
 .cap, .sx { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Una pantalla hecha de una captura y un SVG, como la del 67, lleva el SVG encima de la captura, en
+   el teléfono fijo y en las capas de las capturas apiladas. */
+.scr > .cap ~ .sx, .lay > .cap ~ .sx { position: absolute; inset: 0; }
 
 /* La captura clara o la oscura según el tema. La que no toca no se descarga (loading="lazy"). */
 .cap-oscuro { display: none; }

@@ -615,7 +615,7 @@
   try { still = win.sessionStorage.getItem(QUIETO) === '1'; } catch (e) { /* sin almacenamiento */ }
 
   function nums(s) { return s.trim().split(/\s+/).filter(Boolean).map(Number); }
-  // Un momento es «[*][pantalla:] x y ancho alto [radio] [~t|~b|~o|~n] [=zoom][, otra zona] [@x y |
+  // Un momento es «[*][pantalla:] x y ancho alto [radio] [~t|~b|~o|~r|~n] [=zoom][, otra zona] [@x y |
   // @x y ancho alto] [^y ...]».
   function parseBeats(str, home) {
     var out = [];
@@ -634,7 +634,7 @@
       // un «!» para conservarlo con movimiento reducido, como la lupa del 67, que sin ella no se lee.
       (k >= 0 ? b.slice(0, k) : b).split(',').forEach(function (r) {
         var ZR = /=\s*([\d.]+)(?::([\d.]+))?(!?)/;
-        var h = /~([tbno])/.exec(r), zm = ZR.exec(r), v = nums(r.replace(/~[a-z]/g, '').replace(ZR, ''));
+        var h = /~([tbnor])/.exec(r), zm = ZR.exec(r), v = nums(r.replace(/~[a-z]/g, '').replace(ZR, ''));
         if ((v.length === 4 || v.length === 5) && v.every(isFinite)) {
           v.ring = h ? h[1] : ''; v.zoom = zm && +zm[1] > 1 ? +zm[1] : 0;
           v.zoomC = zm && zm[2] && +zm[2] > 1 ? +zm[2] : v.zoom; v.keep = !!(zm && zm[3]);
@@ -694,13 +694,15 @@
   // Centro del anillo. Toca desde afuera, con 5 puntos adentro, el borde de la lupa que mira al
   // texto, a media altura. Si ahí no cabe entero en la pantalla, va al borde de arriba o al de abajo,
   // junto a la esquina que mira al texto. Una zona puede pedir otro borde, ~t arriba o ~b abajo (al
-  // medio del borde) u ~o el lado opuesto al texto. Así nunca cae dentro de lo que la zona muestra.
+  // medio del borde), ~o el lado opuesto al texto o ~r el derecho, en la compu y en el celular, como
+  // la lupa del 67, que en los dos solo tiene libre ese lado. Así nunca cae dentro de lo que la zona
+  // muestra.
   // Una lupa más baja o más angosta que el anillo, como una insignia sin zoom, lo lleva del todo
   // afuera, con 2 puntos de aire, porque ahí esos 5 puntos taparían sus letras. Con ~n la zona no
   // lleva anillo.
   var RING_OUT = RING / 2 - 5, RING_M = RING / 2 + 5;
   function ringAt(g, side) {
-    var hint = g.z.ring, l = (side === 'l') !== (hint === 'o');
+    var hint = g.z.ring, l = hint === 'r' ? false : (side === 'l') !== (hint === 'o');
     if (hint === 'n') return null;
     var out = Math.min(g.x1 - g.x0, g.y1 - g.y0) < RING ? RING / 2 + 2 : RING_OUT;
     var mid = (g.x0 + g.x1) / 2, ex = hint === 't' || hint === 'b' ? mid : l ? Math.min(g.x0 + RING, mid) : Math.max(g.x1 - RING, mid);
