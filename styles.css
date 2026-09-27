@@ -445,7 +445,9 @@ html.quieto .phone.t67, html.quieto .shot.t67, html.quieto .c67-sube, html.quiet
   position: absolute; border-radius: var(--br, calc(var(--u) * 14));
   opacity: 0; transform: scale(1);
   box-shadow: 0 0 0 calc(var(--u) * 2 / var(--s, 1)) var(--mk, var(--orange)), 0 calc(var(--u) * 18 / var(--s, 1)) calc(var(--u) * 34 / var(--s, 1)) calc(var(--u) * -14 / var(--s, 1)) rgba(0, 0, 0, .7);
-  transition: opacity .25s ease, transform .6s cubic-bezier(.2, .9, .25, 1.15);
+  /* La lupa se vuelve opaca en su lugar, sin zoom, donde calza con la captura de abajo, y recién
+     después crece. Así la copia ampliada y la captura nunca se ven a la vez con el texto doble. */
+  transition: opacity .1s ease, transform .6s cubic-bezier(.2, .9, .25, 1.15) .1s;
 }
 .lens.is-on { opacity: 1; transform: translate(calc(var(--u) * var(--dx, 0)), calc(var(--u) * var(--dy, 0))) scale(var(--s, 1.04)); }
 /* Al pasar al momento siguiente, la lupa y el anillo se apagan en su lugar, sin achicarse. */
