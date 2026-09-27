@@ -188,6 +188,8 @@ html:not(.js) .theme { display: none; }
 html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after,
 html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-pp i,
 html.quieto .phone.t67, html.quieto .shot.t67, html.quieto .c67-sube, html.quieto .c67-msg { animation: none !important; }
+/* El panel del QR aparece en su lugar, sin subir, así Ulises, que se posa sobre él, no se desliza. */
+html.quieto .qrpanel { transform: none; }
 
 /* ---------- Botones y textos comunes ---------- */
 .btn {
