@@ -23,7 +23,8 @@ entonces los datos de respaldo del APK.
 Para revisar una intro concreta del logo se agrega `?intro=ensamble`, `?intro=incremento` o
 `?intro=codigo` a la dirección. Sin el parámetro, cada visita sortea una de las tres, nunca la misma
 de la visita anterior, que el navegador guarda en `localStorage` con la clave `ulimaplus-intro`.
-Sin almacenamiento, el sorteo es entre las tres.
+Sin almacenamiento, el sorteo es entre las tres. Cualquier otro valor, como `?intro=constructor`,
+se ignora y deja el sorteo.
 
 La página sigue el tema claro u oscuro del sistema. El botón de la barra superior lo cambia y el
 navegador recuerda la elección, así que en una computadora en modo claro basta con tocarlo una
@@ -80,7 +81,8 @@ anclada en la esquina de arriba a la izquierda y llega a su lado también con `t
 
 En el chat de la sección llega un «67» de un compañero, a los 4,9 s de empezar el paso, y en el
 celular ese paso es más alto para que no se pase de largo. Una lupa lo agranda, el teléfono se
-inclina 2 s como el truco de la app y Ulises responde «SIX SEVEN!!!» (`data-uli67`). Con movimiento
+inclina 2 s como el truco de la app y Ulises responde «SIX SEVEN!!!» (`data-uli67`), que va con
+`lang="en"` en su burbuja y en el texto del paso. Con movimiento
 reducido, con la pausa o al tocar el texto, la respuesta va en la misma burbuja, debajo de su
 comentario del paso, y si el vaivén ya empezó se corta al instante. Con la pausa puesta, el 67 llega
 quieto, con la conversación ya subida. La pantalla `chat-67` es la captura del chat con la
@@ -212,7 +214,9 @@ anillo caiga en el hueco entre la fila y la tarjeta del curso. La insignia «EVA
 el día cancelado de las prácticas también llevan `~b`, así el anillo queda dentro de su bloque, bajo
 la insignia o bajo «Este día está cancelado», y no sobre el bloque de arriba ni montado en el borde
 de la lupa. La insignia amplía 2,6 veces en la compu y 2,5 en el celular (`=2.6:2.5`), lo más que
-puede sin tapar el final de «INGENIERÍA DE SOFTWARE II». La lupa del 67 lleva `~r`, porque en la
+puede sin tapar el final de «INGENIERÍA DE SOFTWARE II». El botón «Asistiré · Cancelar» amplía 1,25
+veces en la compu y 1,35 en el celular (`=1.25:1.35`), así su lupa no tapa «12 asistirán» y se ve
+que la asesoría suma un asistente. La lupa del 67 lleva `~r`, porque en la
 compu y en el celular solo el lado derecho de la burbuja nueva queda libre, y los botones de la
 bienvenida van sin anillo (`~n`), porque su anillo caería sobre el canto de «Sí, entrar» y se
 confundiría con él. Si la lupa queda más baja que el anillo, como la insignia sin zoom, el anillo va
@@ -252,7 +256,8 @@ El botón «Pausar animaciones» va en la barra superior en la compu, abajo a la
 fijo en el celular, donde muestra solo su ícono y guarda el rótulo para el lector de pantalla, y al
 comienzo de Funciones con las capturas apiladas. Termina todos los recorridos en su
 estado final, muestra ya terminados los que siguen y apaga lo que late, como los halos, los
-anillos, el resplandor del teléfono, la flecha de la portada, el logo en reposo y a Ulises. La tecla
+anillos, el resplandor del teléfono, la flecha de la portada, el logo en reposo y a Ulises. El panel
+del QR aparece en su lugar, sin subir, así Ulises, que se posa sobre él, tampoco se desliza. La tecla
 Escape también pausa, y la pausa dura toda la visita. El mismo botón, que pasa a decir «Reanudar
 animaciones», vuelve a recorrer el paso a la vista. El rótulo cambia por clase, y el script del
 `<head>` pone esa clase antes del primer pintado cuando la pausa quedó guardada, así el botón no
@@ -306,6 +311,8 @@ su área de toque de 48 puntos, así la lupa lo amplía hasta que se lee.
   pausa.» o «Animaciones en marcha.», así el lector de pantalla también se entera de la pausa que
   llega con Escape, sin que nada le robe el foco.
 - El aviso de la portada no parte «no es una app oficial» en dos líneas, así ninguna línea que asome
-  bajo el teléfono fijo del celular dice «app oficial» sin el «no».
+  bajo el teléfono fijo del celular dice «app oficial» sin el «no». Desde 480 px de ancho, donde la
+  frase entera cabe en un renglón, «Proyecto académico de alumnos.» va arriba y la frase completa
+  debajo.
 - La barra de estado, la cámara, la barra de inicio y las copias ampliadas de cada zona son
   decorativas y quedan ocultas para el lector de pantalla.
