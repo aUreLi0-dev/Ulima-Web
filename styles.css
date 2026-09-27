@@ -251,6 +251,9 @@ html.quieto .qrpanel { transform: none; }
 /* «no es una app oficial» no se parte, así ninguna línea del aviso dice «app oficial» sin el «no»,
    ni cuando la primera pasa detrás del teléfono fijo del celular. */
 .note .nw { white-space: nowrap; }
+/* Donde la frase entera cabe en un renglón, el rótulo va arriba y la frase completa debajo, así
+   «ULima++» no queda al final del primer renglón, lejos del resto de su frase. */
+@media (min-width: 480px) { .note strong { display: block; } }
 
 /* Lo que dice Ulises en cada paso, dentro del texto. Se ve con las capturas apiladas y sin JS. Con
    el teléfono fijo lo muestra su burbuja y aquí queda solo para los lectores de pantalla. */
