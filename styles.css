@@ -244,6 +244,9 @@ html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-
 .handoff strong { display: block; color: var(--ink); font-size: 14.5px; }
 .note { margin: 18px 0 0; max-width: 46ch; font-size: 14px; line-height: 1.45; color: var(--ink2); }
 .note strong { color: var(--ink); font-weight: 600; }
+/* «no es una app oficial» no se parte, así ninguna línea del aviso dice «app oficial» sin el «no»,
+   ni cuando la primera pasa detrás del teléfono fijo del celular. */
+.note .nw { white-space: nowrap; }
 
 /* Lo que dice Ulises en cada paso, dentro del texto. Se ve con las capturas apiladas y sin JS. Con
    el teléfono fijo lo muestra su burbuja y aquí queda solo para los lectores de pantalla. */
