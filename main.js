@@ -1434,21 +1434,30 @@
   }
   // Mejor lugar para una burbuja de [w] x [h] junto a Ulises. Prueba arriba, abajo y a los lados, hacia
   // el lado libre, y se queda con el primer lugar que cabe en la ventana (en el celular, dentro del
-  // escenario) sin pisar nada, o si no con el que menos pisa. La pantalla del teléfono pesa cien veces
-  // más que el resto, así que la burbuja nunca la pisa si hay otro lugar, y el código QR pesa diez
-  // veces más que el borde de su panel. También evita el texto activo y el botón de pausa. Con [keep],
-  // el lugar elegido antes se mantiene mientras siga libre.
+  // escenario) sin pisar nada, o si no con el que menos pisa. La pantalla del teléfono y los módulos
+  // del código QR pesan cien veces más que el resto, así que la burbuja nunca los pisa si hay otro
+  // lugar, y el margen blanco del código pesa diez veces más que el borde de su panel. También evita
+  // el texto activo y el botón de pausa. Con [keep], el lugar elegido antes se mantiene mientras siga
+  // libre.
   function bubBest(w, h, keep) {
     var p = spotXY(U.spot), s = U.s, G = glassBox();
     var sr = stage.getBoundingClientRect();
     var lo = { l: 8, r: L.vw - 8, t: L.navH + 6, b: L.wide ? L.vh - 6 : sr.bottom - 4 };
-    var obs = [{ l: G.left - 6, t: G.top - 6, r: G.right + 6, b: G.bottom + 6, wt: 100 }];
+    var obs = [{ l: G.left - 6, t: G.top - 6, r: G.right + 6, b: G.bottom + 6, wt: 100 }], QM = null;
     if (L.wide) {
       var cp = U.idx > 0 ? copies[U.idx] : hero;
       if (cp && (U.idx > 0 || parseFloat(hero.style.opacity || '1') > 0.2)) { var rr = restRect(cp); obs.push({ l: rr.left - 10, t: rr.top - 10, r: rr.right + 10, b: rr.bottom + 10, wt: 1 }); }
       if (stage.classList.contains('is-install') && qrEl) {
         var qo = rectOf(qrEl, 6); qo.wt = 1; obs.push(qo);
-        if (qrImg) { var qi = rectOf(qrImg, 4); qi.wt = 10; obs.push(qi); }
+        if (qrImg) {
+          var qi = rectOf(qrImg, 4); qi.wt = 10; obs.push(qi);
+          // Los módulos del código ocupan 41 de las 49 unidades del SVG, con 4 de margen blanco por
+          // lado. Pesan como el vidrio y la burbuja nunca los pisa, porque con un patrón de posición
+          // tapado el código puede dejar de leerse.
+          var qr = rectOf(qrImg), qm = (qr.r - qr.l) * 4 / 49;
+          QM = { l: qr.l + qm, t: qr.t + qm, r: qr.r - qm, b: qr.b - qm, wt: 100 };
+          obs.push(QM);
+        }
       }
     } else if (pauseSt) { var ps = rectOf(pauseSt, 6); ps.wt = 1; obs.push(ps); }
     obs.push({ l: p.x - s / 2, t: p.y - s / 2, r: p.x + s / 2, b: p.y + s / 2, wt: 1 });
@@ -1461,15 +1470,15 @@
       o: dir >= 0 ? { l: p.x - out - w, t: p.y - h / 2, tail: 'r' } : { l: p.x + out, t: p.y - h / 2, tail: 'l' }
     };
     var order = !L.wide && U.spot.fy < 0.5 ? ['d', 'a', 's'] : ['a', 'd', 's', 'o'];
-    // [hard] es lo que la burbuja nunca debe hacer, pisar el vidrio o, en la compu, salirse de la
-    // ventana. Si el mejor lugar lo hace, la burbuja no se muestra.
+    // [hard] es lo que la burbuja nunca debe hacer, pisar el vidrio o los módulos del QR o, en la
+    // compu, salirse de la ventana. Si el mejor lugar lo hace, la burbuja no se muestra.
     var GX = { l: G.left, t: G.top, r: G.right, b: G.bottom };
     function cost(c) {
       var box = { l: c.l, t: c.t, r: c.l + w, b: c.t + h }, k = 0, outA = w * h - overlap(box, lo);
       obs.forEach(function (o) { k += o.wt * overlap(box, o); });
       // En la compu, salirse de la ventana pesa veinte veces, más que rozar el borde del panel del QR.
       k += (L.wide ? 20 : 2) * outA;
-      c.hard = overlap(box, GX) + (L.wide ? outA : 0);
+      c.hard = overlap(box, GX) + (QM ? overlap(box, QM) : 0) + (L.wide ? outA : 0);
       return k;
     }
     // Se corre a lo largo de su borde para caber, sin que la cola deje de apuntar a Ulises. Prueba el
@@ -1501,8 +1510,9 @@
   function bubPlace() {
     var b = U.bub, p = spotXY(U.spot), w = b.w, h = b.h, best = bubBest(w, h, b.cand);
     b.cand = best.n;
-    // Si ni el mejor lugar evita el vidrio y el borde de la ventana, la burbuja espera oculta, sin
-    // desplazar nada, hasta que haya lugar. Lo que dice Ulises sigue en el texto (.udice).
+    // Si ni el mejor lugar evita el vidrio, los módulos del QR y el borde de la ventana, la burbuja
+    // espera oculta, sin desplazar nada, hasta que haya lugar. Lo que dice Ulises sigue en el texto
+    // (.udice).
     ubub.classList.toggle('no-cabe', best.hard > 0.5);
     // Se ubica con translate y no con left y top, así cambiar de lugar no cuenta como desplazamiento
     // de diseño (CLS), ni siquiera con movimiento reducido, cuando cambia de texto y de lugar en el
