@@ -1221,11 +1221,15 @@
   function syncPause() {
     root.classList.toggle('quieto', still);
   }
+  // Al pausar o reanudar con el botón o con Escape, una región cortés lo dice al lector de pantalla,
+  // porque el cambio de rótulo del botón no se anuncia si la pausa llega con Escape.
+  var pauseNote = $('pausa-aviso');
   function setStill(v) {
     if (v === still) return;
     still = v;
     try { if (v) win.sessionStorage.setItem(QUIETO, '1'); else win.sessionStorage.removeItem(QUIETO); } catch (e) { /* vale solo para esta página */ }
     syncPause();
+    if (pauseNote) pauseNote.textContent = v ? 'Animaciones en pausa.' : 'Animaciones en marcha.';
     if (v) {
       // El vaivén del 67 se corta al instante, en el teléfono fijo y en las capturas apiladas.
       stopTilt(phone);
@@ -1544,15 +1548,16 @@
     ubub.style.setProperty('--py', f(tl === 't' ? -7 : tl === 'b' ? h - 7 : ty - 6) + 'px');
   }
   // Mide la burbuja con cada ancho posible y se queda con el que mejor cabe. Ante un empate gana el
-  // primero, el más ancho. En la compu, si ninguno cabe libre, prueba además una burbuja compacta,
-  // con letra de 13,5 px, que en una compu baja cabe entre la barra y el panel del QR, o en una
-  // angosta, entre el teléfono y el borde de la ventana.
+  // primero, el más ancho. Si ninguno cabe libre, prueba además una burbuja compacta, con letra de
+  // 13,5 px, que en una compu baja cabe entre la barra y el panel del QR, o en una angosta, entre el
+  // teléfono y el borde de la ventana, y en un celular bajo, sobre el botón de pausa.
   function bubFit() {
     var ws = bubWidths(), best = null, bw = 0, bh = 0, bm = ws[0], bc = false;
     [false, true].forEach(function (compact) {
-      // En un hueco de menos de 140 px, la compacta gana si cabe libre, porque lleva menos renglones.
-      var narrow = best && bw < 140;
-      if (compact && (!L.wide || (best.k < 1 && !narrow))) return;
+      // En la compu, en un hueco de menos de 140 px, la compacta gana si cabe libre, porque lleva
+      // menos renglones.
+      var narrow = L.wide && best && bw < 140;
+      if (compact && best.k < 1 && !narrow) return;
       ubub.classList.toggle('is-compact', compact);
       ws.forEach(function (mw) {
         ubub.style.maxWidth = mw + 'px';
