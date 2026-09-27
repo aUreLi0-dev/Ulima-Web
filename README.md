@@ -104,6 +104,7 @@ baja solo en el tema activo.
 | `assets/qr-apk.svg` | Código QR que apunta a la descarga del APK. Se generó una vez con el paquete `qrcode` de npm y se verificó decodificándolo. |
 | `assets/og-ulimaplus.jpg` | Imagen de 1200 x 630 px para compartir la página en redes, hecha con dos capturas reales, la vista de mapa de la malla y el horario, con el mismo marco de teléfono que la página. Las metaetiquetas la piden con `?v=3`, así las redes no siguen mostrando la versión anterior guardada en su caché; al cambiarla otra vez conviene subir ese número. |
 | `assets/favicon.svg`, `assets/favicon-32.png`, `assets/apple-touch-icon.png` | Ícono de la pestaña y de la pantalla de inicio, con el logo y sus «++». |
+| `googlefa47f1607a3cd81d.html` | Archivo con el que Google Search Console verifica la propiedad del sitio. Google lo vuelve a consultar cada cierto tiempo, así que no se borra, no se renombra ni se edita, aunque la verificación ya esté hecha. |
 
 ## Datos del APK
 
