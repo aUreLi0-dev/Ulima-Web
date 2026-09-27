@@ -63,14 +63,17 @@ respira y parpadea, y al hablar asiente. Lo que dice también está en el texto 
 (`.udice`), que se lee con las capturas apiladas y, con el teléfono fijo, queda para los lectores
 de pantalla.
 
-La burbuja busca el lugar que menos pisa junto a Ulises. La pantalla del teléfono pesa cien veces
-más que el resto, así que la burbuja nunca la pisa si hay otro lugar, y también evita el texto
-activo y el botón de pausa. Sobre el panel del QR prueba además un ancho que quepa en el hueco a
-cada lado de Ulises, porque en una compu baja no hay lugar encima de él, y junto al teléfono, el
-hueco entero hasta el borde de la ventana. Si aun así no cabe libre, prueba una burbuja compacta,
-con letra de 13,5 px. En una compu de 600 px de alto puede rozar el borde de arriba del panel del QR
-y el margen blanco del código, nunca sus módulos. Si ningún lugar evita el vidrio y el borde de la
-ventana, la burbuja espera oculta hasta que haya lugar. Se ubica con `translate`, y su cola queda
+La burbuja busca el lugar que menos pisa junto a Ulises. La pantalla del teléfono y los módulos del
+código QR pesan cien veces más que el resto, así que la burbuja nunca los pisa si hay otro lugar, y
+también evita el texto activo y el botón de pausa. Sobre el panel del QR prueba además un ancho que
+quepa en el hueco a cada lado de Ulises, porque en una compu baja no hay lugar encima de él, y junto
+al teléfono, el hueco entero hasta el borde de la ventana. Si aun así no cabe libre, prueba una
+burbuja compacta, con letra de 13,5 px, también en un celular bajo, donde así no pisa el botón de
+pausa. En una compu de 600 px de alto puede rozar el borde de arriba del panel del QR y el margen
+blanco del código, nunca sus módulos, porque con un patrón de posición tapado el código puede dejar
+de leerse. Si ningún lugar evita el vidrio, los módulos del QR y el borde de la
+ventana, la burbuja espera oculta hasta que haya lugar, como en el primer paso de la instalación en
+una compu de 960 x 560 px. Se ubica con `translate`, y su cola queda
 anclada en la esquina de arriba a la izquierda y llega a su lado también con `translate` (`--px` y
 `--py`), así que ni cambiar de lugar ni cambiar la cola de lado suma desplazamientos de diseño
 (CLS).
@@ -79,9 +82,13 @@ En el chat de la sección llega un «67» de un compañero, a los 4,9 s de empez
 celular ese paso es más alto para que no se pase de largo. Una lupa lo agranda, el teléfono se
 inclina 2 s como el truco de la app y Ulises responde «SIX SEVEN!!!» (`data-uli67`). Con movimiento
 reducido, con la pausa o al tocar el texto, la respuesta va en la misma burbuja, debajo de su
-comentario del paso. La pantalla `chat-67` es la captura del chat con la conversación subida 38
-puntos y la burbuja nueva dibujada en SVG, con las medidas y los colores de las burbujas de la
-captura. La captura que va dentro del SVG baja solo en el tema activo.
+comentario del paso, y si el vaivén ya empezó se corta al instante. Con la pausa puesta, el 67 llega
+quieto, con la conversación ya subida. La pantalla `chat-67` es la captura del chat con la
+conversación subida 38 puntos y la burbuja nueva dibujada en SVG, con las medidas y los colores de
+las burbujas de la captura. El SVG va encima de la captura, que deja a la vista su línea y su barra
+«Escribe un mensaje» desde los 767 puntos, y al subir la conversación una franja del color del chat
+tapa la línea y la barra de la copia que sube, así no se repiten. La captura que va dentro del SVG
+baja solo en el tema activo.
 
 ## Qué hace cada archivo
 
@@ -127,10 +134,10 @@ colores del tema.
 
 Para reemplazar una captura se convierte el PNG nuevo a los dos anchos, por ejemplo con `cwebp`.
 Las pantallas con `data-hi` (la malla, su vista de mapa, el horario, el día cancelado, la
-calculadora antes y después del Examen Final, la bienvenida y la contraseña) tienen además una
-versión de 1170 px, que solo baja cuando una lupa amplía 1,3 veces o más, como la fila «Notas
-oficiales», las filas «ULima» o la pregunta de la contraseña en el celular, o las columnas del
-mapa. Las demás no amplían tanto y no la necesitan.
+calculadora antes y después del Examen Final, la ficha del curso, la bienvenida y la contraseña)
+tienen además una versión de 1170 px, que solo baja cuando una lupa amplía 1,3 veces o más, como la
+fila «Notas oficiales», las filas «ULima», el botón «Actualizar» de la asistencia o la pregunta de
+la contraseña en el celular, o las columnas del mapa. Las demás no amplían tanto y no la necesitan.
 
 ```bash
 cwebp -q 72 -m 6 -sharp_yuv -metadata none -resize 360 0 malla-claro.png -o assets/capturas/malla-claro-360.webp
@@ -163,7 +170,8 @@ separados por `|`. Un momento es una o varias zonas `x y ancho alto` en puntos d
 mide 390 x 844, separadas por coma. Una zona puede llevar un quinto número con el radio de sus
 esquinas, que por defecto es 14 y con la mitad del lado la vuelve un círculo, y una marca para su
 anillo, `~t` (al medio del borde de arriba), `~b` (al medio del de abajo), `~o` (del lado opuesto al
-texto) o `~n` (sin anillo). Además, el momento puede llevar estas marcas.
+texto), `~r` (del lado derecho, en la compu y en el celular) o `~n` (sin anillo). Además, el momento
+puede llevar estas marcas.
 
 - `pantalla:` al comienzo, cuando el momento se ve en otra captura que la del paso
   (`data-screen`). Sin ella, el momento usa la captura del paso.
@@ -200,29 +208,40 @@ Un anillo toca desde afuera un borde libre de la zona, del lado del texto cuando
 arriba o abajo, así nunca cae sobre lo que explica. En el celular, con el texto debajo del teléfono,
 va del lado derecho. Las zonas que empiezan junto a la cabecera naranja de la app llevan `~b`,
 porque arriba el anillo se confundiría con ella, y la fila «Notas oficiales» también, para que el
-anillo caiga en el hueco entre la fila y la tarjeta del curso. Si la lupa queda más baja que el
-anillo, como la insignia sin zoom, el anillo va del todo afuera. En el texto se marca la frase que
-tiene el mismo número en `data-b` (una frase puede llevar varios, separados por espacio). En la
-compu, una línea punteada une el texto con el canto del teléfono a la altura de ese anillo, sin
-entrar a la pantalla, y su punta sube o baja por el canto de un anillo al siguiente. Al terminar el
-recorrido, el velo se levanta del todo y quedan la lupa y el anillo sobre la pantalla en color. El
-velo se recorta con `clip-path` y las lupas y los anillos nacen en su lugar y se mueven con
-`transform`, así que nada cambia la geometría de la página ni suma desplazamientos de diseño (CLS).
+anillo caiga en el hueco entre la fila y la tarjeta del curso. La insignia «EVAL PC2» del horario y
+el día cancelado de las prácticas también llevan `~b`, así el anillo queda dentro de su bloque, bajo
+la insignia o bajo «Este día está cancelado», y no sobre el bloque de arriba ni montado en el borde
+de la lupa. La insignia amplía 2,6 veces en la compu y 2,5 en el celular (`=2.6:2.5`), lo más que
+puede sin tapar el final de «INGENIERÍA DE SOFTWARE II». La lupa del 67 lleva `~r`, porque en la
+compu y en el celular solo el lado derecho de la burbuja nueva queda libre, y los botones de la
+bienvenida van sin anillo (`~n`), porque su anillo caería sobre el canto de «Sí, entrar» y se
+confundiría con él. Si la lupa queda más baja que el anillo, como la insignia sin zoom, el anillo va
+del todo afuera. En el texto se marca la frase que tiene el mismo número en `data-b` (una frase
+puede llevar varios, separados por espacio). En la compu, una línea punteada une el texto con el
+canto del teléfono a la altura de ese anillo, sin entrar a la pantalla, y su punta sube o baja por
+el canto de un anillo al siguiente. Al terminar el recorrido, el velo se levanta del todo y quedan
+la lupa y el anillo sobre la pantalla en color. El velo se recorta con `clip-path` y las lupas y los
+anillos nacen en su lugar y se mueven con `transform`, así que nada cambia la geometría de la página
+ni suma desplazamientos de diseño (CLS).
 
 El recorrido empieza a los 0,3 s de llegar al paso, los momentos de paso duran 0,7 s y el cambio de
 pantalla, 0,25 s, así el primer momento principal de cada paso llega antes de los 2,5 s, aun para
 quien baja sin detenerse. Entre dos momentos, la lupa y el anillo que salen se apagan en su lugar en
-0,15 s y los nuevos entran a los 0,16 s, con una lupa que se vuelve opaca en 0,25 s, así hasta un
-momento de paso la muestra entera y con su zoom antes de seguir. El último momento es el que queda
-en reposo, por eso cada paso termina en una pantalla en color. Una pantalla que la app oscurece,
-como el aviso «Hay un cruce» del horario, va antes como momento de paso, y el recorrido vuelve
-después al horario para reposar sobre el bloque de las prácticas. En Notas, el recorrido pasa por
-«Notas oficiales» (`/mis-notas`), con la franja «Actualizar desde la ULima», antes de simular el
-Examen Final, y sus lupas miran la franja y las filas, no la insignia «Final», que en la semana 5
-sale en rojo porque suma lo publicado sin normalizar. En «Instala y entra», Ulises recibe junto al
-logo con «¿Ya usas ULima++?» y el recorrido sigue al login dentro de la conversación, con
-«Continuar con Google», el código y, al final, la contraseña con «Entrar», que es lo que comenta
-Ulises desde el chat.
+0,15 s y los nuevos entran a los 0,16 s. La lupa nueva se vuelve opaca en 0,1 s sin zoom, donde
+calza con la captura de abajo, y recién después crece, así la copia ampliada y la captura nunca
+muestran el texto doble, y hasta un momento de paso la muestra entera y con su zoom antes de seguir.
+El último momento es el que queda en reposo, por eso cada paso termina en una pantalla en color. Una
+pantalla que la app oscurece, como el aviso «Hay un cruce» del horario, va antes como momento de
+paso, y el recorrido vuelve después al horario para reposar sobre el bloque de las prácticas. En
+Notas, el recorrido pasa por «Notas oficiales» (`/mis-notas`), con la franja «Actualizar desde la
+ULima», antes de simular el Examen Final, y sus lupas miran la franja y las filas, no la insignia
+«Final», que en la semana 5 sale en rojo porque suma lo publicado sin normalizar. La última lectura
+de la ULima es de las 08:42, antes de las 9:41 de la barra de estado. En el curso, el primer momento
+amplía el botón «Actualizar» de la asistencia, que recarga desde la ULima, con su anillo, junto al
+primer anuncio, y la frase «tu asistencia, que actualizas desde la ULima» se marca a la vez. En
+«Instala y entra», Ulises recibe junto al logo con «¿Ya usas ULima++?» y el recorrido sigue al login
+dentro de la conversación, con «Continuar con Google», el código y, al final, la contraseña con
+«Entrar», que es lo que comenta Ulises desde el chat.
 
 Al hacer clic en el texto de un paso o tocarlo sin arrastrar, o al llevarle el foco con el teclado,
 y con las capturas apiladas también al tocar su captura, el recorrido se detiene y deja su estado
@@ -252,7 +271,9 @@ recorrido llega a él. Las clases `is-dl` e `is-off` van en el vidrio, así la l
 apilada muestran el mismo cambio.
 
 Las zonas salen del `zonas.json` que la prueba de Flutter escribe junto a las capturas, así que al
-cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
+cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar. La del botón
+«Actualizar» (`actualizar`, en la ficha del curso) es su ícono y su texto con 6 puntos de aire, no
+su área de toque de 48 puntos, así la lupa lo amplía hasta que se lee.
 
 ## Accesibilidad
 
@@ -281,6 +302,10 @@ cambiar una captura conviene revisar que sus zonas sigan en el mismo lugar.
   «Pausar animaciones» (criterio 2.2.2 de WCAG) los detiene con el mouse, el dedo o el teclado. Tab
   lo alcanza en la barra, después de los enlaces, en la compu, justo después de la barra en el
   celular y justo después de la portada con las capturas apiladas, y Escape pausa desde cualquier
-  lugar de la página.
+  lugar de la página. Al pausar o reanudar, una región cortés (`role="status"`) dice «Animaciones en
+  pausa.» o «Animaciones en marcha.», así el lector de pantalla también se entera de la pausa que
+  llega con Escape, sin que nada le robe el foco.
+- El aviso de la portada no parte «no es una app oficial» en dos líneas, así ninguna línea que asome
+  bajo el teléfono fijo del celular dice «app oficial» sin el «no».
 - La barra de estado, la cámara, la barra de inicio y las copias ampliadas de cada zona son
   decorativas y quedan ocultas para el lector de pantalla.
