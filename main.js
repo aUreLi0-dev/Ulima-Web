@@ -359,8 +359,10 @@
   var variant = pool[Math.floor(Math.random() * pool.length) % pool.length];
   try {
     // Para revisar una intro concreta se agrega ?intro=ensamble, ?intro=incremento o ?intro=codigo.
+    // Solo valen esas tres, porque POSES también responde a lo que hereda de Object, como
+    // ?intro=constructor o ?intro=__proto__, que dejarían la intro sin pose ni tiempos.
     var forcedIntro = /[?&]intro=(\w+)/.exec(win.location.search);
-    if (forcedIntro && POSES[forcedIntro[1]]) variant = forcedIntro[1];
+    if (forcedIntro && VARIANTS.indexOf(forcedIntro[1]) !== -1) variant = forcedIntro[1];
   } catch (e) { /* sin parámetros */ }
   try { win.localStorage.setItem(INTRO_KEY, variant); } catch (e) { /* vale solo para esta visita */ }
   root.setAttribute('data-intro', variant);
