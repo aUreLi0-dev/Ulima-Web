@@ -1,7 +1,9 @@
 /* ULima++ · landing
    Dirección «Scrollytelling». Las pantallas del teléfono son capturas reales de la app.
-   Por defecto las secciones van apiladas (celular, tableta y sin JS).
-   Con JS y 900 px o más, el teléfono queda fijo al centro y los textos pasan a su lado. */
+   Por defecto las secciones van apiladas (sin JS y en un celular apaisado).
+   Con JS y 900 px o más, el teléfono queda fijo al centro y los textos pasan a su lado. En el
+   celular y la tableta en vertical, el teléfono queda fijo arriba, más chico, y el texto de cada
+   paso sube por debajo. Ulises acompaña el recorrido junto al teléfono. */
 
 /* ---------- Tokens ---------- */
 :root {
@@ -22,6 +24,9 @@
   --ink: #16161C;
   --ink2: #50505E;
   --accent: #B84A00;
+  /* Los textos chicos en naranja (la ceja de cada paso y «Nuevo») van sobre el resplandor del
+     teléfono, que aclara el fondo. Este tono les da 4,5 a 1 o más también ahí. */
+  --accent-sm: #A94300;
   --glow: .34;
   --shadow: 0 34px 70px -34px rgba(22, 22, 28, .55);
   --app-bg: #F7F8FA;
@@ -32,6 +37,15 @@
   --s-line: #C9C9D2;
   --s-acc: #3D5AFE;
   --s-bar: #ECECF1;
+  /* Velo del foco. En claro es más suave (un 10 % de negro), y tras el primer instante de cada
+     momento baja a --calm de su fuerza, así la cabecera naranja y las pantallas siguen en color. En
+     oscuro enciende con un 50 % y en calma baja a la mitad, un 25 %, para que los otros estados de la
+     pantalla no se apaguen. Al terminar el recorrido se levanta del todo. */
+  --dim: .1;
+  --calm: .6;
+  --mk-a: 30%;
+  /* Fondo de la conversación de Ulises en la captura, para la tapa que deja ver sus burbujas. */
+  --chat-bg: #F9FBFC;
   color-scheme: light;
 }
 
@@ -43,6 +57,7 @@
     --ink: #EDEDF3;
     --ink2: #A3A3B3;
     --accent: #FF8A3D;
+    --accent-sm: #FF8A3D;
     --glow: .6;
     --shadow: 0 40px 90px -30px rgba(0, 0, 0, .85);
     --app-bg: #1A1A20;
@@ -53,6 +68,10 @@
     --s-line: #3A3A44;
     --s-acc: #AFC2FF;
     --s-bar: #1A1A20;
+    --dim: .5;
+    --calm: .5;
+    --mk-a: 38%;
+    --chat-bg: #16151C;
     color-scheme: dark;
   }
 }
@@ -64,6 +83,7 @@
   --ink: #EDEDF3;
   --ink2: #A3A3B3;
   --accent: #FF8A3D;
+  --accent-sm: #FF8A3D;
   --glow: .6;
   --shadow: 0 40px 90px -30px rgba(0, 0, 0, .85);
   --app-bg: #1A1A20;
@@ -74,6 +94,10 @@
   --s-line: #3A3A44;
   --s-acc: #AFC2FF;
   --s-bar: #1A1A20;
+  --dim: .5;
+  --calm: .5;
+  --mk-a: 38%;
+  --chat-bg: #16151C;
   color-scheme: dark;
 }
 
@@ -106,7 +130,7 @@ img { max-width: 100%; }
 .skip:focus { top: 10px; }
 
 /* Oculto a la vista y presente para los lectores de pantalla. */
-.vh, .shot.shot-first {
+.vh {
   position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
@@ -139,6 +163,34 @@ html:not(.js) .theme { display: none; }
 .is-dark .theme .i-sun { display: block; }
 .is-dark .theme .i-moon { display: none; }
 
+/* Botón «Pausar animaciones». Con el teléfono fijo va en la barra y con las capturas apiladas al
+   comienzo de Funciones (el JS sincroniza los dos). Sin JS no hay recorridos y no se muestra. */
+.pausa {
+  display: none; align-items: center; gap: 8px;
+  min-height: 40px; padding: 8px 15px 8px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent; color: var(--ink2);
+  font-size: 14px; font-weight: 600; line-height: 1.1; white-space: nowrap; cursor: pointer;
+}
+.pausa:hover { border-color: var(--ink2); color: var(--ink); }
+.pausa .ic { width: 16px; height: 16px; stroke-width: 2.4; }
+.pausa .i-play, .quieto .pausa .i-pause { display: none; }
+.quieto .pausa .i-play { display: block; }
+/* El rótulo cambia por clase, y el script del <head> pone la clase antes del primer pintado, así el
+   botón no cambia de ancho ni corre los enlaces de la barra al abrir la página con la pausa guardada. */
+.pt-r, .quieto .pt-p { display: none; }
+.quieto .pt-r { display: inline; }
+.pausa-fila { display: none; }
+.js .pausa-fila { display: flex; justify-content: center; padding-top: 8px; }
+.js .pausa-fila .pausa { display: inline-flex; }
+
+/* En pausa se apaga lo que late o se repite, también Ulises y el logo en reposo, y el 67 llega
+   quieto, sin vaivén y con la conversación ya subida. */
+html.quieto .glow, html.quieto .cue .ic, html.quieto .lens::after, html.quieto .ring::after,
+html.quieto .uli-o, html.quieto .uli-lid, html.quieto .lk-star, html.quieto .lk-pp i,
+html.quieto .phone.t67, html.quieto .shot.t67, html.quieto .c67-sube, html.quieto .c67-msg { animation: none !important; }
+/* El panel del QR aparece en su lugar, sin subir, así Ulises, que se posa sobre él, no se desliza. */
+html.quieto .qrpanel { transform: none; }
+
 /* ---------- Botones y textos comunes ---------- */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -156,13 +208,25 @@ html:not(.js) .theme { display: none; }
 .eyebrow {
   margin: 0 0 14px;
   font: 600 12px/1.35 var(--mono); letter-spacing: .08em; text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-sm);
 }
 .meta { margin: 12px 0 0; font: 500 13px/1.45 var(--mono); color: var(--ink2); }
 .meta b { font-weight: 600; color: var(--ink); }
 
 /* ---------- Portada ---------- */
 .hero { max-width: 640px; margin: 0 auto; padding: 36px var(--gutter) 24px; }
+/* El logo entero, la estrella de ocho rombos y «ULIMA++» en cursiva. En reposo la estrella respira
+   y los «++» saltan de a uno, como el contador de la intro. */
+.lockup { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
+.lk-star { width: 48px; height: 48px; flex: none; fill: var(--orange); transform-origin: 50% 50%; }
+.lk-wm { font: italic 800 32px/1 var(--display); letter-spacing: -.012em; white-space: nowrap; }
+.lk-pp { color: var(--accent); }
+.lk-pp i { display: inline-block; font-style: inherit; transform-origin: 50% 60%; }
+.js .lk-star { animation: lk-respira 5.2s ease-in-out infinite; }
+.js .lk-pp i { animation: lk-mas 5.2s ease-in-out infinite; }
+.js .lk-pp i + i { animation-delay: .14s; }
+@keyframes lk-respira { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.06) rotate(7deg); } }
+@keyframes lk-mas { 0%, 72%, 100% { transform: none; } 78% { transform: translateY(-3px) scale(1.3); } 86% { transform: scale(.94); } 92% { transform: none; } }
 .hero h1 {
   margin: 0 0 16px;
   font: italic 800 clamp(34px, 9.6vw, 56px)/.98 var(--display);
@@ -184,6 +248,20 @@ html:not(.js) .theme { display: none; }
 .handoff strong { display: block; color: var(--ink); font-size: 14.5px; }
 .note { margin: 18px 0 0; max-width: 46ch; font-size: 14px; line-height: 1.45; color: var(--ink2); }
 .note strong { color: var(--ink); font-weight: 600; }
+/* «no es una app oficial» no se parte, así ninguna línea del aviso dice «app oficial» sin el «no»,
+   ni cuando la primera pasa detrás del teléfono fijo del celular. */
+.note .nw { white-space: nowrap; }
+/* Donde la frase entera cabe en un renglón, el rótulo va arriba y la frase completa debajo, así
+   «ULima++» no queda al final del primer renglón, lejos del resto de su frase. */
+@media (min-width: 480px) { .note strong { display: block; } }
+
+/* Lo que dice Ulises en cada paso, dentro del texto. Se ve con las capturas apiladas y sin JS. Con
+   el teléfono fijo lo muestra su burbuja y aquí queda solo para los lectores de pantalla. */
+.udice { display: flex; gap: 10px; align-items: flex-start; margin: 16px 0 0; max-width: 46ch; font-size: 15px; line-height: 1.45; color: var(--ink2); }
+.copy .udice { margin-top: 14px; }
+.udice img { width: 32px; height: 32px; flex: none; border-radius: 50%; }
+.udice b { color: var(--ink); font-weight: 700; }
+.ud-67 { display: block; margin-top: 4px; }
 
 /* ---------- Teléfono ---------- */
 .story { position: relative; }
@@ -198,6 +276,21 @@ html:not(.js) .theme { display: none; }
   animation: breathe 7s ease-in-out infinite;
 }
 @keyframes breathe { 50% { transform: translate(-50%, -50%) scale(1.06); } }
+/* El 67. El teléfono entero se inclina de un lado a otro en 2 s, con −3° · sen(2π · 4 · avance), como
+   el truco de la app, primero hacia la izquierda. */
+.phone.t67, .shot.t67 { animation: t67 2s both; }
+@keyframes t67 {
+  0% { transform: rotate(0); animation-timing-function: cubic-bezier(.61, 1, .88, 1); }
+  6.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  18.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  31.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  43.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  56.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  68.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  81.25% { transform: rotate(-3deg); animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+  93.75% { transform: rotate(3deg); animation-timing-function: cubic-bezier(.12, 0, .39, 0); }
+  100% { transform: rotate(0); }
+}
 .phone {
   position: relative; padding: 8px;
   border-radius: calc(var(--gw) * .13 + 8px);
@@ -213,6 +306,9 @@ html:not(.js) .theme { display: none; }
 .scr { position: absolute; inset: 0; }
 .rig .scr:not([data-scr="malla"]) { display: none; }
 .cap, .sx { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* Una pantalla hecha de una captura y un SVG, como la del 67, lleva el SVG encima de la captura, en
+   el teléfono fijo y en las capas de las capturas apiladas. */
+.scr > .cap ~ .sx, .lay > .cap ~ .sx { position: absolute; inset: 0; }
 
 /* La captura clara o la oscura según el tema. La que no toca no se descarga (loading="lazy"). */
 .cap-oscuro { display: none; }
@@ -222,6 +318,28 @@ html:not(.js) .theme { display: none; }
 }
 :root[data-theme="dark"] .cap-claro { display: none; }
 :root[data-theme="dark"] .cap-oscuro { display: block; }
+
+/* Pantalla del 67. La conversación de la captura sube 38 puntos al llegar el mensaje, con los
+   colores de las burbujas de la captura en cada tema. */
+.c67-bg { fill: var(--chat-bg); }
+.c67-card { fill: #FFFFFF; stroke: #E6E8EB; stroke-width: 1; }
+.c67-sombra { fill: rgba(16, 18, 24, .07); }
+.c67-name, .c67-txt { fill: #111318; font-family: Roboto, var(--sans); }
+.c67-time { fill: #4A4C53; font-family: Roboto, var(--sans); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .c67-card { fill: #1F1E25; stroke: #2E2D34; }
+  :root:not([data-theme="light"]) .c67-sombra { fill: rgba(0, 0, 0, .3); }
+  :root:not([data-theme="light"]) .c67-name, :root:not([data-theme="light"]) .c67-txt { fill: #FFFFFF; }
+  :root:not([data-theme="light"]) .c67-time { fill: #ADACB8; }
+}
+:root[data-theme="dark"] .c67-card { fill: #1F1E25; stroke: #2E2D34; }
+:root[data-theme="dark"] .c67-sombra { fill: rgba(0, 0, 0, .3); }
+:root[data-theme="dark"] .c67-name, :root[data-theme="dark"] .c67-txt { fill: #FFFFFF; }
+:root[data-theme="dark"] .c67-time { fill: #ADACB8; }
+.rig .scr[data-scr="chat-67"].is-on .c67-sube { animation: c67-sube .42s cubic-bezier(.2, .8, .2, 1) .12s both; }
+.rig .scr[data-scr="chat-67"].is-on .c67-msg { animation: c67-msg .36s ease-out .3s both; }
+@keyframes c67-sube { from { transform: translateY(38px); } }
+@keyframes c67-msg { from { opacity: 0; } }
 
 /* Logo animado de la entrada (solo con JS) */
 .splash { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; display: none; }
@@ -244,13 +362,252 @@ html:not(.js) .theme { display: none; }
 .sx-page { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
 .sx-page-ink { fill: var(--ink); }
 .sx-page-acc { fill: var(--accent); }
-.sx-page-line { fill: var(--ink2); opacity: .45; }
+.sx-page-ink2 { fill: var(--ink2); }
+.sx-prog-bg { fill: var(--s-line); }
+.sx-prog { fill: var(--s-acc); transform-box: fill-box; transform-origin: left center; transition: transform 1.3s cubic-bezier(.45, 0, .2, 1); }
+/* En el paso 1 la descarga avanza y termina con «Abrir», y en el paso 2 el permiso se enciende. El
+   JS pone is-dl o is-off en el vidrio, así las copias de la lupa muestran el mismo cambio. */
+.sx-going, .sx-done { transition: opacity .3s ease 1.35s; }
+.sx-going { opacity: 0; }
+.is-dl .sx-going { opacity: 1; transition: none; }
+.is-dl .sx-done { opacity: 0; transition: none; }
+.is-dl .sx-prog { transform: scaleX(0); transition: none; }
 .sx-track { fill: var(--s-acc); transition: fill .3s; }
 .sx-knob { fill: var(--s-bg); transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
-.scr.is-off .sx-track { fill: var(--s-line); }
-.scr.is-off .sx-knob { transform: translateX(-20px); fill: var(--s-ink2); }
+.is-off .sx-track { fill: var(--s-line); }
+.is-off .sx-knob { transform: translateX(-20px); fill: var(--s-ink2); }
 
-.pin, .cue, .qrpanel, .leader { display: none; }
+/* ---------- Marco del teléfono ---------- */
+/* Barra de estado, cámara y barra de inicio dibujadas encima de la captura, que trae 24 pt libres
+   arriba y 16 pt abajo. Todo se mide en puntos de la captura, y --u es uno de los 390 de ancho.
+   data-sb y data-hb dicen si la tinta va oscura (o) o clara (c) sobre la captura clara y la oscura. */
+.glass {
+  --u: calc(var(--gw) / 390);
+  --sb-l: #fff; --sb-d: #fff;
+  --hb-l: rgba(255, 255, 255, .92); --hb-d: rgba(255, 255, 255, .92);
+}
+.glass[data-sb^="o"] { --sb-l: #1B1B1F; }
+.glass[data-sb$="o"] { --sb-d: #1B1B1F; }
+.glass[data-hb^="o"] { --hb-l: rgba(18, 18, 24, .8); }
+.glass[data-hb$="o"] { --hb-d: rgba(18, 18, 24, .8); }
+.chrome { position: absolute; inset: 0; z-index: 6; pointer-events: none; color: var(--sb-l); transition: color .3s; }
+.sb {
+  position: absolute; left: 0; right: 0; top: 0; height: calc(var(--u) * 24);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(var(--u) * 1.5) calc(var(--u) * 20) 0 calc(var(--u) * 28);
+}
+.sb b { font: 600 calc(var(--u) * 12.5)/1 var(--sans); letter-spacing: -.01em; }
+.sb svg { width: calc(var(--u) * 56.7); height: calc(var(--u) * 10); }
+.cam {
+  position: absolute; left: 50%; top: calc(var(--u) * 6.5);
+  width: calc(var(--u) * 11); height: calc(var(--u) * 11); margin-left: calc(var(--u) * -5.5);
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 34%, #3A4256 0 10%, #0A0A0E 32%);
+  box-shadow: 0 0 0 calc(var(--u) * 1.2) rgba(0, 0, 0, .28);
+}
+.hb {
+  position: absolute; left: 50%; bottom: calc(var(--u) * 5.5);
+  width: calc(var(--u) * 124); height: calc(var(--u) * 4.6); margin-left: calc(var(--u) * -62);
+  border-radius: 99px; background: var(--hb-l); transition: background-color .3s;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .chrome { color: var(--sb-d); }
+  :root:not([data-theme="light"]) .hb { background: var(--hb-d); }
+}
+:root[data-theme="dark"] .chrome { color: var(--sb-d); }
+:root[data-theme="dark"] .hb { background: var(--hb-d); }
+/* Las lupas y los anillos van en naranja. Sobre una captura naranja, como la bienvenida clara, el
+   naranja no se ve, y data-mk los pasa a blanco (b) o los deja en naranja (n), primero sobre la
+   captura clara y después sobre la oscura. */
+.glass { --mk-l: var(--orange); --mk-d: var(--orange); --mk: var(--mk-l); }
+.glass[data-mk^="b"] { --mk-l: #fff; }
+.glass[data-mk$="b"] { --mk-d: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .glass { --mk: var(--mk-d); }
+}
+:root[data-theme="dark"] .glass { --mk: var(--mk-d); }
+
+/* ---------- Detalles sobre la captura ---------- */
+/* Mientras un texto está activo, el resto de la pantalla queda bajo un velo, la zona que explica
+   sube en una lupa con un borde que late, un anillo marca un borde libre de la zona y la frase que
+   la nombra se marca en el texto. La lupa amplía apenas las zonas grandes y hasta 2,6 veces las
+   chicas; su borde, su sombra y sus esquinas se dividen por el zoom para verse iguales en todas.
+   Al final del recorrido el velo se levanta y quedan la lupa y el anillo. Nada de esto cambia la
+   geometría de la página, porque el velo se recorta con clip-path y las lupas y los anillos nacen
+   en su lugar y se mueven con transform, así que no suma desplazamientos de diseño (CLS). */
+.hl { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.spot {
+  position: absolute; inset: 0;
+  background: rgba(8, 8, 14, var(--dim));
+  opacity: 0;
+  transition: opacity .45s ease, clip-path .6s cubic-bezier(.2, .8, .2, 1);
+}
+.hl.is-on .spot { opacity: 1; }
+.hl.is-on.is-calm .spot { opacity: var(--calm); transition: opacity .9s ease, clip-path .6s cubic-bezier(.2, .8, .2, 1); }
+/* En reposo el velo se levanta, aunque quede otra clase del recorrido. */
+.hl.is-rest .spot, .hl.is-on.is-calm.is-rest .spot { opacity: 0; transition: opacity 1s ease; }
+.lens {
+  position: absolute; border-radius: var(--br, calc(var(--u) * 14));
+  opacity: 0; transform: scale(1);
+  box-shadow: 0 0 0 calc(var(--u) * 2 / var(--s, 1)) var(--mk, var(--orange)), 0 calc(var(--u) * 18 / var(--s, 1)) calc(var(--u) * 34 / var(--s, 1)) calc(var(--u) * -14 / var(--s, 1)) rgba(0, 0, 0, .7);
+  /* La lupa se vuelve opaca en su lugar, sin zoom, donde calza con la captura de abajo, y recién
+     después crece. Así la copia ampliada y la captura nunca se ven a la vez con el texto doble. */
+  transition: opacity .1s ease, transform .6s cubic-bezier(.2, .9, .25, 1.15) .1s;
+}
+.lens.is-on { opacity: 1; transform: translate(calc(var(--u) * var(--dx, 0)), calc(var(--u) * var(--dy, 0))) scale(var(--s, 1.04)); }
+/* Al pasar al momento siguiente, la lupa y el anillo se apagan en su lugar, sin achicarse. */
+.lens.is-on.is-out, .ring.is-on.is-out { opacity: 0; transition: opacity .15s ease; }
+.lens > div { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.lens .cap, .lens .sx { position: absolute; max-width: none; left: var(--ix); top: var(--iy); width: var(--iw); height: var(--ih); }
+.lens::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  animation: halo 1.9s ease-out .4s 3 both;
+}
+@keyframes halo {
+  from { box-shadow: 0 0 0 0 rgba(255, 102, 0, .55); }
+  to { box-shadow: 0 0 0 calc(var(--u) * var(--hs, 16)) rgba(255, 102, 0, 0); }
+}
+
+/* El anillo mide 24 puntos de la captura en cualquier ancho (unos 20 px en el teléfono fijo) y toca
+   un borde libre de la zona desde afuera, así no tapa lo que explica. La píldora rodea un elemento
+   chico. */
+.ring {
+  position: absolute; box-sizing: border-box;
+  border: 2px solid var(--mk, var(--orange)); border-radius: 50%;
+  box-shadow: 0 0 0 calc(var(--u) * 4) rgba(255, 102, 0, .2);
+  opacity: 0; transform: scale(.5);
+  transition: opacity .3s ease, transform .5s cubic-bezier(.2, .9, .25, 1.35);
+}
+.ring.is-on { opacity: 1; transform: none; }
+.ring.pill { border-radius: 99px; box-shadow: 0 0 0 calc(var(--u) * 2.5) rgba(255, 102, 0, .2); }
+.ring::after {
+  content: ""; position: absolute; inset: -2px; border-radius: inherit;
+  border: 2px solid var(--mk, var(--orange)); opacity: 0;
+}
+.ring.is-on::after { animation: ping 1.8s ease-out .35s 3; }
+.ring.pill.is-on::after { animation-name: ping-pill; }
+@keyframes ping { from { transform: scale(1); opacity: .7; } to { transform: scale(2.1); opacity: 0; } }
+@keyframes ping-pill { from { transform: scale(1); opacity: .7; } to { transform: scale(1.3, 1.9); opacity: 0; } }
+
+/* Tapa del color del fondo del chat que deja ver las burbujas de la captura una tras otra. */
+.rev {
+  position: absolute; z-index: 3; pointer-events: none;
+  background: var(--chat-bg);
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path .42s cubic-bezier(.3, .7, .2, 1);
+}
+
+/* Pantallas intermedias de un paso en el modo apilado, encima de la captura de la figura y de su
+   tapa de burbujas, que es solo de la pantalla del paso, y debajo del foco. */
+.lay {
+  position: absolute; inset: 0; z-index: 4;
+  opacity: 0; visibility: hidden;
+  transition: opacity .45s ease, visibility 0s linear .45s;
+}
+.lay.is-on { opacity: 1; visibility: visible; transition: opacity .45s ease; }
+/* Entre dos capas, la que sale espera entera bajo la que entra, así no asoma la captura de abajo. Un
+   cambio en su lugar (data-cf), como una hoja que se cierra, entra en 0,2 s. */
+.glass.swap .lay:not(.is-on) { transition: opacity 0s linear .45s, visibility 0s linear .45s; }
+.glass.cf .lay.is-on { transition: opacity .2s ease; }
+.glass.swap.cf .lay:not(.is-on) { transition: opacity 0s linear .2s, visibility 0s linear .2s; }
+
+/* Frase del texto que explica la zona resaltada, con el color del estado cuando lo tiene. Al
+   encenderse, el texto toma el color pleno antes de que crezca la banda, y al apagarse lo conserva
+   hasta que la banda se retira, así nunca queda gris sobre ella. */
+.hl-f {
+  --mk: var(--orange);
+  background: linear-gradient(color-mix(in srgb, var(--mk) var(--mk-a), transparent), color-mix(in srgb, var(--mk) var(--mk-a), transparent)) 0 92% / 0 .46em no-repeat;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-size .6s cubic-bezier(.2, .8, .2, 1), color .3s ease .55s;
+}
+.hl-f.is-on { background-size: 100% .46em; color: var(--ink); transition: background-size .6s cubic-bezier(.2, .8, .2, 1), color 0s; }
+
+/* En el modo apilado, cada captura entra suave al asomar (la clase la pone el JS). */
+.shot.rv { opacity: 0; transform: translateY(28px) scale(.98); transition: opacity .6s ease, transform .8s cubic-bezier(.2, .8, .2, 1); }
+.shot.rv.in { opacity: 1; transform: none; }
+
+.cue, .qrpanel, .leader, .uli, .ubub { display: none; }
+
+/* ---------- Ulises ---------- */
+/* Ulises, con su imagen del chatbot, va en una capa fija encima de la página, así puede cruzar por
+   encima del teléfono y de la barra al cambiar de lado. El JS lo mueve con transform (.uli al lugar,
+   .uli-f para el giro, el aleteo y hacia dónde mira). En reposo respira con un leve vaivén (.uli-o)
+   y parpadea (.uli-lid, sobre su ojo). */
+.uli {
+  --us: 64px;
+  position: fixed; left: 0; top: 0; z-index: 45;
+  width: var(--us); height: var(--us);
+  pointer-events: none; opacity: 0; transition: opacity .25s ease;
+  will-change: transform;
+}
+.uli.is-on { opacity: 1; }
+.uli-f { width: 100%; height: 100%; transform-origin: 50% 70%; }
+.uli-o { width: 100%; height: 100%; transform-origin: 50% 85%; animation: uli-respira 3.8s ease-in-out infinite; }
+.uli-i {
+  position: relative; width: 100%; height: 100%; border-radius: 50%;
+  box-shadow: 0 10px 22px -8px rgba(60, 20, 0, .5), 0 0 0 2px color-mix(in srgb, var(--bg) 70%, transparent);
+}
+.uli-i img { display: block; width: 100%; height: 100%; border-radius: 50%; }
+.uli-lid {
+  position: absolute; left: 37.6%; top: 31.8%; width: 11.2%; height: 13.4%;
+  border-radius: 50%; background: #212122;
+  transform: scaleY(0); transform-origin: 50% 0;
+  animation: uli-parpadea 5.4s linear infinite;
+}
+@keyframes uli-respira {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  50% { transform: translateY(-2.5%) rotate(-3deg) scale(1.03); }
+}
+@keyframes uli-parpadea {
+  0%, 90%, 100% { transform: scaleY(0); }
+  92%, 94% { transform: scaleY(1); }
+  96% { transform: scaleY(0); }
+}
+
+/* Burbuja de Ulises, con su cola hacia él. El JS la ubica en el lugar libre a su lado. */
+.ubub {
+  --tx: 24px; --ty: 20px;
+  position: fixed; left: 0; top: 0; z-index: 44;
+  width: max-content; max-width: 250px;
+  padding: 10px 14px 11px; border-radius: 18px;
+  background: var(--card); border: 1px solid var(--line);
+  box-shadow: 0 18px 40px -22px rgba(22, 22, 28, .55);
+  color: var(--ink); font: 500 15px/1.36 var(--sans);
+  pointer-events: none;
+  opacity: 0; transform: scale(.9); transform-origin: var(--tx) 100%;
+  transition: opacity .2s ease, transform .3s cubic-bezier(.2, .9, .25, 1.25);
+}
+.ubub[data-tail="t"] { transform-origin: var(--tx) 0; }
+.ubub[data-tail="l"] { transform-origin: 0 var(--ty); }
+.ubub[data-tail="r"] { transform-origin: 100% var(--ty); }
+.ubub.is-on { opacity: 1; transform: none; }
+.ubub.is-hid, .ubub.no-cabe { visibility: hidden; }
+/* Burbuja compacta, cuando la normal no cabe libre, como sobre el panel del QR en una compu baja, en
+   el hueco angosto junto al teléfono en la portada o sobre el botón de pausa de un celular bajo. */
+.ubub.is-compact { padding: 8px 12px 9px; font-size: 13.5px; line-height: 1.3; }
+.ub-t { margin: 0; text-wrap: pretty; }
+.ubub::before {
+  content: ""; position: absolute; width: 12px; height: 12px;
+  background: var(--card); border: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.ubub[data-tail="b"]::before { left: calc(var(--tx) - 6px); bottom: -7px; border-top: 0; border-left: 0; }
+.ubub[data-tail="t"]::before { left: calc(var(--tx) - 6px); top: -7px; border-bottom: 0; border-right: 0; }
+.ubub[data-tail="l"]::before { top: calc(var(--ty) - 6px); left: -7px; border-top: 0; border-right: 0; }
+.ubub[data-tail="r"]::before { top: calc(var(--ty) - 6px); right: -7px; border-bottom: 0; border-left: 0; }
+/* Donde se puede, la cola queda anclada en la esquina de arriba a la izquierda y el JS la lleva a su
+   lado solo con translate (--px y --py), así ni moverla ni cambiarla de lado suman desplazamientos de
+   diseño (CLS). */
+@supports (translate: 1px) {
+  .ubub[data-tail]::before { left: 0; top: 0; right: auto; bottom: auto; translate: var(--px, 0px) var(--py, 0px); }
+}
+/* La respuesta al 67, como el rótulo de la app. Durante el recorrido va sola (.solo-67). Con
+   movimiento reducido, con la pausa o al saltar al estado final va debajo del comentario del paso. */
+.ub-s { display: none; margin: 0; }
+.ubub.is-67 .ub-s { display: block; font: italic 800 23px/1.05 var(--display); letter-spacing: -.01em; color: var(--accent); white-space: nowrap; }
+.ubub.is-67:not(.solo-67) .ub-s { margin-top: 6px; }
+.ubub.solo-67 { padding: 10px 16px 11px; }
+.ubub.solo-67 .ub-t { display: none; }
 
 /* ---------- Pasos (modo apilado) ---------- */
 .steps { max-width: 980px; margin: 0 auto; padding: 0 var(--gutter); }
@@ -266,7 +623,7 @@ html:not(.js) .theme { display: none; }
 .copy p { margin: 0; color: var(--ink2); }
 .copy p:not([class]) { font-size: 16.5px; }
 .copy p:not([class]) + p:not([class]) { margin-top: 10px; }
-.copy .eyebrow { margin-bottom: 12px; color: var(--accent); }
+.copy .eyebrow { margin-bottom: 12px; color: var(--accent-sm); }
 .copy .btn { margin-top: 18px; }
 .soon {
   display: flex; gap: 10px; align-items: flex-start;
@@ -274,7 +631,7 @@ html:not(.js) .theme { display: none; }
   border-radius: 14px; border: 1px dashed color-mix(in srgb, var(--accent) 70%, transparent);
   font-size: 15px; line-height: 1.45;
 }
-.soon b { flex: none; font: 700 11px/1.9 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.soon b { flex: none; font: 700 11px/1.9 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent-sm); }
 .num {
   display: inline-grid; place-items: center;
   width: 30px; height: 30px; margin-right: 10px; border-radius: 50%;
@@ -341,18 +698,57 @@ html:not(.js) .theme { display: none; }
   .wm { font-size: 18px; }
   .cta .btn { flex: 1 1 100%; }
 }
+/* Con menos de 560 px de alto, como en un celular apaisado, las capturas siguen apiladas y el teléfono
+   se achica hasta caber entero bajo la barra, con 8 px de aire arriba y abajo. Así cada zona del
+   recorrido se enciende a la vista y no por encima o por debajo de la ventana. */
+@media (max-height: 559px) {
+  :root { --gw: min(72vw, 280px, calc((100vh - var(--nav-h) - 30px) / 2.1641)); }
+}
+@supports (height: 100svh) {
+  @media (max-height: 559px) {
+    :root { --gw: min(72vw, 280px, calc((100svh - var(--nav-h) - 30px) / 2.1641)); }
+  }
+}
 @media (max-width: 359px) {
   :root { --gutter: 14px; }
   .btn-sm { padding: 8px 12px; }
   .hero h1 { font-size: 32px; }
 }
 
-/* ---------- Scrollytelling, con JS y 900 px o más ---------- */
-@media (min-width: 900px) {
+/* ---------- Teléfono fijo, con JS, en la compu (wide) y en el celular en vertical (cmp) ---------- */
+@media (min-width: 900px) and (min-height: 560px), (max-width: 899px) and (min-height: 500px) {
+  .js .pausa-fila { display: none; }
+  .js .rig .scr:not([data-scr="malla"]) { display: block; }
+  .js .scr {
+    opacity: 0; visibility: hidden; transform: translateY(10px) scale(.985);
+    transition: opacity .4s ease, transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .55s;
+  }
+  .js .scr[data-push] { transform: translateX(14%); }
+  .js .scr.is-on {
+    opacity: 1; visibility: visible; transform: none;
+    transition: opacity .4s ease .08s, transform .55s cubic-bezier(.2, .8, .2, 1) .08s, visibility 0s;
+  }
+  .js .glass.in-splash .scr { transition: none; }
+  /* Una pestaña, un botón o una hoja que cambia dentro de la misma pantalla entra en su lugar, en
+     0,2 s y encima de la que sale, que espera entera debajo. Así las dos no se ven a medias a la vez. */
+  .js .glass.cf .scr { transform: none; transition: opacity 0s linear .2s, visibility 0s linear .2s; }
+  .js .glass.cf .scr.is-on { transition: opacity .2s ease, visibility 0s; }
+  .js .shot, .js .udice {
+    position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; box-shadow: none;
+  }
+  .js .uli, .js .ubub { display: block; }
+}
+
+/* ---------- Scrollytelling, con JS, 900 px o más de ancho y 560 px o más de alto ---------- */
+/* Un celular apaisado, ancho pero bajo, sigue con las capturas apiladas, porque el teléfono fijo
+   no le cabe entero. */
+@media (min-width: 900px) and (min-height: 560px) {
   .js {
     /* Cabe en el alto de la ventana y deja a los textos al menos un cuarto del ancho a cada lado. */
     --gw: clamp(220px, min(calc((100vh - var(--nav-h) - 96px) / 2.1641), 25vw), 330px);
   }
+  .js .nav .pausa { display: inline-flex; }
   .js .top { position: relative; }
   .js .hero {
     position: absolute; z-index: 3; top: 0; left: 0;
@@ -370,17 +766,6 @@ html:not(.js) .theme { display: none; }
     pointer-events: none;
   }
   .js .rig { grid-column: 2; justify-self: center; will-change: transform; }
-  .js .rig .scr:not([data-scr="malla"]) { display: block; }
-  .js .scr {
-    opacity: 0; visibility: hidden; transform: translateY(8px);
-    transition: opacity .4s ease, transform .55s cubic-bezier(.2, .8, .2, 1), visibility 0s linear .55s;
-  }
-  .js .scr[data-push] { transform: translateX(14%); }
-  .js .scr.is-on {
-    opacity: 1; visibility: visible; transform: none;
-    transition: opacity .4s ease .08s, transform .55s cubic-bezier(.2, .8, .2, 1) .08s, visibility 0s;
-  }
-  .js .glass.in-splash .scr { transition: none; }
 
   .js .cue {
     position: absolute; left: 50%; top: calc(100% + 16px); transform: translateX(-50%);
@@ -389,24 +774,6 @@ html:not(.js) .theme { display: none; }
   }
   .js .cue .ic { width: 15px; height: 15px; animation: nudge 1.6s ease-in-out infinite; }
   @keyframes nudge { 50% { transform: translateY(3px); } }
-
-  /* El anillo y su halo escalan con el teléfono. Con el de 330 px miden 28 y 4 px, y en cualquier
-     ancho cubren los mismos 33 dp de la captura, así que no pisan texto en pantallas más chicas. */
-  .js .pin {
-    --pd: calc(var(--gw) * 28 / 330);
-    display: block; position: absolute; z-index: 7; left: 0; top: 0;
-    width: var(--pd); height: var(--pd); margin: calc(var(--pd) / -2) 0 0 calc(var(--pd) / -2);
-    border-radius: 50%; border: 2px solid var(--orange);
-    box-shadow: 0 0 0 calc(var(--gw) * 4 / 330) rgba(255, 102, 0, .2);
-    opacity: 0; pointer-events: none;
-    transition: opacity .3s, left .5s cubic-bezier(.2, .8, .2, 1), top .5s cubic-bezier(.2, .8, .2, 1);
-  }
-  .js .pin::after {
-    content: ""; position: absolute; inset: -2px; border-radius: 50%;
-    border: 2px solid var(--orange); animation: ping 1.8s ease-out infinite;
-  }
-  @keyframes ping { from { transform: scale(1); opacity: .7; } to { transform: scale(2.1); opacity: 0; } }
-  .js .pin.is-on { opacity: 1; }
 
   .js .qrpanel {
     position: relative; z-index: 2;
@@ -446,14 +813,65 @@ html:not(.js) .theme { display: none; }
   .js .step[data-side="l"] .copy { grid-column: 1; justify-self: end; }
   .js .copy h2 { font-size: clamp(27px, 2.7vw, 38px); }
   .js .copy p:not([class]) { font-size: 16px; }
-  .js .shot {
-    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
-    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; box-shadow: none;
-  }
   .ready .copy { opacity: .14; transform: translateX(26px); transition: opacity .55s ease, transform .7s cubic-bezier(.2, .8, .2, 1); }
   .ready .step[data-side="l"] .copy { transform: translateX(-26px); }
   .ready .en-portada .copy { opacity: 0; }
   .ready .step.is-active .copy, .ready .copy:focus-within { opacity: 1; transform: none; }
+}
+
+/* ---------- Teléfono fijo arriba, con JS, en el celular y la tableta en vertical ---------- */
+/* El teléfono queda fijo bajo la barra, un poco más chico, con Ulises posado en su canto derecho y su
+   burbuja en la columna libre de al lado. El texto de cada paso sube por debajo del teléfono, que lo
+   tapa con el fondo de la página, y el paso activo es el que pasó la línea de lectura. Un celular
+   apaisado, bajo, sigue con las capturas apiladas. */
+@media (max-width: 899px) and (min-height: 500px) {
+  .js {
+    --gw: min(44vw, calc(((100vh - var(--nav-h)) * .52 - 38px) / 2.1641));
+    --stage-h: calc(var(--gw) * 2.1641 + 38px);
+    --read-h: calc(100vh - var(--nav-h) - var(--stage-h));
+  }
+  html.js { scroll-padding-top: calc(var(--nav-h) + var(--stage-h)); }
+  .js .stage {
+    position: sticky; top: var(--nav-h); z-index: 30;
+    display: block; height: var(--stage-h);
+    padding: 10px var(--gutter) 12px;
+    background: var(--bg);
+  }
+  .js .stage::after {
+    content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+    background: linear-gradient(var(--bg) 30%, color-mix(in srgb, var(--bg) 0%, transparent));
+  }
+  .js .rig { width: var(--pw); margin-left: max(0px, calc(50% - var(--pw) / 2 - 104px)); }
+  .js .stage .pausa-st {
+    display: inline-flex; justify-content: center;
+    position: absolute; right: var(--gutter); bottom: 12px;
+    width: 40px; height: 40px; min-height: 0; padding: 0;
+    background: var(--bg);
+  }
+  .js .stage .pausa-st .ic { width: 16px; height: 16px; }
+  .js .hero { padding-top: 24px; }
+  .js .steps { position: relative; z-index: 1; }
+  .js .step, .js .step:not(.step-intro) {
+    display: block; min-height: calc(var(--read-h) * .8);
+    padding: 18px 0 30px;
+  }
+  .js .step-intro { display: none; }
+  .js .step.step-last { min-height: calc(var(--read-h) + 40px); }
+  .js .copy { margin: 0 auto; }
+  .ready .copy { opacity: .3; transition: opacity .45s ease; }
+  .ready .step.is-active .copy, .ready .copy:focus-within { opacity: 1; }
+  /* «SIX SEVEN!!!» cabe entero en la columna libre junto al teléfono, que en 320 px mide unos 110 px. */
+  .ubub.is-67 .ub-s { font-size: clamp(16px, 5.4vw, 23px); }
+  /* El paso del chat dura más al bajar, así el «67», que llega a los 4,9 s, no se pasa de largo. */
+  .js .step[data-uli67] { min-height: calc(var(--read-h) * 1.5); }
+}
+@supports (height: 100svh) {
+  @media (max-width: 899px) and (min-height: 500px) {
+    .js {
+      --gw: min(44vw, calc(((100svh - var(--nav-h)) * .52 - 38px) / 2.1641));
+      --read-h: calc(100svh - var(--nav-h) - var(--stage-h));
+    }
+  }
 }
 
 /* ---------- Reducir movimiento, sin animaciones ---------- */
@@ -464,4 +882,8 @@ html:not(.js) .theme { display: none; }
   .ready .copy, .ready .step[data-side="l"] .copy { transform: none; }
   .js .scr, .js .scr[data-push] { transform: none; }
   .js .qrpanel { transform: none; }
+  .shot.rv { opacity: 1; transform: none; }
+  /* Sin animaciones no hay nada que pausar. */
+  .js .pausa-fila, .js .nav .pausa, .js .stage .pausa-st { display: none; }
+  .ubub { transform: none; }
 }
